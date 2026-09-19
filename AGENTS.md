@@ -36,6 +36,7 @@ La orden de trabajo es la entidad central. Agrupa cliente, vehículo, tareas, re
 - Tomar una tarea debe ser concurrente-seguro (`with_lock` o lock optimista con `lock_version`): una tarea tomada no puede ser tomada al mismo tiempo por otro mecánico.
 - Tiempo real: Action Cable (Solid Cable) para notificar cambios de estado de tareas y órdenes.
 - Estilo Ruby: RuboCop Rails Omakase (`bin/rubocop`).
+- No escribir comentarios inline en el código salvo que el developer lo pida explícitamente.
 - Este repo es el backend API. No mezclar el frontend React acá hasta que exista su propio árbol.
 
 ## Commits y pull requests

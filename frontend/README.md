@@ -1,75 +1,52 @@
-# React + TypeScript + Vite
+# Frontend — Gestión de Taller
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplicación React que consume la API de Rails del proyecto (carpeta `../` en la raíz del repo). Pensada como panel único usado tanto desde web (recepción/administración) como desde el celular (mecánicos), con vistas adaptadas según el rol.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- [Vite](https://vitejs.dev/) + React + TypeScript
+- [React Router](https://reactrouter.com/) para el ruteo
+- [TanStack Query](https://tanstack.com/query) para pedir y cachear datos de la API
+- Axios como cliente HTTP, con interceptor de autenticación (JWT)
+- ESLint para linting
 
-## React Compiler
+## Requisitos previos
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Node.js (versión que uses en el backend/monorepo, o la última LTS)
+- pnpm (`corepack enable` si no lo tenés instalado)
+- El backend corriendo en `http://localhost:3000` (ver README de la raíz del repo)
 
-## Expanding the ESLint configuration
+## Setup local
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+1. Parate en esta carpeta:
+   ```
+   cd frontend
+   ```
+2. Instalá las dependencias:
+   ```
+   pnpm install
+   ```
+3. Copiá `.env.example` a `.env` y ajustá si hace falta:
+   ```
+   VITE_API_URL=http://localhost:3000
+   ```
+4. Levantá el servidor de desarrollo:
+   ```
+   pnpm dev
+   ```
+   La app queda disponible en `http://localhost:5173`.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Scripts
 
 ```
-
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+pnpm dev       # servidor de desarrollo
+pnpm build     # build de producción
+pnpm lint      # corre ESLint
+pnpm preview   # sirve el build de producción localmente
 ```
+
+## Convenciones
+
+- Toda llamada a la API pasa por `src/lib/api.ts` (no instanciar Axios suelto en otros lados), para que el token JWT se adjunte siempre igual.
+- Los datos remotos se manejan con TanStack Query (`useQuery`/`useMutation`), no con `useEffect` + `useState` a mano, para aprovechar el caché e invalidación cuando lleguen eventos en tiempo real (ActionCable) más adelante.
+- Cada feature es lo más autocontenida posible: sus propios componentes, hooks y llamadas a la API viven dentro de su carpeta en `features/`.

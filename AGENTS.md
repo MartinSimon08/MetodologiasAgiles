@@ -17,7 +17,7 @@ No construir un ERP ni un sistema de stock. El diferencial es el modelo pull de 
 ## Stack
 
 - Backend: Ruby on Rails 8 (API only) + PostgreSQL
-- Frontend: React como PWA responsive (web de recepción y vista móvil para mecánicos). El frontend todavía no vive en este repo.
+- Frontend: React como PWA responsive (web de recepción y vista móvil para mecánicos). Vive en `frontend/`.
 - Tests: RSpec + FactoryBot
 - Auth prevista: JWT con roles mecánico y administrador
 
@@ -37,7 +37,7 @@ La orden de trabajo es la entidad central. Agrupa cliente, vehículo, tareas, re
 - Tiempo real: Action Cable (Solid Cable) para notificar cambios de estado de tareas y órdenes.
 - Estilo Ruby: RuboCop Rails Omakase (`bin/rubocop`).
 - No escribir comentarios inline en el código salvo que el developer lo pida explícitamente.
-- Este repo es el backend API. No mezclar el frontend React acá hasta que exista su propio árbol.
+- El backend (Rails API) vive en la raíz. El frontend React queda en `frontend/`; no mezclar código de uno en el árbol del otro.
 
 ## Commits y pull requests
 

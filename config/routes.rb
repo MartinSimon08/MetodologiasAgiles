@@ -12,4 +12,6 @@ Rails.application.routes.draw do
       patch :resetear_password
     end
   end
+
+  resources :clientes, only: %i[index create]
 end

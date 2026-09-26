@@ -2,12 +2,17 @@ es:
   activerecord:
     models:
       usuario: Usuario
+      cliente: Cliente
     attributes:
       usuario:
         nombre: Nombre
         email: Email
         rol: Rol
         password: Contraseña
+      cliente:
+        nombre: Nombre
+        telefono: Teléfono
+        email: Email
     errors:
       messages:
         record_invalid: "La validación falló: %{errors}"

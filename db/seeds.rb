@@ -7,3 +7,11 @@
 #   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
 #     MovieGenre.find_or_create_by!(name: genre_name)
 #   end
+
+if ENV["ADMIN_EMAIL"].present? && ENV["ADMIN_PASSWORD"].present?
+  Usuario.find_or_create_by!(email: ENV["ADMIN_EMAIL"].strip.downcase) do |usuario|
+    usuario.nombre = ENV.fetch("ADMIN_NOMBRE", "Administrador")
+    usuario.rol = :administrador
+    usuario.password = ENV["ADMIN_PASSWORD"]
+  end
+end

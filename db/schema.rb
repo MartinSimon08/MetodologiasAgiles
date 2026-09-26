@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_26_174656) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_26_202440) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -23,6 +23,28 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_26_174656) do
     t.index ["telefono"], name: "index_clientes_on_telefono", unique: true
   end
 
+  create_table "ordenes", force: :cascade do |t|
+    t.string "cliente", null: false
+    t.datetime "created_at", null: false
+    t.string "estado", default: "abierta", null: false
+    t.datetime "updated_at", null: false
+    t.string "vehiculo", null: false
+  end
+
+  create_table "tareas", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "descripcion", null: false
+    t.string "estado", default: "pendiente", null: false
+    t.bigint "mecanico_id"
+    t.bigint "orden_id", null: false
+    t.datetime "terminada_en"
+    t.datetime "tomada_en"
+    t.datetime "updated_at", null: false
+    t.index ["mecanico_id"], name: "index_tareas_on_mecanico_id"
+    t.index ["orden_id", "estado"], name: "index_tareas_on_orden_id_and_estado"
+    t.index ["orden_id"], name: "index_tareas_on_orden_id"
+  end
+
   create_table "usuarios", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "email", null: false
@@ -32,4 +54,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_26_174656) do
     t.datetime "updated_at", null: false
     t.index "lower((email)::text)", name: "index_usuarios_on_lower_email", unique: true
   end
+
+  add_foreign_key "tareas", "ordenes"
+  add_foreign_key "tareas", "usuarios", column: "mecanico_id"
 end

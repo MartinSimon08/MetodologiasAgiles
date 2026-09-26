@@ -1,3 +1,5 @@
+![Gestión de Taller: del ingreso del vehículo al cobro](docs/images/portada.png)
+
 # Gestión de Taller
 
 Software de gestión para un taller mecánico único, pensado para el dinamismo real de un taller: los mecánicos atienden vehículos según disponibilidad (no hay asignación fija), y los repuestos se compran al vuelo sin stock permanente, cargándose a la orden con su costo real.

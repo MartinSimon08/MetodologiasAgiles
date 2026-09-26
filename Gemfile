@@ -36,6 +36,7 @@ gem "image_processing", "~> 1.2"
 gem "rack-cors"
 
 gem "bcrypt"
+gem "jwt"
 gem "json", "~> 2.10"
 
 group :development, :test do

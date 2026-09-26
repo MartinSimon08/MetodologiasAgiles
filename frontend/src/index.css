@@ -320,6 +320,59 @@ button:focus-visible {
   padding-top: 0.75rem;
 }
 
+.fila-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.fila-item .item-datos {
+  flex: 1 1 220px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.insignia {
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  white-space: nowrap;
+}
+
+.insignia-abierta,
+.insignia-pendiente {
+  color: var(--acento);
+}
+
+.insignia-cerrada,
+.insignia-terminada {
+  color: var(--texto-suave);
+}
+
+.insignia-en_curso {
+  color: var(--mecanico);
+}
+
+.volver {
+  color: var(--acento);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.orden-detalle {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.orden-detalle .encabezado p {
+  margin: 0.15rem 0 0;
+}
+
 @media (max-width: 600px) {
   .item {
     grid-template-columns: 1fr auto;

@@ -7,6 +7,9 @@ Rails.application.routes.draw do
 
   resource :sesion, only: :create, controller: "sesiones"
 
-  # Defines the root path route ("/")
-  # root "posts#index"
+  resources :usuarios, only: %i[index create] do
+    member do
+      patch :resetear_password
+    end
+  end
 end

@@ -39,4 +39,9 @@ RSpec.describe Usuario, type: :model do
 
     expect { duplicado.save(validate: false) }.to raise_error(ActiveRecord::RecordNotUnique)
   end
+
+  it "informa los errores de validación en español" do
+    expect { create(:usuario, password: PasswordsDePrueba::CORTA) }
+      .to raise_error(ActiveRecord::RecordInvalid, "La validación falló: Contraseña es demasiado corta (mínimo 8 caracteres)")
+  end
 end

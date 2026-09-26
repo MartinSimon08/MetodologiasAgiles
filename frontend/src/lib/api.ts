@@ -38,6 +38,13 @@ api.interceptors.response.use(
   },
 )
 
+export interface MetaPaginacion {
+  pagina: number
+  por_pagina: number
+  total: number
+  total_paginas: number
+}
+
 export type FieldErrors = Record<string, string[]>
 
 export function fieldErrors(error: unknown): FieldErrors {

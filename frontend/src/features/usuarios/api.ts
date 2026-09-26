@@ -1,4 +1,4 @@
-import { api } from '../../lib/api'
+import { api, type MetaPaginacion } from '../../lib/api'
 import type { Rol, Usuario } from '../auth/types'
 
 export interface UsuarioListado extends Usuario {
@@ -10,13 +10,6 @@ export interface NuevoUsuario {
   email: string
   rol: Rol
   password: string
-}
-
-export interface MetaPaginacion {
-  pagina: number
-  por_pagina: number
-  total: number
-  total_paginas: number
 }
 
 export interface PaginaUsuarios {

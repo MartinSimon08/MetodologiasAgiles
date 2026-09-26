@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
+import { ErroresCampo } from '../../components/ErroresCampo'
 import { errorMessage, fieldErrors } from '../../lib/api'
 import { ROL_LABELS, type Rol } from '../auth/types'
 import { crearUsuario, type NuevoUsuario } from './api'
@@ -92,9 +93,4 @@ export function NuevoUsuarioForm({ onCreado, onCancelar }: Props) {
       </div>
     </form>
   )
-}
-
-function ErroresCampo({ errores }: { errores?: string[] }) {
-  if (!errores?.length) return null
-  return <span className="error">{errores.join('. ')}</span>
 }

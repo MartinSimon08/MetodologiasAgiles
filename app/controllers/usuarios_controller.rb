@@ -1,8 +1,11 @@
 class UsuariosController < ApplicationController
+  include Paginable
+
   before_action :require_administrador!
 
   def index
-    render json: Usuario.order(:nombre).map { |usuario| serialize(usuario) }
+    usuarios, meta = paginar(Usuario.order(:nombre, :id))
+    render json: { usuarios: usuarios.map { |usuario| serialize(usuario) }, meta: meta }
   end
 
   def create

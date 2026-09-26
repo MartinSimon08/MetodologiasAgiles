@@ -1,5 +1,7 @@
-import { useQuery } from '@tanstack/react-query'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
+import { Paginacion } from '../../components/Paginacion'
 import { errorMessage } from '../../lib/api'
 import { useAuth } from '../auth/AuthContext'
 import { ROL_LABELS } from '../auth/types'
@@ -13,7 +15,20 @@ export function UsuariosPage() {
   const [reseteandoId, setReseteandoId] = useState<number | null>(null)
   const [aviso, setAviso] = useState<string | null>(null)
 
-  const usuarios = useQuery({ queryKey: ['usuarios'], queryFn: listarUsuarios })
+  const [searchParams, setSearchParams] = useSearchParams()
+  const pagina = Math.max(1, Number(searchParams.get('pagina')) || 1)
+
+  const usuarios = useQuery({
+    queryKey: ['usuarios', pagina],
+    queryFn: () => listarUsuarios(pagina),
+    placeholderData: keepPreviousData,
+  })
+
+  function irAPagina(nueva: number) {
+    setReseteandoId(null)
+    setSearchParams(nueva === 1 ? {} : { pagina: String(nueva) })
+    window.scrollTo({ top: 0 })
+  }
 
   return (
     <section className="usuarios">
@@ -55,8 +70,8 @@ export function UsuariosPage() {
       )}
 
       {usuarios.data && (
-        <ul className="lista">
-          {usuarios.data.map((usuario) => (
+        <ul className="lista" aria-busy={usuarios.isPlaceholderData}>
+          {usuarios.data.usuarios.map((usuario) => (
             <li key={usuario.id} className="tarjeta item">
               <div className="item-datos">
                 <strong>
@@ -89,6 +104,14 @@ export function UsuariosPage() {
             </li>
           ))}
         </ul>
+      )}
+
+      {usuarios.data && (
+        <Paginacion
+          meta={usuarios.data.meta}
+          cargando={usuarios.isPlaceholderData}
+          onCambiar={irAPagina}
+        />
       )}
     </section>
   )

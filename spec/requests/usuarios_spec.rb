@@ -72,7 +72,35 @@ RSpec.describe "Usuarios", type: :request do
       get "/usuarios", headers: auth_headers(admin)
 
       expect(response).to have_http_status(:ok)
-      expect(response.parsed_body.pluck("email")).to contain_exactly(admin.email, mecanico.email)
+      expect(response.parsed_body["usuarios"].pluck("email")).to contain_exactly(admin.email, mecanico.email)
+      expect(response.parsed_body["meta"]).to eq(
+        "pagina" => 1, "por_pagina" => 20, "total" => 2, "total_paginas" => 1
+      )
+    end
+
+    it "pagina los resultados ordenados por nombre" do
+      %w[Carla Ana Bruno Diego].each { |nombre| create(:usuario, nombre: nombre) }
+      admin.update!(nombre: "Zoe")
+
+      get "/usuarios", params: { pagina: 2, por_pagina: 2 }, headers: auth_headers(admin)
+
+      expect(response.parsed_body["usuarios"].pluck("nombre")).to eq(%w[Carla Diego])
+      expect(response.parsed_body["meta"]).to eq(
+        "pagina" => 2, "por_pagina" => 2, "total" => 5, "total_paginas" => 3
+      )
+    end
+
+    it "limita la cantidad por página" do
+      get "/usuarios", params: { por_pagina: 1000 }, headers: auth_headers(admin)
+
+      expect(response.parsed_body["meta"]["por_pagina"]).to eq(100)
+    end
+
+    it "devuelve la última página si se pide una fuera de rango" do
+      get "/usuarios", params: { pagina: 99 }, headers: auth_headers(admin)
+
+      expect(response.parsed_body["meta"]["pagina"]).to eq(1)
+      expect(response.parsed_body["usuarios"].pluck("email")).to eq([ admin.email ])
     end
 
     it "prohíbe el listado a un mecánico" do

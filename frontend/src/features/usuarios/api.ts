@@ -12,8 +12,20 @@ export interface NuevoUsuario {
   password: string
 }
 
-export async function listarUsuarios() {
-  const { data } = await api.get<UsuarioListado[]>('/usuarios')
+export interface MetaPaginacion {
+  pagina: number
+  por_pagina: number
+  total: number
+  total_paginas: number
+}
+
+export interface PaginaUsuarios {
+  usuarios: UsuarioListado[]
+  meta: MetaPaginacion
+}
+
+export async function listarUsuarios(pagina: number) {
+  const { data } = await api.get<PaginaUsuarios>('/usuarios', { params: { pagina } })
   return data
 }
 

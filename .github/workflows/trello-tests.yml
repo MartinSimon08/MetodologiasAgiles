@@ -1,0 +1,27 @@
+name: Tests de integración Trello
+
+on:
+  pull_request:
+    paths:
+      - 'script/trello-*'
+      - '.github/workflows/trello-*'
+  push:
+    branches: [main]
+    paths:
+      - 'script/trello-*'
+      - '.github/workflows/trello-*'
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test script/trello-sync.test.mjs

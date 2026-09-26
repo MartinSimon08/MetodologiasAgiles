@@ -2,6 +2,10 @@
 
 <!-- Resumen de lo que cambia y por qué. El título del PR debe seguir Conventional Commits, por ejemplo: feat(tareas): permitir tomar una tarea disponible -->
 
+## Ticket
+
+<!-- Para un ticket importado desde Trello, agregar una línea independiente: Closes #123 -->
+
 ## Cómo probarlo
 
 -

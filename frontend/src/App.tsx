@@ -5,6 +5,8 @@ import { ClientesPage } from './features/clientes/ClientesPage'
 import { ConfiguracionPage } from './features/configuracion/ConfiguracionPage'
 import { LoginPage } from './features/auth/LoginPage'
 import { RequireAuth } from './features/auth/RequireAuth'
+import { OrdenDetallePage } from './features/ordenes/OrdenDetallePage'
+import { OrdenesPage } from './features/ordenes/OrdenesPage'
 import { UsuariosPage } from './features/usuarios/UsuariosPage'
 
 function App() {
@@ -20,6 +22,8 @@ function App() {
           }
         >
           <Route index element={<InicioPage />} />
+          <Route path="ordenes" element={<OrdenesPage />} />
+          <Route path="ordenes/:id" element={<OrdenDetallePage />} />
           <Route
             path="clientes"
             element={

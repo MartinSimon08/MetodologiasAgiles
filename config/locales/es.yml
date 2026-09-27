@@ -3,6 +3,8 @@ es:
     models:
       usuario: Usuario
       cliente: Cliente
+      orden: Orden
+      tarea: Tarea
     attributes:
       usuario:
         nombre: Nombre
@@ -13,12 +15,29 @@ es:
         nombre: Nombre
         telefono: Teléfono
         email: Email
+      orden:
+        cliente: Cliente
+        vehiculo: Vehículo
+        estado: Estado
+      tarea:
+        orden: Orden
+        mecanico: Mecánico
+        descripcion: Descripción
+        estado: Estado
     errors:
       messages:
         record_invalid: "La validación falló: %{errors}"
         restrict_dependent_destroy:
           has_one: No se puede eliminar porque existe un %{record} dependiente
           has_many: No se puede eliminar porque existen %{record} dependientes
+      models:
+        tarea:
+          attributes:
+            estado:
+              no_disponible: ya fue tomada por otro mecánico
+              no_en_curso: no está en curso
+            orden:
+              cerrada: está cerrada
   errors:
     format: "%{attribute} %{message}"
     messages:

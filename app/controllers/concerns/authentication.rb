@@ -28,6 +28,10 @@ module Authentication
     head :forbidden unless current_usuario&.administrador?
   end
 
+  def require_mecanico!
+    head :forbidden unless current_usuario&.mecanico?
+  end
+
   def bearer_token
     request.authorization.to_s[/\ABearer (.+)\z/, 1]
   end

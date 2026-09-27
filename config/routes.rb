@@ -15,4 +15,14 @@ Rails.application.routes.draw do
   end
 
   resources :clientes, only: %i[index create]
+
+  resources :ordenes, only: %i[index show] do
+    resources :tareas, only: %i[index create], shallow: true do
+      member do
+        patch :tomar
+        patch :completar
+        patch :liberar
+      end
+    end
+  end
 end

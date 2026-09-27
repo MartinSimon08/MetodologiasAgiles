@@ -91,6 +91,28 @@ script/check-conventional-commits --title "feat(tareas): permitir tomar una tare
 script/check-conventional-commits --from origin/main --to HEAD
 ```
 
+## Tickets de Trello en pull requests
+
+- Usar `.github/PULL_REQUEST_TEMPLATE.md` para preparar la descripción de cada PR.
+- Para un ticket de Trello, buscar el issue asociado antes de redactar el PR. No inventar números de issues.
+- La importación desde `Sprint Backlog` es manual. No ejecutarla automáticamente al crear un PR.
+- Si falta el issue asociado, informar que hace falta ejecutar `Importar Sprint Backlog` desde Actions.
+- Si el PR completa el ticket, escribir `Closes #123` en una línea independiente de la descripción.
+- Reemplazar `123` por el número real del issue en este repositorio.
+- Escribir la referencia fuera de comentarios HTML y bloques de código. Para varios tickets, usar una línea por issue.
+- Si el PR es parcial, escribir `Relacionado con #123` y explicar el trabajo pendiente. Reservar `Closes` para el PR final.
+- Si el cambio no tiene ticket, escribir `No aplica` en la sección Ticket y explicar el motivo.
+- No crear tickets ni ejecutar importaciones solamente para completar la plantilla.
+- Conservar el marcador `<!-- trello-card:ID -->` de los issues importados.
+
+Un PR listo con `Closes` mueve la tarjeta a `En Revisión / Esperando Merge`.
+Al integrar ese PR en `main`, la tarjeta pasa a `Hecho`.
+Los PRs parciales no mueven tarjetas automáticamente. Cerrar un PR sin integrarlo conserva la lista actual.
+La automatización solo procesa PRs del mismo repositorio, con autor colaborador y destino en la rama predeterminada.
+Los borradores quedan excluidos hasta que estén listos para revisión.
+
+Configuración y límites: [Trello y GitHub](docs/trello-github.md).
+
 ## Tests
 
 ```

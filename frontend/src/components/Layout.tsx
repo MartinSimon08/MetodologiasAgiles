@@ -16,6 +16,7 @@ export function Layout() {
             <>
               <NavLink to="/clientes">Clientes</NavLink>
               <NavLink to="/usuarios">Usuarios</NavLink>
+              <NavLink to="/configuracion">Configuración</NavLink>
             </>
           )}
         </nav>

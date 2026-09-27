@@ -6,6 +6,7 @@ Rails.application.routes.draw do
   get "up" => "rails/health#show", as: :rails_health_check
 
   resource :sesion, only: %i[show create], controller: "sesiones"
+  resource :configuracion_taller, only: %i[show update], controller: "configuraciones_taller"
 
   resources :usuarios, only: %i[index create] do
     member do

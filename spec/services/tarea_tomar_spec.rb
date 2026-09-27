@@ -30,23 +30,36 @@ RSpec.describe TareaTomar do
       .to raise_error(ActiveRecord::RecordInvalid)
   end
 
-  it "impide que dos mecánicos tomen la misma tarea al mismo tiempo" do
-    otro_mecanico = create(:usuario)
-    resultados = Queue.new
+  context "con dos conexiones reales a la base" do
+    self.use_transactional_tests = false
 
-    hilos = [ mecanico, otro_mecanico ].map do |usuario|
-      Thread.new do
-        ActiveRecord::Base.connection_pool.with_connection do
-          described_class.call(tarea: tarea, mecanico: usuario)
-          resultados << :ok
-        rescue ActiveRecord::RecordInvalid
-          resultados << :rechazada
+    after do
+      Tarea.delete_all
+      Orden.delete_all
+      Cliente.delete_all
+      Usuario.delete_all
+    end
+
+    it "impide que dos mecánicos tomen la misma tarea al mismo tiempo" do
+      tarea = create(:tarea)
+      mecanico = create(:usuario)
+      otro_mecanico = create(:usuario)
+      resultados = Queue.new
+
+      hilos = [ mecanico, otro_mecanico ].map do |usuario|
+        Thread.new do
+          ActiveRecord::Base.connection_pool.with_connection do
+            described_class.call(tarea: tarea, mecanico: usuario)
+            resultados << :ok
+          rescue ActiveRecord::RecordInvalid
+            resultados << :rechazada
+          end
         end
       end
-    end
-    hilos.each(&:join)
+      hilos.each(&:join)
 
-    expect(Array.new(2) { resultados.pop }).to contain_exactly(:ok, :rechazada)
-    expect(tarea.reload).to be_en_curso
+      expect(Array.new(2) { resultados.pop }).to contain_exactly(:ok, :rechazada)
+      expect(tarea.reload).to be_en_curso
+    end
   end
 end

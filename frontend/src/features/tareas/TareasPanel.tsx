@@ -33,17 +33,17 @@ export function TareasPanel({ ordenId, ordenAbierta }: Props) {
 
   const tomar = useMutation({
     mutationFn: tomarTarea,
-    onSuccess: invalidar,
+    onSettled: invalidar,
     onError: (err: unknown) => setError(errorMessage(err, 'No se pudo tomar la tarea.')),
   })
   const completar = useMutation({
     mutationFn: completarTarea,
-    onSuccess: invalidar,
+    onSettled: invalidar,
     onError: (err: unknown) => setError(errorMessage(err, 'No se pudo completar la tarea.')),
   })
   const liberar = useMutation({
     mutationFn: liberarTarea,
-    onSuccess: invalidar,
+    onSettled: invalidar,
     onError: (err: unknown) => setError(errorMessage(err, 'No se pudo liberar la tarea.')),
   })
 

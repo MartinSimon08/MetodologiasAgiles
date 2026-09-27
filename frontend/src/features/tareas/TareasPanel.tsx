@@ -105,6 +105,7 @@ export function TareasPanel({ ordenId, ordenAbierta }: Props) {
               <div className="item-datos">
                 <strong>{tarea.descripcion}</strong>
                 <span>{responsable(tarea.mecanico)}</span>
+                {tarea.precio && <span>$ {tarea.precio}</span>}
               </div>
               <span className={`insignia insignia-${tarea.estado}`}>
                 {ESTADO_TAREA_LABELS[tarea.estado]}

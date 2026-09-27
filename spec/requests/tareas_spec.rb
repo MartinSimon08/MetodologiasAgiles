@@ -17,6 +17,22 @@ RSpec.describe "Tareas", type: :request do
       expect(response.parsed_body).to include("descripcion" => "Cambiar aceite", "estado" => "pendiente")
     end
 
+    it "permite cargar un precio, por ejemplo el sugerido por el catálogo" do
+      post "/ordenes/#{orden.id}/tareas", params: { tarea: params[:tarea].merge(precio: "15000") },
+                                          headers: auth_headers(mecanico), as: :json
+
+      expect(response).to have_http_status(:created)
+      expect(response.parsed_body["precio"]).to eq("15000.0")
+    end
+
+    it "rechaza un precio negativo" do
+      post "/ordenes/#{orden.id}/tareas", params: { tarea: params[:tarea].merge(precio: "-1") },
+                                          headers: auth_headers(mecanico), as: :json
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body["errors"]).to have_key("precio")
+    end
+
     it "rechaza una descripción vacía" do
       post "/ordenes/#{orden.id}/tareas", params: { tarea: { descripcion: "" } },
                                           headers: auth_headers(mecanico), as: :json

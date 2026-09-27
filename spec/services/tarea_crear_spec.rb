@@ -11,6 +11,12 @@ RSpec.describe TareaCrear do
     expect(tarea.orden).to eq(orden)
   end
 
+  it "acepta un precio sugerido por el catálogo" do
+    tarea = described_class.call(orden: orden, descripcion: "Cambiar aceite", precio: 15_000)
+
+    expect(tarea.precio).to eq(15_000)
+  end
+
   it "rechaza una descripción vacía" do
     expect { described_class.call(orden: orden, descripcion: "") }
       .to raise_error(ActiveRecord::RecordInvalid)

@@ -5,6 +5,7 @@ es:
       cliente: Cliente
       orden: Orden
       tarea: Tarea
+      tarea_frecuente: Tarea frecuente
     attributes:
       usuario:
         nombre: Nombre
@@ -24,6 +25,10 @@ es:
         mecanico: Mecánico
         descripcion: Descripción
         estado: Estado
+        precio: Precio
+      tarea_frecuente:
+        descripcion: Descripción
+        precio_sugerido: Precio sugerido
     errors:
       messages:
         record_invalid: "La validación falló: %{errors}"
@@ -50,3 +55,6 @@ es:
       password_too_long: es demasiado larga
       confirmation: no coincide con %{attribute}
       required: debe existir
+      not_a_number: no es un número
+      greater_than: debe ser mayor a %{count}
+      greater_than_or_equal_to: debe ser mayor o igual a %{count}

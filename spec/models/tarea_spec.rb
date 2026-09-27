@@ -20,6 +20,14 @@ RSpec.describe Tarea, type: :model do
     expect(create(:tarea)).to be_pendiente
   end
 
+  it "permite no cargar precio" do
+    expect(build(:tarea, precio: nil)).to be_valid
+  end
+
+  it "rechaza un precio negativo" do
+    expect(build(:tarea, precio: -1)).not_to be_valid
+  end
+
   it "no puede crearse sobre una orden cerrada" do
     orden = create(:orden, :cerrada)
 

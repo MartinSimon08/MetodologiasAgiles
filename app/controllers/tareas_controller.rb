@@ -46,11 +46,11 @@ class TareasController < ApplicationController
   end
 
   def tarea_params
-    params.require(:tarea).permit(:descripcion).with_defaults(descripcion: nil)
+    params.require(:tarea).permit(:descripcion, :precio).with_defaults(descripcion: nil)
   end
 
   def serialize(tarea)
-    datos = tarea.as_json(only: %i[id orden_id descripcion estado mecanico_id tomada_en terminada_en created_at])
+    datos = tarea.as_json(only: %i[id orden_id descripcion estado precio mecanico_id tomada_en terminada_en created_at])
     datos[:mecanico] = tarea.mecanico&.as_json(only: %i[id nombre])
     datos
   end

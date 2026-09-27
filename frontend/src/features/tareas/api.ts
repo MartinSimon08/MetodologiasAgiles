@@ -11,8 +11,10 @@ export async function listarTareas(ordenId: number, pagina: number) {
   return data
 }
 
-export async function crearTarea(ordenId: number, descripcion: string) {
-  const { data } = await api.post<Tarea>(`/ordenes/${ordenId}/tareas`, { tarea: { descripcion } })
+export async function crearTarea(ordenId: number, descripcion: string, precio: string) {
+  const { data } = await api.post<Tarea>(`/ordenes/${ordenId}/tareas`, {
+    tarea: { descripcion, precio: precio || null },
+  })
   return data
 }
 

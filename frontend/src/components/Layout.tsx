@@ -12,6 +12,7 @@ export function Layout() {
           Taller
         </NavLink>
         <nav>
+          <NavLink to="/ordenes">Órdenes</NavLink>
           {usuario?.rol === 'administrador' && (
             <>
               <NavLink to="/clientes">Clientes</NavLink>

@@ -6,6 +6,7 @@ export interface Tarea {
   descripcion: string
   estado: EstadoTarea
   mecanico_id: number | null
+  mecanico: { id: number; nombre: string } | null
   tomada_en: string | null
   terminada_en: string | null
   created_at: string

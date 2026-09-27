@@ -82,6 +82,7 @@ RSpec.describe "Tareas", type: :request do
 
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body).to include("estado" => "en_curso", "mecanico_id" => mecanico.id)
+      expect(response.parsed_body["mecanico"]).to include("id" => mecanico.id, "nombre" => mecanico.nombre)
       expect(response.parsed_body["tomada_en"]).to be_present
     end
 

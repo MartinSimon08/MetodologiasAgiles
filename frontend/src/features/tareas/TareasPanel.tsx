@@ -51,10 +51,10 @@ export function TareasPanel({ ordenId, ordenAbierta }: Props) {
     setSearchParams(nueva === 1 ? {} : { pagina: String(nueva) })
   }
 
-  function responsable(mecanicoId: number | null) {
-    if (mecanicoId === null) return 'Sin tomar'
-    if (mecanicoId === usuario?.id) return 'Tomada por vos'
-    return `Tomada por mecánico #${mecanicoId}`
+  function responsable(mecanico: { id: number; nombre: string } | null) {
+    if (mecanico === null) return 'Sin tomar'
+    if (mecanico.id === usuario?.id) return 'Tomada por vos'
+    return `Tomada por ${mecanico.nombre}`
   }
 
   return (
@@ -104,7 +104,7 @@ export function TareasPanel({ ordenId, ordenAbierta }: Props) {
             <li key={tarea.id} className="tarjeta fila-item">
               <div className="item-datos">
                 <strong>{tarea.descripcion}</strong>
-                <span>{responsable(tarea.mecanico_id)}</span>
+                <span>{responsable(tarea.mecanico)}</span>
               </div>
               <span className={`insignia insignia-${tarea.estado}`}>
                 {ESTADO_TAREA_LABELS[tarea.estado]}

@@ -63,6 +63,15 @@ RSpec.describe "Tareas", type: :request do
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body["tareas"].pluck("descripcion")).to eq([ "Cambiar aceite" ])
     end
+
+    it "permite a un administrador consultarlas en modo solo lectura" do
+      create(:tarea, orden: orden, descripcion: "Cambiar aceite")
+
+      get "/ordenes/#{orden.id}/tareas", headers: auth_headers(admin)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body["tareas"].pluck("descripcion")).to eq([ "Cambiar aceite" ])
+    end
   end
 
   describe "PATCH /tareas/:id/tomar" do

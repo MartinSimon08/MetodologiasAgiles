@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
+import { ErroresCampo } from '../../components/ErroresCampo'
 import { errorMessage, fieldErrors } from '../../lib/api'
 import { crearTarea } from './api'
 
@@ -58,9 +59,4 @@ export function NuevaTareaForm({ ordenId, onCreada, onCancelar }: Props) {
       </div>
     </form>
   )
-}
-
-function ErroresCampo({ errores }: { errores?: string[] }) {
-  if (!errores?.length) return null
-  return <span className="error">{errores.join('. ')}</span>
 }

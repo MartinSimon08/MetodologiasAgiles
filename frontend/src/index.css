@@ -255,7 +255,14 @@ button:focus-visible {
 }
 
 .campo-porcentaje input {
+  appearance: textfield;
   max-width: 180px;
+}
+
+.campo-porcentaje input::-webkit-inner-spin-button,
+.campo-porcentaje input::-webkit-outer-spin-button {
+  appearance: none;
+  margin: 0;
 }
 
 .campo-porcentaje > span {

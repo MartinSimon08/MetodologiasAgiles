@@ -1,0 +1,26 @@
+name: Asignar PR a su autor
+
+on:
+  pull_request_target:
+    types: [opened, reopened]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  assign:
+    if: github.event.pull_request.user.type != 'Bot'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Agregar al autor como responsable
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const pullRequest = context.payload.pull_request;
+
+            await github.rest.issues.addAssignees({
+              ...context.repo,
+              issue_number: pullRequest.number,
+              assignees: [pullRequest.user.login],
+            });

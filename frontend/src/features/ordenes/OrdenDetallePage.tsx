@@ -31,7 +31,7 @@ export function OrdenDetallePage() {
         <>
           <header className="encabezado">
             <div>
-              <h1>{orden.data.cliente}</h1>
+              <h1>{orden.data.cliente.nombre}</h1>
               <p className="estado">{orden.data.vehiculo}</p>
             </div>
             <span className={`insignia insignia-${orden.data.estado}`}>

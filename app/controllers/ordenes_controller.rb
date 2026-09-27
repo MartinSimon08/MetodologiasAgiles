@@ -13,6 +13,8 @@ class OrdenesController < ApplicationController
   private
 
   def serialize(orden)
-    orden.as_json(only: %i[id cliente vehiculo estado created_at])
+    datos = orden.as_json(only: %i[id vehiculo estado created_at])
+    datos[:cliente] = orden.cliente.as_json(only: %i[id nombre telefono email])
+    datos
   end
 end

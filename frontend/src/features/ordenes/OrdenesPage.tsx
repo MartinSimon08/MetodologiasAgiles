@@ -42,7 +42,7 @@ export function OrdenesPage() {
           {ordenes.data.ordenes.map((orden) => (
             <li key={orden.id} className="tarjeta fila-item">
               <Link to={`/ordenes/${orden.id}`} className="item-datos">
-                <strong>{orden.cliente}</strong>
+                <strong>{orden.cliente.nombre}</strong>
                 <span>{orden.vehiculo}</span>
               </Link>
               <span className={`insignia insignia-${orden.estado}`}>

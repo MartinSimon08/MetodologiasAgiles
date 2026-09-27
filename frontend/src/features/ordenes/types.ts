@@ -2,7 +2,7 @@ export type EstadoOrden = 'abierta' | 'cerrada'
 
 export interface Orden {
   id: number
-  cliente: string
+  cliente: { id: number; nombre: string; telefono: string; email: string | null }
   vehiculo: string
   estado: EstadoOrden
   created_at: string

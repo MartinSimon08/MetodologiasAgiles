@@ -5,13 +5,14 @@ RSpec.describe "Ordenes", type: :request do
 
   describe "GET /ordenes" do
     it "lista las órdenes para un usuario autenticado" do
-      create(:orden, cliente: "Carla Gómez")
-      create(:orden, :cerrada, cliente: "Bruno Díaz")
+      create(:orden, cliente: create(:cliente, nombre: "Carla Gómez"))
+      create(:orden, :cerrada, cliente: create(:cliente, nombre: "Bruno Díaz"))
 
       get "/ordenes", headers: auth_headers(mecanico)
 
       expect(response).to have_http_status(:ok)
-      expect(response.parsed_body["ordenes"].pluck("cliente")).to contain_exactly("Carla Gómez", "Bruno Díaz")
+      nombres = response.parsed_body["ordenes"].map { |orden| orden["cliente"]["nombre"] }
+      expect(nombres).to contain_exactly("Carla Gómez", "Bruno Díaz")
     end
 
     it "exige autenticación" do
@@ -23,12 +24,14 @@ RSpec.describe "Ordenes", type: :request do
 
   describe "GET /ordenes/:id" do
     it "devuelve los datos de la orden" do
-      orden = create(:orden, cliente: "Carla Gómez", vehiculo: "Fiat Cronos ABC123")
+      cliente = create(:cliente, nombre: "Carla Gómez")
+      orden = create(:orden, cliente: cliente, vehiculo: "Fiat Cronos ABC123")
 
       get "/ordenes/#{orden.id}", headers: auth_headers(mecanico)
 
       expect(response).to have_http_status(:ok)
-      expect(response.parsed_body).to include("cliente" => "Carla Gómez", "vehiculo" => "Fiat Cronos ABC123", "estado" => "abierta")
+      expect(response.parsed_body).to include("vehiculo" => "Fiat Cronos ABC123", "estado" => "abierta")
+      expect(response.parsed_body["cliente"]).to include("id" => cliente.id, "nombre" => "Carla Gómez")
     end
 
     it "devuelve 404 si la orden no existe" do

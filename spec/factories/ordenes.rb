@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :orden do
-    sequence(:cliente) { |n| "Cliente #{n}" }
+    cliente
     sequence(:vehiculo) { |n| "Vehículo #{n}" }
     estado { :abierta }
 

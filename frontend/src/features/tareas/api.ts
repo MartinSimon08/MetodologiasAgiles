@@ -1,5 +1,5 @@
 import { api, type MetaPaginacion } from '../../lib/api'
-import type { Tarea } from './types'
+import type { Tarea, TareasMecanico } from './types'
 
 export interface PaginaTareas {
   tareas: Tarea[]
@@ -30,5 +30,10 @@ export async function completarTarea(id: number) {
 
 export async function liberarTarea(id: number) {
   const { data } = await api.patch<Tarea>(`/tareas/${id}/liberar`)
+  return data
+}
+
+export async function listarTareasMecanico() {
+  const { data } = await api.get<TareasMecanico>('/tareas_mecanico')
   return data
 }

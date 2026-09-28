@@ -16,6 +16,7 @@ export function Paginacion({ meta, cargando = false, onCambiar }: Props) {
   return (
     <nav className="paginacion" aria-label="Paginación">
       <button
+        type="button"
         className="secundario"
         disabled={cargando || meta.pagina <= 1}
         onClick={() => onCambiar(meta.pagina - 1)}
@@ -27,6 +28,7 @@ export function Paginacion({ meta, cargando = false, onCambiar }: Props) {
         <small>{meta.total} en total</small>
       </span>
       <button
+        type="button"
         className="secundario"
         disabled={cargando || meta.pagina >= meta.total_paginas}
         onClick={() => onCambiar(meta.pagina + 1)}

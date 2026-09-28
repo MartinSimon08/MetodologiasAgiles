@@ -46,8 +46,7 @@ class TareasController < ApplicationController
   end
 
   def tarea_params
-  before_action :require_administrador!, only: :create
-  before_action :require_mecanico!, only: %i[tomar completar liberar]
+    params.require(:tarea).permit(:descripcion, :precio).with_defaults(descripcion: nil)
   end
 
   def serialize(tarea)

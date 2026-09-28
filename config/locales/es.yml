@@ -8,6 +8,7 @@ es:
       repuesto: Repuesto
       repuesto_catalogo: Repuesto del catálogo
       tarea_frecuente: Tarea frecuente
+      vehiculo: Vehículo
     attributes:
       usuario:
         nombre: Nombre
@@ -41,6 +42,13 @@ es:
         registrado_por: Administrador
       repuesto_catalogo:
         nombre: Nombre
+      vehiculo:
+        cliente: Dueño
+        patente: Patente
+        marca: Marca
+        modelo: Modelo
+        anio: Año
+        kilometraje: Kilometraje
         ultimo_costo: Último costo
     errors:
       messages:
@@ -56,6 +64,10 @@ es:
               no_en_curso: no está en curso
             orden:
               cerrada: está cerrada
+        vehiculo:
+          attributes:
+            cliente:
+              mismo_duenio: ya es el dueño de este vehículo
   errors:
     format: "%{attribute} %{message}"
     messages:

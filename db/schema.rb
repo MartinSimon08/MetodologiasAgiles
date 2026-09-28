@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_28_130000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_28_140000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -104,10 +104,25 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_28_130000) do
     t.index "lower((email)::text)", name: "index_usuarios_on_lower_email", unique: true
   end
 
+  create_table "vehiculos", force: :cascade do |t|
+    t.integer "anio"
+    t.bigint "cliente_id", null: false
+    t.datetime "created_at", null: false
+    t.integer "kilometraje"
+    t.string "marca"
+    t.string "modelo"
+    t.string "patente", null: false
+    t.datetime "updated_at", null: false
+    t.index ["cliente_id"], name: "index_vehiculos_on_cliente_id"
+    t.index ["patente"], name: "index_vehiculos_on_patente", unique: true
+    t.check_constraint "kilometraje >= 0", name: "vehiculos_kilometraje_no_negativo"
+  end
+
   add_foreign_key "ordenes", "clientes"
   add_foreign_key "repuestos", "ordenes"
   add_foreign_key "repuestos", "repuestos_catalogo", column: "repuesto_catalogo_id"
   add_foreign_key "repuestos", "usuarios", column: "registrado_por_id"
   add_foreign_key "tareas", "ordenes"
   add_foreign_key "tareas", "usuarios", column: "mecanico_id"
+  add_foreign_key "vehiculos", "clientes"
 end

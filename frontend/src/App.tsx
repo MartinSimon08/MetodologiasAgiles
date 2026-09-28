@@ -9,6 +9,7 @@ import { OrdenDetallePage } from './features/ordenes/OrdenDetallePage'
 import { OrdenesPage } from './features/ordenes/OrdenesPage'
 import { TareasFrecuentesPage } from './features/tareasFrecuentes/TareasFrecuentesPage'
 import { UsuariosPage } from './features/usuarios/UsuariosPage'
+import { CatalogoRepuestosPage } from './features/repuestos/CatalogoRepuestosPage'
 
 function App() {
   return (
@@ -25,6 +26,14 @@ function App() {
           <Route index element={<InicioPage />} />
           <Route path="ordenes" element={<OrdenesPage />} />
           <Route path="ordenes/:id" element={<OrdenDetallePage />} />
+          <Route
+            path="repuestos"
+            element={
+              <RequireAuth roles={['administrador']}>
+                <CatalogoRepuestosPage />
+              </RequireAuth>
+            }
+          />
           <Route
             path="clientes"
             element={

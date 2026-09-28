@@ -5,6 +5,8 @@ es:
       cliente: Cliente
       orden: Orden
       tarea: Tarea
+      repuesto: Repuesto
+      repuesto_catalogo: Repuesto del catálogo
       tarea_frecuente: Tarea frecuente
     attributes:
       usuario:
@@ -29,6 +31,17 @@ es:
       tarea_frecuente:
         descripcion: Descripción
         precio_sugerido: Precio sugerido
+      repuesto:
+        orden: Orden
+        descripcion: Descripción
+        cantidad: Cantidad
+        costo_unitario: Costo unitario real
+        margen: Margen
+        repuesto_catalogo: Repuesto del catálogo
+        registrado_por: Administrador
+      repuesto_catalogo:
+        nombre: Nombre
+        ultimo_costo: Último costo
     errors:
       messages:
         record_invalid: "La validación falló: %{errors}"
@@ -55,6 +68,9 @@ es:
       password_too_long: es demasiado larga
       confirmation: no coincide con %{attribute}
       required: debe existir
-      not_a_number: no es un número
-      greater_than: debe ser mayor a %{count}
-      greater_than_or_equal_to: debe ser mayor o igual a %{count}
+      not_a_number: debe ser un número
+      not_an_integer: debe ser un número entero
+      greater_than: debe ser mayor que %{count}
+      greater_than_or_equal_to: debe ser mayor o igual que %{count}
+      less_than: debe ser menor que %{count}
+      less_than_or_equal_to: debe ser menor o igual que %{count}

@@ -1,0 +1,100 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useState, type FormEvent } from 'react'
+import { ErroresCampo } from '../../components/ErroresCampo'
+import { errorMessage, fieldErrors } from '../../lib/api'
+import { agregarRepuesto, type RepuestoCatalogo } from './api'
+import { CatalogoRepuestos } from './CatalogoRepuestos'
+
+interface Props {
+  ordenId: number
+  onGuardado: () => void
+  onCancelar: () => void
+}
+
+export function NuevoRepuestoForm({ ordenId, onGuardado, onCancelar }: Props) {
+  const queryClient = useQueryClient()
+  const [seleccionado, setSeleccionado] = useState<RepuestoCatalogo | null>(null)
+  const [descripcion, setDescripcion] = useState('')
+  const [cantidad, setCantidad] = useState('1')
+  const [costo, setCosto] = useState('')
+  const [margen, setMargen] = useState('')
+  const [proveedor, setProveedor] = useState('')
+  const mutation = useMutation({
+    mutationFn: () => agregarRepuesto(ordenId, {
+      repuesto_catalogo_id: seleccionado?.id,
+      descripcion, cantidad, costo_unitario: costo, margen: margen || undefined, proveedor,
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['repuestos', ordenId] })
+      onGuardado()
+    },
+  })
+  const errores = fieldErrors(mutation.error)
+
+  function seleccionar(repuesto: RepuestoCatalogo) {
+    setSeleccionado(repuesto)
+    setDescripcion(repuesto.nombre)
+    setCosto(repuesto.precio)
+    mutation.reset()
+  }
+
+  function guardar(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    mutation.mutate()
+  }
+
+  return (
+    <form className="tarjeta formulario" onSubmit={guardar}>
+      <h2>Agregar repuesto</h2>
+      <fieldset className="campos-repuesto" disabled={mutation.isPending}>
+        {seleccionado && <p className="estado" role="status">
+          Usando {seleccionado.nombre}. Revisá el costo real de esta compra.
+          {' '}<button type="button" className="secundario" onClick={() => {
+            setSeleccionado(null)
+            setDescripcion('')
+            setCosto('')
+          }}>Cargar otro repuesto</button>
+        </p>}
+        <label>
+          Descripción
+          <input value={descripcion} onChange={(event) => setDescripcion(event.target.value)}
+            required maxLength={200} readOnly={seleccionado !== null} />
+          <ErroresCampo errores={errores.descripcion} />
+        </label>
+        {!seleccionado && <CatalogoRepuestos key={descripcion} filtro={descripcion} onSeleccionar={seleccionar} />}
+        <label>
+          Cantidad comprada
+          <input type="number" min="1" max="2147483647" step="1" value={cantidad}
+            onChange={(event) => setCantidad(event.target.value)} required />
+          <ErroresCampo errores={errores.cantidad} />
+        </label>
+        <label>
+          Costo unitario real ($)
+          <input type="number" inputMode="decimal" min="0" max="9999999999.99" step="0.01"
+            value={costo} onChange={(event) => setCosto(event.target.value)} required
+            aria-describedby="ayuda-costo" />
+          <small id="ayuda-costo">Podés ajustar el costo sugerido para esta orden.</small>
+          <ErroresCampo errores={errores.costo_unitario} />
+        </label>
+        <label>
+          Margen (%) — opcional
+          <input type="number" inputMode="decimal" min="0" max="100" step="0.01" value={margen}
+            onChange={(event) => setMargen(event.target.value)} placeholder="Margen por defecto del taller" />
+          <ErroresCampo errores={errores.margen} />
+        </label>
+        <label>
+          Proveedor — opcional
+          <input value={proveedor} onChange={(event) => setProveedor(event.target.value)} />
+        </label>
+      </fieldset>
+      <ErroresCampo errores={errores.orden} />
+      {mutation.isError && Object.keys(errores).length === 0 && <p className="error" role="alert">
+        {errorMessage(mutation.error, 'No se pudo agregar el repuesto.')}
+      </p>}
+      <div className="acciones">
+        <button type="button" className="secundario" disabled={mutation.isPending} onClick={onCancelar}>Cancelar</button>
+        <button type="submit" disabled={mutation.isPending}>{mutation.isPending ? 'Guardando…' : 'Guardar compra'}</button>
+      </div>
+    </form>
+  )
+}

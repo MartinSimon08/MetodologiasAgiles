@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_27_120001) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_28_130000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -40,6 +40,35 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_27_120001) do
     t.datetime "updated_at", null: false
     t.string "vehiculo", null: false
     t.index ["cliente_id"], name: "index_ordenes_on_cliente_id"
+  end
+
+  create_table "repuestos", force: :cascade do |t|
+    t.integer "cantidad", null: false
+    t.decimal "costo_unitario", precision: 12, scale: 2, null: false
+    t.datetime "created_at", null: false
+    t.string "descripcion", null: false
+    t.decimal "margen", precision: 5, scale: 2, null: false
+    t.bigint "orden_id", null: false
+    t.decimal "precio_cliente", precision: 24, scale: 2, null: false
+    t.string "proveedor"
+    t.bigint "registrado_por_id", null: false
+    t.bigint "repuesto_catalogo_id"
+    t.datetime "updated_at", null: false
+    t.index ["orden_id"], name: "index_repuestos_on_orden_id"
+    t.index ["registrado_por_id"], name: "index_repuestos_on_registrado_por_id"
+    t.index ["repuesto_catalogo_id"], name: "index_repuestos_on_repuesto_catalogo_id"
+    t.check_constraint "cantidad > 0", name: "repuestos_cantidad_positiva"
+    t.check_constraint "costo_unitario >= 0::numeric", name: "repuestos_costo_no_negativo"
+    t.check_constraint "margen >= 0::numeric AND margen <= 100::numeric", name: "repuestos_margen_valido"
+  end
+
+  create_table "repuestos_catalogo", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "nombre", null: false
+    t.decimal "precio", precision: 12, scale: 2, null: false
+    t.datetime "updated_at", null: false
+    t.index ["nombre"], name: "index_repuestos_catalogo_on_nombre", unique: true
+    t.check_constraint "precio >= 0::numeric", name: "catalogo_costo_no_negativo"
   end
 
   create_table "tarea_frecuentes", force: :cascade do |t|
@@ -76,6 +105,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_27_120001) do
   end
 
   add_foreign_key "ordenes", "clientes"
+  add_foreign_key "repuestos", "ordenes"
+  add_foreign_key "repuestos", "repuestos_catalogo", column: "repuesto_catalogo_id"
+  add_foreign_key "repuestos", "usuarios", column: "registrado_por_id"
   add_foreign_key "tareas", "ordenes"
   add_foreign_key "tareas", "usuarios", column: "mecanico_id"
 end

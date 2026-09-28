@@ -43,7 +43,7 @@ export function NuevaTareaForm({ ordenId, onCreada, onCancelar }: Props) {
     const tareaFrecuente = tareasFrecuentes.data?.tareas_frecuentes.find((t) => String(t.id) === id)
     if (tareaFrecuente) {
       setDescripcion(tareaFrecuente.descripcion)
-      setPrecio(tareaFrecuente.precio_sugerido)
+      setPrecio(String(tareaFrecuente.precio_sugerido))
     }
   }
 

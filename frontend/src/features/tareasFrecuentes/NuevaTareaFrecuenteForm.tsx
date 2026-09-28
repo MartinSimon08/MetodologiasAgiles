@@ -2,9 +2,14 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
 import { ErroresCampo } from '../../components/ErroresCampo'
 import { errorMessage, fieldErrors } from '../../lib/api'
-import { crearTareaFrecuente, type NuevaTareaFrecuente } from './api'
+import { crearTareaFrecuente } from './api'
 
-const VACIO: NuevaTareaFrecuente = { descripcion: '', precio_sugerido: '' }
+interface FormState {
+  descripcion: string
+  precio_sugerido: string
+}
+
+const VACIO: FormState = { descripcion: '', precio_sugerido: '' }
 
 interface Props {
   onCreada: (descripcion: string) => void
@@ -13,7 +18,7 @@ interface Props {
 
 export function NuevaTareaFrecuenteForm({ onCreada, onCancelar }: Props) {
   const queryClient = useQueryClient()
-  const [datos, setDatos] = useState<NuevaTareaFrecuente>(VACIO)
+  const [datos, setDatos] = useState<FormState>(VACIO)
 
   const mutation = useMutation({
     mutationFn: crearTareaFrecuente,
@@ -27,13 +32,16 @@ export function NuevaTareaFrecuenteForm({ onCreada, onCancelar }: Props) {
   const errores = fieldErrors(mutation.error)
   const hayErroresDeCampo = Object.keys(errores).length > 0
 
-  function actualizar(campo: keyof NuevaTareaFrecuente, valor: string) {
+  function actualizar(campo: keyof FormState, valor: string) {
     setDatos((previo) => ({ ...previo, [campo]: valor }))
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    mutation.mutate(datos)
+    mutation.mutate({
+      descripcion: datos.descripcion,
+      precio_sugerido: Number(datos.precio_sugerido),
+    })
   }
 
   return (

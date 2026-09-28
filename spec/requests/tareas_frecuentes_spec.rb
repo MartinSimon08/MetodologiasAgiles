@@ -13,7 +13,7 @@ RSpec.describe "TareasFrecuentes", type: :request do
       }.to change(TareaFrecuente, :count).by(1)
 
       expect(response).to have_http_status(:created)
-      expect(response.parsed_body).to include("descripcion" => "Cambio de aceite", "precio_sugerido" => "15000.0")
+      expect(response.parsed_body).to include("descripcion" => "Cambio de aceite", "precio_sugerido" => 15_000.0)
     end
 
     it "exige la descripción" do

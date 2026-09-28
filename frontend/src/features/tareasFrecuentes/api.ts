@@ -3,13 +3,13 @@ import { api, type MetaPaginacion } from '../../lib/api'
 export interface TareaFrecuente {
   id: number
   descripcion: string
-  precio_sugerido: string
+  precio_sugerido: number
   created_at: string
 }
 
 export interface NuevaTareaFrecuente {
   descripcion: string
-  precio_sugerido: string
+  precio_sugerido: number
 }
 
 export interface PaginaTareasFrecuentes {

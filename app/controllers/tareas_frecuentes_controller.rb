@@ -20,6 +20,8 @@ class TareasFrecuentesController < ApplicationController
   end
 
   def serialize(tarea_frecuente)
-    tarea_frecuente.as_json(only: %i[id descripcion precio_sugerido created_at])
+    datos = tarea_frecuente.as_json(only: %i[id descripcion created_at])
+    datos["precio_sugerido"] = tarea_frecuente.precio_sugerido.to_f
+    datos
   end
 end

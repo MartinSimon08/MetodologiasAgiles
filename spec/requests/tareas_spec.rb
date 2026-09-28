@@ -22,7 +22,7 @@ RSpec.describe "Tareas", type: :request do
                                           headers: auth_headers(mecanico), as: :json
 
       expect(response).to have_http_status(:created)
-      expect(response.parsed_body["precio"]).to eq("15000.0")
+      expect(response.parsed_body["precio"]).to eq(15_000.0)
     end
 
     it "rechaza un precio negativo" do

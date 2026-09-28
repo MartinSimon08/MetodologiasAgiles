@@ -23,6 +23,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_27_120001) do
     t.index ["telefono"], name: "index_clientes_on_telefono", unique: true
   end
 
+  create_table "configuraciones_taller", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.decimal "margen_repuestos", precision: 5, scale: 2, default: "0.0", null: false
+    t.boolean "registro_unico", default: true, null: false
+    t.datetime "updated_at", null: false
+    t.index ["registro_unico"], name: "index_configuraciones_taller_on_registro_unico", unique: true
+    t.check_constraint "margen_repuestos >= 0::numeric AND margen_repuestos <= 100::numeric", name: "configuraciones_taller_margen_repuestos_valido"
+    t.check_constraint "registro_unico = true", name: "configuraciones_taller_registro_unico"
+  end
+
   create_table "ordenes", force: :cascade do |t|
     t.bigint "cliente_id", null: false
     t.datetime "created_at", null: false

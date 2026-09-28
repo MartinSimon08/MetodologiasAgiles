@@ -1,7 +1,8 @@
 class TareasController < ApplicationController
   include Paginable
 
-  before_action :require_mecanico!, except: :index
+  before_action :require_administrador!, only: :create
+  before_action :require_mecanico!, only: %i[tomar completar liberar]
   before_action :set_orden, only: %i[index create]
   before_action :set_tarea, only: %i[tomar completar liberar]
   before_action :require_responsable!, only: %i[completar liberar]

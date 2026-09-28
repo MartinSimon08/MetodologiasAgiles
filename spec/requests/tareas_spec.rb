@@ -8,9 +8,9 @@ RSpec.describe "Tareas", type: :request do
   describe "POST /ordenes/:orden_id/tareas" do
     let(:params) { { tarea: { descripcion: "Cambiar aceite" } } }
 
-    it "permite a un mecánico crear una tarea pendiente" do
+    it "permite a un administrador crear una tarea pendiente" do
       expect {
-        post "/ordenes/#{orden.id}/tareas", params: params, headers: auth_headers(mecanico), as: :json
+        post "/ordenes/#{orden.id}/tareas", params: params, headers: auth_headers(admin), as: :json
       }.to change(Tarea, :count).by(1)
 
       expect(response).to have_http_status(:created)
@@ -19,7 +19,7 @@ RSpec.describe "Tareas", type: :request do
 
     it "permite cargar un precio, por ejemplo el sugerido por el catálogo" do
       post "/ordenes/#{orden.id}/tareas", params: { tarea: params[:tarea].merge(precio: "15000") },
-                                          headers: auth_headers(mecanico), as: :json
+                                          headers: auth_headers(admin), as: :json
 
       expect(response).to have_http_status(:created)
       expect(response.parsed_body["precio"]).to eq(15_000.0)
@@ -27,7 +27,7 @@ RSpec.describe "Tareas", type: :request do
 
     it "rechaza un precio negativo" do
       post "/ordenes/#{orden.id}/tareas", params: { tarea: params[:tarea].merge(precio: "-1") },
-                                          headers: auth_headers(mecanico), as: :json
+                                          headers: auth_headers(admin), as: :json
 
       expect(response).to have_http_status(:unprocessable_content)
       expect(response.parsed_body["errors"]).to have_key("precio")
@@ -35,7 +35,7 @@ RSpec.describe "Tareas", type: :request do
 
     it "rechaza una descripción vacía" do
       post "/ordenes/#{orden.id}/tareas", params: { tarea: { descripcion: "" } },
-                                          headers: auth_headers(mecanico), as: :json
+                                          headers: auth_headers(admin), as: :json
 
       expect(response).to have_http_status(:unprocessable_content)
       expect(response.parsed_body["errors"]).to have_key("descripcion")
@@ -44,14 +44,14 @@ RSpec.describe "Tareas", type: :request do
     it "rechaza crear tareas en una orden cerrada" do
       orden.update!(estado: :cerrada)
 
-      post "/ordenes/#{orden.id}/tareas", params: params, headers: auth_headers(mecanico), as: :json
+      post "/ordenes/#{orden.id}/tareas", params: params, headers: auth_headers(admin), as: :json
 
       expect(response).to have_http_status(:unprocessable_content)
       expect(response.parsed_body["errors"]).to have_key("orden")
     end
 
-    it "prohíbe a un administrador crear tareas" do
-      post "/ordenes/#{orden.id}/tareas", params: params, headers: auth_headers(admin), as: :json
+    it "prohíbe a un mecánico crear tareas" do
+      post "/ordenes/#{orden.id}/tareas", params: params, headers: auth_headers(mecanico), as: :json
 
       expect(response).to have_http_status(:forbidden)
     end
@@ -63,7 +63,7 @@ RSpec.describe "Tareas", type: :request do
     end
 
     it "devuelve 404 si la orden no existe" do
-      post "/ordenes/0/tareas", params: params, headers: auth_headers(mecanico), as: :json
+      post "/ordenes/0/tareas", params: params, headers: auth_headers(admin), as: :json
 
       expect(response).to have_http_status(:not_found)
     end

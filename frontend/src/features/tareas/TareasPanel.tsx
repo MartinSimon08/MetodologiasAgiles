@@ -17,6 +17,7 @@ export function TareasPanel({ ordenId, ordenAbierta }: Props) {
   const { usuario } = useAuth()
   const queryClient = useQueryClient()
   const esMecanico = usuario?.rol === 'mecanico'
+  const esAdministrador = usuario?.rol === 'administrador'
 
   const [creando, setCreando] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -61,7 +62,7 @@ export function TareasPanel({ ordenId, ordenAbierta }: Props) {
     <section className="tareas">
       <header className="encabezado">
         <h2>Tareas</h2>
-        {esMecanico && ordenAbierta && !creando && (
+        {esAdministrador && ordenAbierta && !creando && (
           <button
             onClick={() => {
               setError(null)

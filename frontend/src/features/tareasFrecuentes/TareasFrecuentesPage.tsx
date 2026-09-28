@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { errorMessage } from '../../lib/api'
+import { importe } from '../../lib/formato'
 import { listarTareasFrecuentes } from './api'
 import { NuevaTareaFrecuenteForm } from './NuevaTareaFrecuenteForm'
 
@@ -63,7 +64,7 @@ export function TareasFrecuentesPage() {
               <div className="item-datos">
                 <strong>{tareaFrecuente.descripcion}</strong>
               </div>
-              <span>$ {tareaFrecuente.precio_sugerido}</span>
+              <span>$ {importe(tareaFrecuente.precio_sugerido)}</span>
             </li>
           ))}
         </ul>

@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Paginacion } from '../../components/Paginacion'
 import { errorMessage } from '../../lib/api'
+import { importe } from '../../lib/formato'
 import { useAuth } from '../auth/AuthContext'
 import { completarTarea, liberarTarea, listarTareas, tomarTarea } from './api'
 import { NuevaTareaForm } from './NuevaTareaForm'
@@ -106,7 +107,7 @@ export function TareasPanel({ ordenId, ordenAbierta }: Props) {
               <div className="item-datos">
                 <strong>{tarea.descripcion}</strong>
                 <span>{responsable(tarea.mecanico)}</span>
-                {tarea.precio != null && <span>$ {tarea.precio}</span>}
+                {tarea.precio != null && <span>$ {importe(tarea.precio)}</span>}
               </div>
               <span className={`insignia insignia-${tarea.estado}`}>
                 {ESTADO_TAREA_LABELS[tarea.estado]}

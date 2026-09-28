@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
 import { ErroresCampo } from '../../components/ErroresCampo'
 import { errorMessage, fieldErrors } from '../../lib/api'
+import { importe } from '../../lib/formato'
 import { listarTareasFrecuentes } from '../tareasFrecuentes/api'
 import { crearTarea } from './api'
 
@@ -62,7 +63,7 @@ export function NuevaTareaForm({ ordenId, onCreada, onCancelar }: Props) {
             <option value={SIN_CATALOGO}>Escribir manualmente…</option>
             {tareasFrecuentes.data.tareas_frecuentes.map((tareaFrecuente) => (
               <option key={tareaFrecuente.id} value={tareaFrecuente.id}>
-                {tareaFrecuente.descripcion} (sugerido $ {tareaFrecuente.precio_sugerido})
+                {tareaFrecuente.descripcion} (sugerido $ {importe(tareaFrecuente.precio_sugerido)})
               </option>
             ))}
           </select>

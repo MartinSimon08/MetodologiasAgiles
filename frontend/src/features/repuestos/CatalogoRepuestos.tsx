@@ -2,7 +2,8 @@ import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Paginacion } from '../../components/Paginacion'
 import { errorMessage } from '../../lib/api'
-import { importe, listarCatalogo, type RepuestoCatalogo } from './api'
+import { importe } from '../../lib/formato'
+import { listarCatalogo, type RepuestoCatalogo } from './api'
 
 interface Props {
   onSeleccionar?: (repuesto: RepuestoCatalogo) => void

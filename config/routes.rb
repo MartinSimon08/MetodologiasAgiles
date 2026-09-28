@@ -23,6 +23,7 @@ Rails.application.routes.draw do
   resources :repuestos_catalogo, only: %i[index create update destroy]
 
   resources :tareas_frecuentes, only: %i[index create]
+  resources :tareas_mecanico, only: :index
 
   resources :ordenes, only: %i[index show] do
     resources :repuestos, only: %i[index create]

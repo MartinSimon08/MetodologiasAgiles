@@ -15,8 +15,10 @@ Rails.application.routes.draw do
   end
 
   resources :clientes, only: %i[index create]
+  resources :repuestos_catalogo, only: :index
 
   resources :ordenes, only: %i[index show] do
+    resources :repuestos, only: %i[index create]
     resources :tareas, only: %i[index create], shallow: true do
       member do
         patch :tomar

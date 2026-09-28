@@ -40,7 +40,7 @@ export function NuevaTareaFrecuenteForm({ onCreada, onCancelar }: Props) {
     event.preventDefault()
     mutation.mutate({
       descripcion: datos.descripcion,
-      precio_sugerido: Number(datos.precio_sugerido),
+      precio_sugerido: datos.precio_sugerido === '' ? null : Number(datos.precio_sugerido),
     })
   }
 

@@ -23,7 +23,7 @@ export function RepuestosPanel({ ordenId, ordenAbierta }: { ordenId: number; ord
           setCreando(true)
         }}>Agregar repuesto</button>}
       </header>
-      {aviso && <p className="aviso" role="status">Compra registrada y último costo actualizado en el catálogo.</p>}
+      {aviso && <p className="aviso" role="status">Repuesto agregado a la orden.</p>}
       {creando && ordenAbierta && <NuevoRepuestoForm ordenId={ordenId} onCancelar={() => setCreando(false)}
         onGuardado={() => {
           setCreando(false)

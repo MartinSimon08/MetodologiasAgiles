@@ -1,6 +1,6 @@
 class Repuesto < ApplicationRecord
   belongs_to :orden
-  belongs_to :repuesto_catalogo
+  belongs_to :repuesto_catalogo, optional: true
   belongs_to :registrado_por, class_name: "Usuario"
 
   normalizes :descripcion, with: ->(descripcion) { descripcion.squish }

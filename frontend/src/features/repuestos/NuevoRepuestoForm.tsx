@@ -26,7 +26,6 @@ export function NuevoRepuestoForm({ ordenId, onGuardado, onCancelar }: Props) {
     }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['repuestos', ordenId] })
-      queryClient.invalidateQueries({ queryKey: ['repuestos-catalogo'] })
       onGuardado()
     },
   })
@@ -35,7 +34,7 @@ export function NuevoRepuestoForm({ ordenId, onGuardado, onCancelar }: Props) {
   function seleccionar(repuesto: RepuestoCatalogo) {
     setSeleccionado(repuesto)
     setDescripcion(repuesto.nombre)
-    setCosto(repuesto.ultimo_costo)
+    setCosto(repuesto.precio)
     mutation.reset()
   }
 
@@ -48,7 +47,6 @@ export function NuevoRepuestoForm({ ordenId, onGuardado, onCancelar }: Props) {
     <form className="tarjeta formulario" onSubmit={guardar}>
       <h2>Agregar repuesto</h2>
       <fieldset className="campos-repuesto" disabled={mutation.isPending}>
-        <CatalogoRepuestos onSeleccionar={seleccionar} />
         {seleccionado && <p className="estado" role="status">
           Usando {seleccionado.nombre}. Revisá el costo real de esta compra.
           {' '}<button type="button" className="secundario" onClick={() => {
@@ -63,6 +61,7 @@ export function NuevoRepuestoForm({ ordenId, onGuardado, onCancelar }: Props) {
             required maxLength={200} readOnly={seleccionado !== null} />
           <ErroresCampo errores={errores.descripcion} />
         </label>
+        {!seleccionado && <CatalogoRepuestos key={descripcion} filtro={descripcion} onSeleccionar={seleccionar} />}
         <label>
           Cantidad comprada
           <input type="number" min="1" max="2147483647" step="1" value={cantidad}
@@ -74,7 +73,7 @@ export function NuevoRepuestoForm({ ordenId, onGuardado, onCancelar }: Props) {
           <input type="number" inputMode="decimal" min="0" max="9999999999.99" step="0.01"
             value={costo} onChange={(event) => setCosto(event.target.value)} required
             aria-describedby="ayuda-costo" />
-          <small id="ayuda-costo">Podés cambiar el costo sugerido. Al guardar se actualizará el catálogo.</small>
+          <small id="ayuda-costo">Podés ajustar el costo sugerido para esta orden.</small>
           <ErroresCampo errores={errores.costo_unitario} />
         </label>
         <label>

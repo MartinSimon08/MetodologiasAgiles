@@ -3,7 +3,7 @@ import { api, type MetaPaginacion } from '../../lib/api'
 export interface RepuestoCatalogo {
   id: number
   nombre: string
-  ultimo_costo: string
+  precio: string
 }
 
 export interface Repuesto {
@@ -28,11 +28,22 @@ export interface NuevoRepuesto {
 export const importe = (valor: string) =>
   Number(valor).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
+export async function guardarCatalogo(repuesto: { nombre: string; precio: string }, id?: number) {
+  const { data } = id === undefined
+    ? await api.post<RepuestoCatalogo>('/repuestos_catalogo', { repuesto_catalogo: repuesto })
+    : await api.patch<RepuestoCatalogo>(`/repuestos_catalogo/${id}`, { repuesto_catalogo: repuesto })
+  return data
+}
+
 export async function listarCatalogo(buscar: string, pagina: number) {
   const { data } = await api.get<{ repuestos: RepuestoCatalogo[]; meta: MetaPaginacion }>(
     '/repuestos_catalogo', { params: { buscar, pagina } },
   )
   return data
+}
+
+export async function eliminarCatalogo(id: number) {
+  await api.delete(`/repuestos_catalogo/${id}`)
 }
 
 export async function listarRepuestos(ordenId: number, pagina: number) {

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_28_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_28_130000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -52,7 +52,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_28_120000) do
     t.decimal "precio_cliente", precision: 24, scale: 2, null: false
     t.string "proveedor"
     t.bigint "registrado_por_id", null: false
-    t.bigint "repuesto_catalogo_id", null: false
+    t.bigint "repuesto_catalogo_id"
     t.datetime "updated_at", null: false
     t.index ["orden_id"], name: "index_repuestos_on_orden_id"
     t.index ["registrado_por_id"], name: "index_repuestos_on_registrado_por_id"
@@ -65,10 +65,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_28_120000) do
   create_table "repuestos_catalogo", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "nombre", null: false
-    t.decimal "ultimo_costo", precision: 12, scale: 2, null: false
+    t.decimal "precio", precision: 12, scale: 2, null: false
     t.datetime "updated_at", null: false
     t.index ["nombre"], name: "index_repuestos_catalogo_on_nombre", unique: true
-    t.check_constraint "ultimo_costo >= 0::numeric", name: "catalogo_costo_no_negativo"
+    t.check_constraint "precio >= 0::numeric", name: "catalogo_costo_no_negativo"
   end
 
   create_table "tareas", force: :cascade do |t|

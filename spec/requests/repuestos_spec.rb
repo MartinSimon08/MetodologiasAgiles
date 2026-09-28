@@ -7,8 +7,8 @@ RSpec.describe "Repuestos", type: :request do
   let(:atributos) { { descripcion: "Filtro", cantidad: 2, costo_unitario: "123.45", margen: "20" } }
 
   describe "GET /repuestos_catalogo" do
-    it "lista el último costo conocido con paginación y búsqueda por nombre" do
-      create(:repuesto_catalogo, nombre: "Filtro de aceite", ultimo_costo: "123.45")
+    it "lista los precios del catálogo con paginación y búsqueda por nombre" do
+      create(:repuesto_catalogo, nombre: "Filtro de aceite", precio: "123.45")
       create(:repuesto_catalogo, nombre: "Filtro de aire")
       create(:repuesto_catalogo, nombre: "Bujía")
 
@@ -16,7 +16,7 @@ RSpec.describe "Repuestos", type: :request do
 
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body["repuestos"]).to contain_exactly(
-        include("nombre" => "filtro de aceite", "ultimo_costo" => "123.45")
+        include("nombre" => "filtro de aceite", "precio" => "123.45")
       )
       expect(response.parsed_body["meta"]).to include("total" => 2, "total_paginas" => 2)
 
@@ -32,7 +32,7 @@ RSpec.describe "Repuestos", type: :request do
       expect(response.parsed_body["repuestos"]).to eq([])
     end
 
-    it "devuelve una lista vacía cuando todavía no hubo compras" do
+    it "devuelve una lista vacía cuando todavía no se cargaron repuestos" do
       get "/repuestos_catalogo", headers: auth_headers(admin)
 
       expect(response).to have_http_status(:ok)
@@ -41,22 +41,27 @@ RSpec.describe "Repuestos", type: :request do
   end
 
   describe "POST /ordenes/:orden_id/repuestos" do
-    it "registra una compra y permite reutilizarla con un costo real diferente" do
+    it "registra una compra ocasional sin agregarla al catálogo" do
       post "/ordenes/#{orden.id}/repuestos", params: { repuesto: atributos }, headers: auth_headers(admin), as: :json
 
       expect(response).to have_http_status(:created)
       expect(response.parsed_body).to include("precio_cliente" => "296.28", "ganancia" => "49.38", "registrado_por_id" => admin.id)
       expect(response.parsed_body["created_at"]).to be_present
-      catalogo_id = response.parsed_body["repuesto_catalogo_id"]
+      expect(response.parsed_body["repuesto_catalogo_id"]).to be_nil
+      expect(RepuestoCatalogo.count).to eq(0)
+    end
+
+    it "reutiliza un artículo con un costo real diferente sin modificar el catálogo" do
+      catalogo = create(:repuesto_catalogo, nombre: "Filtro")
 
       post "/ordenes/#{orden.id}/repuestos", params: { repuesto: {
-        repuesto_catalogo_id: catalogo_id, cantidad: 1, costo_unitario: "150"
+        repuesto_catalogo_id: catalogo.id, cantidad: 1, costo_unitario: "150"
       } }, headers: auth_headers(admin), as: :json
 
       expect(response).to have_http_status(:created)
       expect(response.parsed_body).to include("descripcion" => "filtro", "costo_unitario" => "150.0")
       get "/repuestos_catalogo", headers: auth_headers(admin)
-      expect(response.parsed_body["repuestos"]).to contain_exactly(include("ultimo_costo" => "150.0"))
+      expect(response.parsed_body["repuestos"]).to contain_exactly(include("precio" => "100.5"))
     end
 
     it "ignora valores calculados y el autor enviados por el cliente" do
@@ -66,7 +71,7 @@ RSpec.describe "Repuestos", type: :request do
 
       expect(response).to have_http_status(:created)
       expect(Repuesto.last).to have_attributes(precio_cliente: BigDecimal("296.28"), registrado_por_id: admin.id)
-      expect(RepuestoCatalogo.last.ultimo_costo).to eq(BigDecimal("123.45"))
+      expect(RepuestoCatalogo.count).to eq(0)
     end
 
     it "devuelve errores de campo para un costo inválido" do

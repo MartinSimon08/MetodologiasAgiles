@@ -1,6 +1,7 @@
 import axios from 'axios'
 
-const TOKEN_KEY = 'taller.token'
+export const TOKEN_KEY = 'taller.token'
+const HEADER_TOKEN_RENOVADO = 'x-token-renovado'
 
 export const tokenStorage = {
   get: () => localStorage.getItem(TOKEN_KEY),
@@ -28,7 +29,11 @@ export function onUnauthorized(handler: () => void) {
 }
 
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    const renovado = response.headers[HEADER_TOKEN_RENOVADO]
+    if (typeof renovado === 'string' && tokenStorage.get()) tokenStorage.set(renovado)
+    return response
+  },
   (error) => {
     if (axios.isAxiosError(error) && error.response?.status === 401 && tokenStorage.get()) {
       tokenStorage.clear()

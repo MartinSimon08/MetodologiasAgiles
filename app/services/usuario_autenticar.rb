@@ -1,8 +1,8 @@
 class UsuarioAutenticar
   def self.call(email:, password:)
-    usuario = Usuario.find_by(email: email.to_s.strip.downcase)
-    return unless usuario&.authenticate(password.to_s)
+    usuario = Usuario.authenticate_by(email: email.to_s, password: password.to_s)
+    return unless usuario
 
-    JsonWebToken.encode({ usuario_id: usuario.id, rol: usuario.rol })
+    JsonWebToken.para(usuario)
   end
 end

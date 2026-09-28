@@ -4,7 +4,7 @@ import { useSearchParams } from 'react-router-dom'
 import { Paginacion } from '../../components/Paginacion'
 import { errorMessage } from '../../lib/api'
 import { useAuth } from '../auth/AuthContext'
-import { actualizarPrecioTarea, completarTarea, liberarTarea, listarTareas, tomarTarea } from './api'
+import { completarTarea, liberarTarea, listarTareas, tomarTarea } from './api'
 import { NuevaTareaForm } from './NuevaTareaForm'
 import { ESTADO_TAREA_LABELS } from './types'
 
@@ -20,8 +20,6 @@ export function TareasPanel({ ordenId, ordenAbierta }: Props) {
 
   const [creando, setCreando] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [editandoPrecioId, setEditandoPrecioId] = useState<number | null>(null)
-  const [precioEditado, setPrecioEditado] = useState('')
   const [searchParams, setSearchParams] = useSearchParams()
   const pagina = Math.max(1, Number(searchParams.get('pagina')) || 1)
 
@@ -47,12 +45,6 @@ export function TareasPanel({ ordenId, ordenAbierta }: Props) {
     mutationFn: liberarTarea,
     onSettled: invalidar,
     onError: (err: unknown) => setError(errorMessage(err, 'No se pudo liberar la tarea.')),
-  })
-  const actualizarPrecio = useMutation({
-    mutationFn: ({ id, precio }: { id: number; precio: string }) => actualizarPrecioTarea(id, precio),
-    onSuccess: () => setEditandoPrecioId(null),
-    onSettled: invalidar,
-    onError: (err: unknown) => setError(errorMessage(err, 'No se pudo actualizar el precio.')),
   })
 
   function irAPagina(nueva: number) {
@@ -113,52 +105,7 @@ export function TareasPanel({ ordenId, ordenAbierta }: Props) {
               <div className="item-datos">
                 <strong>{tarea.descripcion}</strong>
                 <span>{responsable(tarea.mecanico)}</span>
-                {editandoPrecioId === tarea.id ? (
-                  <form
-                    className="acciones"
-                    onSubmit={(event) => {
-                      event.preventDefault()
-                      actualizarPrecio.mutate({ id: tarea.id, precio: precioEditado })
-                    }}
-                  >
-                    <input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      inputMode="decimal"
-                      autoFocus
-                      value={precioEditado}
-                      onChange={(e) => setPrecioEditado(e.target.value)}
-                    />
-                    <button type="submit" disabled={actualizarPrecio.isPending}>
-                      Guardar
-                    </button>
-                    <button
-                      type="button"
-                      className="secundario"
-                      onClick={() => setEditandoPrecioId(null)}
-                    >
-                      Cancelar
-                    </button>
-                  </form>
-                ) : (
-                  <span>
-                    {tarea.precio ? `$ ${tarea.precio}` : 'Sin precio'}
-                    {esMecanico && tarea.mecanico_id === usuario?.id && (
-                      <button
-                        type="button"
-                        className="secundario"
-                        onClick={() => {
-                          setError(null)
-                          setPrecioEditado(tarea.precio ?? '')
-                          setEditandoPrecioId(tarea.id)
-                        }}
-                      >
-                        Editar precio
-                      </button>
-                    )}
-                  </span>
-                )}
+                {tarea.precio && <span>$ {tarea.precio}</span>}
               </div>
               <span className={`insignia insignia-${tarea.estado}`}>
                 {ESTADO_TAREA_LABELS[tarea.estado]}

@@ -13,6 +13,7 @@ export function LoginPage() {
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [mostrarPassword, setMostrarPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [enviando, setEnviando] = useState(false)
 
@@ -51,16 +52,28 @@ export function LoginPage() {
             onChange={(e) => setEmail(e.target.value)}
           />
         </label>
-        <label>
-          Contraseña
-          <input
-            type="password"
-            autoComplete="current-password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </label>
+        <div className="campo">
+          <label htmlFor="password">Contraseña</label>
+          <div className="campo-password">
+            <input
+              id="password"
+              type={mostrarPassword ? 'text' : 'password'}
+              autoComplete="current-password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <button
+              type="button"
+              className="secundario"
+              aria-controls="password"
+              aria-pressed={mostrarPassword}
+              onClick={() => setMostrarPassword((actual) => !actual)}
+            >
+              {mostrarPassword ? 'Ocultar' : 'Ver'}
+            </button>
+          </div>
+        </div>
         {error && <p className="error" role="alert">{error}</p>}
         <button type="submit" disabled={enviando}>
           {enviando ? 'Ingresando…' : 'Ingresar'}

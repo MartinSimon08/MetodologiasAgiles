@@ -295,6 +295,26 @@ button.accion-catalogo.eliminar:focus-visible {
   gap: 0.9rem;
 }
 
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.campo > label {
+  font-weight: 500;
+}
+
+.campo-password {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.campo-password button {
+  flex: none;
+  min-width: 5.5rem;
+}
+
 .campo-porcentaje {
   display: flex;
   align-items: center;

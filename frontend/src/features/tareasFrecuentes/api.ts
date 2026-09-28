@@ -9,7 +9,7 @@ export interface TareaFrecuente {
 
 export interface NuevaTareaFrecuente {
   descripcion: string
-  precio_sugerido: number
+  precio_sugerido: number | null
 }
 
 export interface PaginaTareasFrecuentes {

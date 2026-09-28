@@ -157,4 +157,42 @@ RSpec.describe "Tareas", type: :request do
       expect(tarea.reload).to be_en_curso
     end
   end
+
+  describe "PATCH /tareas/:id/actualizar_precio" do
+    let!(:tarea) { create(:tarea, :en_curso, orden: orden, mecanico: mecanico, precio: 15_000) }
+
+    it "permite al mecánico responsable corregir el precio" do
+      patch "/tareas/#{tarea.id}/actualizar_precio", params: { tarea: { precio: "18000" } },
+                                                       headers: auth_headers(mecanico), as: :json
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body["precio"]).to eq("18000.0")
+    end
+
+    it "permite al mecánico responsable borrar el precio" do
+      patch "/tareas/#{tarea.id}/actualizar_precio", params: { tarea: { precio: nil } },
+                                                       headers: auth_headers(mecanico), as: :json
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body["precio"]).to be_nil
+    end
+
+    it "prohíbe a otro mecánico corregirla" do
+      otro_mecanico = create(:usuario)
+
+      patch "/tareas/#{tarea.id}/actualizar_precio", params: { tarea: { precio: "18000" } },
+                                                       headers: auth_headers(otro_mecanico), as: :json
+
+      expect(response).to have_http_status(:forbidden)
+      expect(tarea.reload.precio).to eq(15_000)
+    end
+
+    it "prohíbe a un administrador corregirla" do
+      patch "/tareas/#{tarea.id}/actualizar_precio", params: { tarea: { precio: "18000" } },
+                                                       headers: auth_headers(admin), as: :json
+
+      expect(response).to have_http_status(:forbidden)
+      expect(tarea.reload.precio).to eq(15_000)
+    end
+  end
 end

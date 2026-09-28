@@ -24,6 +24,7 @@ Rails.application.routes.draw do
         patch :tomar
         patch :completar
         patch :liberar
+        patch :actualizar_precio
       end
     end
   end

@@ -3,8 +3,8 @@ class TareasController < ApplicationController
 
   before_action :require_mecanico!, except: :index
   before_action :set_orden, only: %i[index create]
-  before_action :set_tarea, only: %i[tomar completar liberar]
-  before_action :require_responsable!, only: %i[completar liberar]
+  before_action :set_tarea, only: %i[tomar completar liberar actualizar_precio]
+  before_action :require_responsable!, only: %i[completar liberar actualizar_precio]
 
   def index
     tareas, meta = paginar(@orden.tareas.order(:created_at, :id))
@@ -31,6 +31,11 @@ class TareasController < ApplicationController
     render json: serialize(tarea)
   end
 
+  def actualizar_precio
+    tarea = TareaActualizarPrecio.call(tarea: @tarea, precio: precio_param)
+    render json: serialize(tarea)
+  end
+
   private
 
   def set_orden
@@ -47,6 +52,10 @@ class TareasController < ApplicationController
 
   def tarea_params
     params.require(:tarea).permit(:descripcion, :precio).with_defaults(descripcion: nil)
+  end
+
+  def precio_param
+    params.require(:tarea).permit(:precio)[:precio]
   end
 
   def serialize(tarea)

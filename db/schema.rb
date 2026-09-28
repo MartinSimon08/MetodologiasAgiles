@@ -42,6 +42,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_27_120001) do
     t.index ["cliente_id"], name: "index_ordenes_on_cliente_id"
   end
 
+  create_table "tarea_frecuentes", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "descripcion", null: false
+    t.decimal "precio_sugerido", precision: 10, scale: 2, null: false
+    t.datetime "updated_at", null: false
+    t.index "lower((descripcion)::text)", name: "index_tarea_frecuentes_on_lower_descripcion", unique: true
+  end
+
   create_table "tareas", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "descripcion", null: false
@@ -55,14 +63,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_27_120001) do
     t.index ["mecanico_id"], name: "index_tareas_on_mecanico_id"
     t.index ["orden_id", "estado"], name: "index_tareas_on_orden_id_and_estado"
     t.index ["orden_id"], name: "index_tareas_on_orden_id"
-  end
-
-  create_table "tarea_frecuentes", force: :cascade do |t|
-    t.datetime "created_at", null: false
-    t.string "descripcion", null: false
-    t.decimal "precio_sugerido", precision: 10, scale: 2, null: false
-    t.datetime "updated_at", null: false
-    t.index "lower((descripcion)::text)", name: "index_tarea_frecuentes_on_lower_descripcion", unique: true
   end
 
   create_table "usuarios", force: :cascade do |t|

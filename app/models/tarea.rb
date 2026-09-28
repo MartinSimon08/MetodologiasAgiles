@@ -5,6 +5,7 @@ class Tarea < ApplicationRecord
   enum :estado, { pendiente: "pendiente", en_curso: "en_curso", terminada: "terminada" }, validate: true
 
   validates :descripcion, presence: true
+  validates :precio, numericality: { greater_than_or_equal_to: 0 }, allow_nil: true
   validate :orden_abierta, on: :create
 
   private

@@ -17,6 +17,8 @@ Rails.application.routes.draw do
   resources :clientes, only: %i[index create]
   resources :repuestos_catalogo, only: %i[index create update destroy]
 
+  resources :tareas_frecuentes, only: %i[index create]
+
   resources :ordenes, only: %i[index show] do
     resources :repuestos, only: %i[index create]
     resources :tareas, only: %i[index create], shallow: true do

@@ -2,7 +2,8 @@ import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Paginacion } from '../../components/Paginacion'
 import { errorMessage } from '../../lib/api'
-import { importe, listarRepuestos } from './api'
+import { importe } from '../../lib/formato'
+import { listarRepuestos } from './api'
 import { NuevoRepuestoForm } from './NuevoRepuestoForm'
 
 export function RepuestosPanel({ ordenId, ordenAbierta }: { ordenId: number; ordenAbierta: boolean }) {

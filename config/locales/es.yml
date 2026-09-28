@@ -7,6 +7,7 @@ es:
       tarea: Tarea
       repuesto: Repuesto
       repuesto_catalogo: Repuesto del catálogo
+      tarea_frecuente: Tarea frecuente
     attributes:
       usuario:
         nombre: Nombre
@@ -26,6 +27,10 @@ es:
         mecanico: Mecánico
         descripcion: Descripción
         estado: Estado
+        precio: Precio
+      tarea_frecuente:
+        descripcion: Descripción
+        precio_sugerido: Precio sugerido
       repuesto:
         orden: Orden
         descripcion: Descripción

@@ -1,7 +1,8 @@
 class TareasController < ApplicationController
   include Paginable
 
-  before_action :require_mecanico!, except: :index
+  before_action :require_administrador!, only: :create
+  before_action :require_mecanico!, only: %i[tomar completar liberar]
   before_action :set_orden, only: %i[index create]
   before_action :set_tarea, only: %i[tomar completar liberar]
   before_action :require_responsable!, only: %i[completar liberar]
@@ -46,11 +47,12 @@ class TareasController < ApplicationController
   end
 
   def tarea_params
-    params.require(:tarea).permit(:descripcion).with_defaults(descripcion: nil)
+    params.require(:tarea).permit(:descripcion, :precio).with_defaults(descripcion: nil)
   end
 
   def serialize(tarea)
     datos = tarea.as_json(only: %i[id orden_id descripcion estado mecanico_id tomada_en terminada_en created_at])
+    datos["precio"] = tarea.precio&.to_f
     datos[:mecanico] = tarea.mecanico&.as_json(only: %i[id nombre])
     datos
   end

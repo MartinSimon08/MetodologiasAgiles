@@ -25,9 +25,6 @@ export interface NuevoRepuesto {
   proveedor: string
 }
 
-export const importe = (valor: string) =>
-  Number(valor).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-
 export async function guardarCatalogo(repuesto: { nombre: string; precio: string }, id?: number) {
   const { data } = id === undefined
     ? await api.post<RepuestoCatalogo>('/repuestos_catalogo', { repuesto_catalogo: repuesto })

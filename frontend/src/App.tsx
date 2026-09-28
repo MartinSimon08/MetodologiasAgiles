@@ -7,6 +7,7 @@ import { LoginPage } from './features/auth/LoginPage'
 import { RequireAuth } from './features/auth/RequireAuth'
 import { OrdenDetallePage } from './features/ordenes/OrdenDetallePage'
 import { OrdenesPage } from './features/ordenes/OrdenesPage'
+import { TareasFrecuentesPage } from './features/tareasFrecuentes/TareasFrecuentesPage'
 import { UsuariosPage } from './features/usuarios/UsuariosPage'
 import { CatalogoRepuestosPage } from './features/repuestos/CatalogoRepuestosPage'
 
@@ -46,6 +47,14 @@ function App() {
             element={
               <RequireAuth roles={['administrador']}>
                 <UsuariosPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="tareas-frecuentes"
+            element={
+              <RequireAuth roles={['administrador']}>
+                <TareasFrecuentesPage />
               </RequireAuth>
             }
           />

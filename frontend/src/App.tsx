@@ -9,6 +9,7 @@ import { OrdenDetallePage } from './features/ordenes/OrdenDetallePage'
 import { OrdenesPage } from './features/ordenes/OrdenesPage'
 import { TareasFrecuentesPage } from './features/tareasFrecuentes/TareasFrecuentesPage'
 import { UsuariosPage } from './features/usuarios/UsuariosPage'
+import { VehiculosPage } from './features/vehiculos/VehiculosPage'
 import { CatalogoRepuestosPage } from './features/repuestos/CatalogoRepuestosPage'
 
 function App() {
@@ -39,6 +40,14 @@ function App() {
             element={
               <RequireAuth roles={['administrador']}>
                 <ClientesPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="vehiculos"
+            element={
+              <RequireAuth roles={['administrador']}>
+                <VehiculosPage />
               </RequireAuth>
             }
           />

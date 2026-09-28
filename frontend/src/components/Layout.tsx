@@ -16,6 +16,7 @@ export function Layout() {
           {usuario?.rol === 'administrador' && (
             <>
               <NavLink to="/clientes">Clientes</NavLink>
+              <NavLink to="/vehiculos">Vehículos</NavLink>
               <NavLink to="/repuestos">Repuestos</NavLink>
               <NavLink to="/usuarios">Usuarios</NavLink>
               <NavLink to="/tareas-frecuentes">Tareas frecuentes</NavLink>

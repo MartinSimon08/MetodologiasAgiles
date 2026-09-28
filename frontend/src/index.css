@@ -463,3 +463,30 @@ button.accion-catalogo.eliminar:focus-visible {
     display: none;
   }
 }
+
+.selector-cliente {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.campos-vehiculo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.9rem;
+}
+
+.item-vehiculo {
+  grid-template-columns: 1fr auto;
+}
+
+.patente {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: 0.05em;
+}
+
+.cambio-duenio {
+  grid-column: 1 / -1;
+  border-top: 1px solid var(--borde);
+  padding-top: 0.75rem;
+}

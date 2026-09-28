@@ -15,6 +15,11 @@ Rails.application.routes.draw do
   end
 
   resources :clientes, only: %i[index create]
+  resources :vehiculos, only: %i[index create] do
+    member do
+      patch :cambiar_duenio
+    end
+  end
   resources :repuestos_catalogo, only: %i[index create update destroy]
 
   resources :tareas_frecuentes, only: %i[index create]

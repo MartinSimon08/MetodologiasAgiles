@@ -58,6 +58,11 @@ es:
           has_one: No se puede eliminar porque existe un %{record} dependiente
           has_many: No se puede eliminar porque existen %{record} dependientes
       models:
+        usuario:
+          attributes:
+            base:
+              ya_desactivado: El usuario ya está desactivado
+              ultimo_administrador: No se puede desactivar al último administrador activo
         tarea:
           attributes:
             estado:

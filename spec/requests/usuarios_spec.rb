@@ -142,4 +142,68 @@ RSpec.describe "Usuarios", type: :request do
       expect(response).to have_http_status(:not_found)
     end
   end
+
+  describe "PATCH /usuarios/:id/desactivar" do
+    it "desactiva al mecánico, libera sus tareas en curso e invalida su sesión" do
+      headers_mecanico = auth_headers(mecanico)
+      tarea = create(:tarea, :en_curso, mecanico: mecanico)
+
+      patch "/usuarios/#{mecanico.id}/desactivar", headers: auth_headers(admin), as: :json
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body).to include("id" => mecanico.id, "activo" => false)
+      expect(response.parsed_body["tareas_liberadas"]).to eq(
+        [ { "id" => tarea.id, "orden_id" => tarea.orden_id, "descripcion" => tarea.descripcion } ]
+      )
+      expect(tarea.reload).to be_pendiente
+
+      get "/sesion", headers: headers_mecanico
+      expect(response).to have_http_status(:unauthorized)
+    end
+
+    it "mantiene el nombre del mecánico en sus tareas terminadas" do
+      tarea = create(:tarea, :terminada, mecanico: mecanico)
+
+      patch "/usuarios/#{mecanico.id}/desactivar", headers: auth_headers(admin), as: :json
+      get "/ordenes/#{tarea.orden_id}/tareas", headers: auth_headers(admin)
+
+      expect(response.parsed_body["tareas"].first["mecanico"]).to eq("id" => mecanico.id, "nombre" => mecanico.nombre)
+    end
+
+    it "impide desactivar al último administrador activo" do
+      patch "/usuarios/#{admin.id}/desactivar", headers: auth_headers(admin), as: :json
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body["errors"]["base"]).to eq([ "No se puede desactivar al último administrador activo" ])
+      expect(admin.reload).to be_activo
+    end
+
+    it "prohíbe a un mecánico desactivar usuarios" do
+      otro = create(:usuario)
+
+      patch "/usuarios/#{otro.id}/desactivar", headers: auth_headers(mecanico), as: :json
+
+      expect(response).to have_http_status(:forbidden)
+      expect(otro.reload).to be_activo
+    end
+
+    it "devuelve 404 si el usuario no existe" do
+      patch "/usuarios/0/desactivar", headers: auth_headers(admin), as: :json
+
+      expect(response).to have_http_status(:not_found)
+    end
+  end
+
+  describe "GET /usuarios con tareas en curso" do
+    it "informa el estado y la cantidad de tareas en curso de cada usuario" do
+      create_list(:tarea, 2, :en_curso, mecanico: mecanico)
+      create(:tarea, :terminada, mecanico: mecanico)
+
+      get "/usuarios", headers: auth_headers(admin)
+
+      datos = response.parsed_body["usuarios"].index_by { |usuario| usuario["id"] }
+      expect(datos[mecanico.id]).to include("activo" => true, "tareas_en_curso" => 2)
+      expect(datos[admin.id]).to include("tareas_en_curso" => 0)
+    end
+  end
 end

@@ -2,7 +2,19 @@ import { api, type MetaPaginacion } from '../../lib/api'
 import type { Rol, Usuario } from '../auth/types'
 
 export interface UsuarioListado extends Usuario {
+  activo: boolean
+  tareas_en_curso: number
   created_at: string
+}
+
+export interface TareaLiberada {
+  id: number
+  orden_id: number
+  descripcion: string
+}
+
+export interface UsuarioDesactivado extends UsuarioListado {
+  tareas_liberadas: TareaLiberada[]
 }
 
 export interface NuevoUsuario {
@@ -29,4 +41,9 @@ export async function crearUsuario(usuario: NuevoUsuario) {
 
 export async function resetearPassword(id: number, password: string) {
   await api.patch(`/usuarios/${id}/resetear_password`, { password })
+}
+
+export async function desactivarUsuario(id: number) {
+  const { data } = await api.patch<UsuarioDesactivado>(`/usuarios/${id}/desactivar`)
+  return data
 }

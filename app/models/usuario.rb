@@ -5,6 +5,8 @@ class Usuario < ApplicationRecord
 
   enum :rol, { administrador: "administrador", mecanico: "mecanico" }, validate: true
 
+  scope :activos, -> { where(activo: true) }
+
   normalizes :email, with: ->(email) { email.strip.downcase }
   normalizes :nombre, with: ->(nombre) { nombre.strip }
 

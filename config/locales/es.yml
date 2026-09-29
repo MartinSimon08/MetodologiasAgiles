@@ -15,6 +15,7 @@ es:
         email: Email
         rol: Rol
         password: Contraseña
+        activo: Activo
       cliente:
         nombre: Nombre
         telefono: Teléfono

@@ -33,6 +33,15 @@ RSpec.describe "Sesiones", type: :request do
       expect(response.parsed_body).to eq("error" => "Email o contraseña incorrectos")
     end
 
+    it "rechaza a un usuario desactivado con el mensaje genérico" do
+      usuario.update!(activo: false)
+
+      post "/sesion", params: { email: "juan@taller.test", password: PasswordsDePrueba::VALIDA }, as: :json
+
+      expect(response).to have_http_status(:unauthorized)
+      expect(response.parsed_body).to eq("error" => "Email o contraseña incorrectos")
+    end
+
     it "devuelve un token con el rol de administrador" do
       admin = create(:usuario, :administrador)
 
@@ -94,6 +103,16 @@ RSpec.describe "Sesiones", type: :request do
       end
 
       expect(response).to have_http_status(:ok)
+    end
+
+    it "invalida la sesión activa de un usuario desactivado" do
+      headers = auth_headers(usuario)
+      usuario.update!(activo: false)
+
+      get "/sesion", headers: headers
+
+      expect(response).to have_http_status(:unauthorized)
+      expect(response.headers["X-Token-Renovado"]).to be_nil
     end
 
     it "rechaza un token vencido" do

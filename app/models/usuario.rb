@@ -3,6 +3,10 @@ class Usuario < ApplicationRecord
 
   has_secure_password
 
+  has_many :tareas, foreign_key: :mecanico_id, inverse_of: :mecanico, dependent: :restrict_with_error
+  has_many :repuestos_registrados, class_name: "Repuesto", foreign_key: :registrado_por_id,
+                                   inverse_of: :registrado_por, dependent: :restrict_with_error
+
   enum :rol, { administrador: "administrador", mecanico: "mecanico" }, validate: true
 
   scope :activos, -> { where(activo: true) }

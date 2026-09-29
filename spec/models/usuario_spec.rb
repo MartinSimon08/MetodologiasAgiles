@@ -49,4 +49,10 @@ RSpec.describe Usuario, type: :model do
     expect(create(:usuario)).to be_activo
   end
 
+  it "no se puede borrar si tiene tareas" do
+    tarea = create(:tarea, :terminada)
+
+    expect(tarea.mecanico.destroy).to be(false)
+    expect(Usuario.exists?(tarea.mecanico.id)).to be(true)
+  end
 end

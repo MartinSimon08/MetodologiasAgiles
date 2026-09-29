@@ -1,8 +1,8 @@
 class JsonWebToken
   ALGORITHM = "HS256".freeze
-  EXPIRATION = 12.hours
+  INACTIVIDAD_MAXIMA = 30.minutes
 
-  def self.encode(payload, exp: EXPIRATION.from_now)
+  def self.encode(payload, exp: INACTIVIDAD_MAXIMA.from_now)
     JWT.encode(payload.merge(exp: exp.to_i), secret, ALGORITHM)
   end
 
@@ -10,6 +10,10 @@ class JsonWebToken
     JWT.decode(token, secret, true, algorithm: ALGORITHM).first
   rescue JWT::DecodeError
     nil
+  end
+
+  def self.para(usuario)
+    encode({ usuario_id: usuario.id, rol: usuario.rol })
   end
 
   def self.secret

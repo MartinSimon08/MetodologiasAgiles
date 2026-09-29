@@ -1,6 +1,8 @@
 module Authentication
   extend ActiveSupport::Concern
 
+  HEADER_TOKEN_RENOVADO = "X-Token-Renovado".freeze
+
   included do
     before_action :authenticate!
   end
@@ -14,7 +16,11 @@ module Authentication
   private
 
   def authenticate!
-    head :unauthorized unless current_usuario
+    if current_usuario
+      response.set_header(HEADER_TOKEN_RENOVADO, JsonWebToken.para(current_usuario))
+    else
+      head :unauthorized
+    end
   end
 
   def current_usuario

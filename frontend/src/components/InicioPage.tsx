@@ -1,5 +1,7 @@
 import { Navigate } from 'react-router-dom'
+import { useAuth } from '../features/auth/AuthContext'
 
 export function InicioPage() {
-  return <Navigate to="/ordenes" replace />
+  const { usuario } = useAuth()
+  return <Navigate to={usuario?.rol === 'mecanico' ? '/mis-tareas' : '/ordenes'} replace />
 }

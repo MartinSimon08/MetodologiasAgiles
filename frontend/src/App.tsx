@@ -11,6 +11,7 @@ import { TareasFrecuentesPage } from './features/tareasFrecuentes/TareasFrecuent
 import { UsuariosPage } from './features/usuarios/UsuariosPage'
 import { VehiculosPage } from './features/vehiculos/VehiculosPage'
 import { CatalogoRepuestosPage } from './features/repuestos/CatalogoRepuestosPage'
+import { MisTareasPage } from './features/tareas/MisTareasPage'
 
 function App() {
   return (
@@ -25,6 +26,14 @@ function App() {
           }
         >
           <Route index element={<InicioPage />} />
+          <Route
+            path="mis-tareas"
+            element={
+              <RequireAuth roles={['mecanico']}>
+                <MisTareasPage />
+              </RequireAuth>
+            }
+          />
           <Route path="ordenes" element={<OrdenesPage />} />
           <Route path="ordenes/:id" element={<OrdenDetallePage />} />
           <Route

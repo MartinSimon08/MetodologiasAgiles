@@ -266,6 +266,7 @@ button.accion-catalogo.eliminar:focus-visible {
   gap: 1rem;
 }
 
+.mis-tareas,
 .usuarios,
 .clientes,
 .repuestos,
@@ -292,6 +293,26 @@ button.accion-catalogo.eliminar:focus-visible {
   display: flex;
   flex-direction: column;
   gap: 0.9rem;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.campo > label {
+  font-weight: 500;
+}
+
+.campo-password {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.campo-password button {
+  flex: none;
+  min-width: 5.5rem;
 }
 
 .campo-porcentaje {
@@ -489,4 +510,21 @@ button.accion-catalogo.eliminar:focus-visible {
   grid-column: 1 / -1;
   border-top: 1px solid var(--borde);
   padding-top: 0.75rem;
+}
+
+.mis-tareas h2 {
+  margin: 0.5rem 0 0;
+  font-size: 1.1rem;
+}
+
+.tarea-movil {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+@media (max-width: 600px) {
+  .tarea-movil .acciones button {
+    flex: 1;
+  }
 }

@@ -1,6 +1,6 @@
 module AuthHelpers
   def auth_headers(usuario)
-    { "Authorization" => "Bearer #{JsonWebToken.encode({ usuario_id: usuario.id, rol: usuario.rol })}" }
+    { "Authorization" => "Bearer #{JsonWebToken.para(usuario)}" }
   end
 end
 

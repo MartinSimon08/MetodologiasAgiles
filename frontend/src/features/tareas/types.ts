@@ -18,3 +18,19 @@ export const ESTADO_TAREA_LABELS: Record<EstadoTarea, string> = {
   en_curso: 'En curso',
   terminada: 'Terminada',
 }
+
+export interface TareaMecanico {
+  id: number
+  orden_id: number
+  descripcion: string
+  estado: EstadoTarea
+  mecanico_id: number | null
+  tomada_en: string | null
+  created_at: string
+  orden: { id: number; vehiculo: string; cliente: string }
+}
+
+export interface TareasMecanico {
+  mias: TareaMecanico[]
+  disponibles: TareaMecanico[]
+}

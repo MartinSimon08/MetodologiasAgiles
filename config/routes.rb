@@ -11,6 +11,7 @@ Rails.application.routes.draw do
   resources :usuarios, only: %i[index create] do
     member do
       patch :resetear_password
+      patch :desactivar
     end
   end
 

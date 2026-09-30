@@ -412,6 +412,42 @@ button.accion-catalogo.eliminar:focus-visible {
   color: var(--texto-suave);
 }
 
+.item-acciones {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.item.inactivo .item-datos {
+  opacity: 0.6;
+}
+
+.insignia-desactivado {
+  color: var(--texto-suave);
+  justify-self: start;
+}
+
+button.peligro {
+  background: var(--error);
+  border-color: var(--error);
+  color: #ffffff;
+}
+
+button.secundario.peligro {
+  background: transparent;
+  color: var(--error);
+}
+
+.advertencia {
+  margin: 0;
+  color: var(--mecanico);
+  font-weight: 500;
+}
+
+.reseteo p {
+  margin: 0;
+}
+
 .reseteo {
   grid-column: 1 / -1;
   border-top: 1px solid var(--borde);
@@ -476,7 +512,8 @@ button.accion-catalogo.eliminar:focus-visible {
     grid-template-columns: 1fr auto;
   }
 
-  .item > button {
+  .item > button,
+  .item > .item-acciones {
     grid-column: 1 / -1;
   }
 

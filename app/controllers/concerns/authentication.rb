@@ -27,7 +27,7 @@ module Authentication
     return @current_usuario if defined?(@current_usuario)
 
     payload = JsonWebToken.decode(bearer_token)
-    @current_usuario = payload && Usuario.find_by(id: payload["usuario_id"])
+    @current_usuario = payload && Usuario.activos.find_by(id: payload["usuario_id"])
   end
 
   def require_administrador!

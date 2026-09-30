@@ -44,4 +44,15 @@ RSpec.describe Usuario, type: :model do
     expect { create(:usuario, password: PasswordsDePrueba::CORTA) }
       .to raise_error(ActiveRecord::RecordInvalid, "La validación falló: Contraseña es demasiado corta (mínimo 8 caracteres)")
   end
+
+  it "está activo por defecto" do
+    expect(create(:usuario)).to be_activo
+  end
+
+  it "no se puede borrar si tiene tareas" do
+    tarea = create(:tarea, :terminada)
+
+    expect(tarea.mecanico.destroy).to be(false)
+    expect(Usuario.exists?(tarea.mecanico.id)).to be(true)
+  end
 end

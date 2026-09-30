@@ -5,14 +5,15 @@ import { Paginacion } from '../../components/Paginacion'
 import { errorMessage } from '../../lib/api'
 import { useAuth } from '../auth/AuthContext'
 import { ROL_LABELS } from '../auth/types'
-import { listarUsuarios } from './api'
+import { listarUsuarios, type UsuarioDesactivado } from './api'
+import { DesactivarUsuario } from './DesactivarUsuario'
 import { NuevoUsuarioForm } from './NuevoUsuarioForm'
 import { ResetearPasswordForm } from './ResetearPasswordForm'
 
 export function UsuariosPage() {
   const { usuario: actual } = useAuth()
   const [creando, setCreando] = useState(false)
-  const [reseteandoId, setReseteandoId] = useState<number | null>(null)
+  const [accion, setAccion] = useState<{ tipo: 'resetear' | 'desactivar'; id: number } | null>(null)
   const [aviso, setAviso] = useState<string | null>(null)
 
   const [searchParams, setSearchParams] = useSearchParams()
@@ -25,9 +26,25 @@ export function UsuariosPage() {
   })
 
   function irAPagina(nueva: number) {
-    setReseteandoId(null)
+    setAccion(null)
     setSearchParams(nueva === 1 ? {} : { pagina: String(nueva) })
     window.scrollTo({ top: 0 })
+  }
+
+  function iniciar(tipo: 'resetear' | 'desactivar', id: number) {
+    setAviso(null)
+    setAccion({ tipo, id })
+  }
+
+  function avisarDesactivacion({ nombre, tareas_liberadas }: UsuarioDesactivado) {
+    setAccion(null)
+    const liberadas =
+      tareas_liberadas.length === 0
+        ? ''
+        : ` Se ${tareas_liberadas.length === 1 ? 'liberó 1 tarea' : `liberaron ${tareas_liberadas.length} tareas`}: ${tareas_liberadas
+            .map((tarea) => `${tarea.descripcion} (orden #${tarea.orden_id})`)
+            .join(', ')}.`
+    setAviso(`Se desactivó a ${nombre}.${liberadas}`)
   }
 
   return (
@@ -72,7 +89,7 @@ export function UsuariosPage() {
       {usuarios.data && (
         <ul className="lista" aria-busy={usuarios.isPlaceholderData}>
           {usuarios.data.usuarios.map((usuario) => (
-            <li key={usuario.id} className="tarjeta item">
+            <li key={usuario.id} className={`tarjeta item${usuario.activo ? '' : ' inactivo'}`}>
               <div className="item-datos">
                 <strong>
                   {usuario.nombre}
@@ -81,25 +98,33 @@ export function UsuariosPage() {
                 <span>{usuario.email}</span>
               </div>
               <span className={`rol rol-${usuario.rol}`}>{ROL_LABELS[usuario.rol]}</span>
-              {reseteandoId === usuario.id ? (
+              {!usuario.activo ? (
+                <span className="insignia insignia-desactivado">Desactivado</span>
+              ) : accion?.id === usuario.id && accion.tipo === 'resetear' ? (
                 <ResetearPasswordForm
                   usuario={usuario}
                   onListo={() => {
-                    setReseteandoId(null)
+                    setAccion(null)
                     setAviso(`Se actualizó la contraseña de ${usuario.nombre}.`)
                   }}
-                  onCancelar={() => setReseteandoId(null)}
+                  onCancelar={() => setAccion(null)}
+                />
+              ) : accion?.id === usuario.id && accion.tipo === 'desactivar' ? (
+                <DesactivarUsuario
+                  usuario={usuario}
+                  esActual={usuario.id === actual?.id}
+                  onListo={avisarDesactivacion}
+                  onCancelar={() => setAccion(null)}
                 />
               ) : (
-                <button
-                  className="secundario"
-                  onClick={() => {
-                    setAviso(null)
-                    setReseteandoId(usuario.id)
-                  }}
-                >
-                  Resetear contraseña
-                </button>
+                <div className="item-acciones">
+                  <button className="secundario" onClick={() => iniciar('resetear', usuario.id)}>
+                    Resetear contraseña
+                  </button>
+                  <button className="secundario peligro" onClick={() => iniciar('desactivar', usuario.id)}>
+                    Desactivar
+                  </button>
+                </div>
               )}
             </li>
           ))}

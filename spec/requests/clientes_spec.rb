@@ -93,6 +93,22 @@ RSpec.describe "Clientes", type: :request do
       )
     end
 
+    it "busca clientes por nombre, teléfono o patente" do
+      ana = create(:cliente, nombre: "Ana Gómez", telefono: "1145551234")
+      bruno = create(:cliente, nombre: "Bruno Díaz")
+      create(:vehiculo, patente: "AB123CD", cliente: bruno)
+
+      get "/clientes", params: { q: "gómez" }, headers: auth_headers(admin)
+      expect(response.parsed_body["clientes"].pluck("id")).to eq([ ana.id ])
+
+      get "/clientes", params: { q: "4555 1234" }, headers: auth_headers(admin)
+      expect(response.parsed_body["clientes"].pluck("id")).to eq([ ana.id ])
+
+      get "/clientes", params: { q: "ab-123-cd" }, headers: auth_headers(admin)
+      expect(response.parsed_body["clientes"].pluck("id")).to eq([ bruno.id ])
+      expect(response.parsed_body["meta"]).to include("total" => 1)
+    end
+
     it "prohíbe el listado a un mecánico" do
       get "/clientes", headers: auth_headers(mecanico)
 

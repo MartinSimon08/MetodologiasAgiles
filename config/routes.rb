@@ -17,6 +17,9 @@ Rails.application.routes.draw do
 
   resources :clientes, only: %i[index create]
   resources :vehiculos, only: %i[index create] do
+    collection do
+      get :verificar_patente
+    end
     member do
       patch :cambiar_duenio
     end

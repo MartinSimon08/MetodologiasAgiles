@@ -8,7 +8,7 @@ class VehiculoBuscar
     base = scope.joins(:cliente)
 
     coincidencias = base.where("vehiculos.patente LIKE ?", contiene(patente))
-                        .or(base.where("clientes.nombre ILIKE ?", contiene(termino)))
+                        .or(base.where("unaccent(clientes.nombre) ILIKE unaccent(?)", contiene(termino)))
     coincidencias = coincidencias.or(base.where("clientes.telefono LIKE ?", contiene(telefono))) if telefono.match?(/\d/)
 
     coincidencias.order(prioridad(patente)).order(:patente, :id)

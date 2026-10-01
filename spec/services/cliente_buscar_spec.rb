@@ -12,6 +12,11 @@ RSpec.describe ClienteBuscar do
     expect(described_class.call("GÓM")).to eq([ ana ])
   end
 
+  it "busca por nombre sin importar los acentos" do
+    expect(described_class.call("gomez")).to eq([ ana ])
+    expect(described_class.call("Brúno DIAZ")).to eq([ bruno ])
+  end
+
   it "busca por teléfono aunque tenga otro formato" do
     expect(described_class.call("11 6666-7777")).to eq([ bruno ])
   end

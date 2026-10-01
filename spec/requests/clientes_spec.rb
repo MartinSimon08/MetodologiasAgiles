@@ -98,7 +98,7 @@ RSpec.describe "Clientes", type: :request do
       bruno = create(:cliente, nombre: "Bruno Díaz")
       create(:vehiculo, patente: "AB123CD", cliente: bruno)
 
-      get "/clientes", params: { q: "gómez" }, headers: auth_headers(admin)
+      get "/clientes", params: { q: "gomez" }, headers: auth_headers(admin)
       expect(response.parsed_body["clientes"].pluck("id")).to eq([ ana.id ])
 
       get "/clientes", params: { q: "4555 1234" }, headers: auth_headers(admin)

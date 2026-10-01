@@ -40,6 +40,13 @@ RSpec.describe VehiculoBuscar do
     expect(described_class.call("gómez")).to eq([ buscado ])
   end
 
+  it "busca por el nombre del dueño sin importar los acentos" do
+    buscado = create(:vehiculo, cliente: ana)
+    create(:vehiculo, cliente: bruno)
+
+    expect(described_class.call("ana gomez")).to eq([ buscado ])
+  end
+
   it "busca por el teléfono del dueño aunque tenga otro formato" do
     buscado = create(:vehiculo, cliente: ana)
     create(:vehiculo, cliente: bruno)

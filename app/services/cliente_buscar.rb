@@ -6,7 +6,7 @@ class ClienteBuscar
     patente = Vehiculo.normalize_value_for(:patente, termino)
     telefono = Cliente.normalize_value_for(:telefono, termino)
 
-    coincidencias = Cliente.where("clientes.nombre ILIKE ?", contiene(termino))
+    coincidencias = Cliente.where("unaccent(clientes.nombre) ILIKE unaccent(?)", contiene(termino))
                            .or(Cliente.where(id: Vehiculo.where("vehiculos.patente LIKE ?", contiene(patente))
                                                          .select(:cliente_id)))
     coincidencias = coincidencias.or(Cliente.where("clientes.telefono LIKE ?", contiene(telefono))) if telefono.match?(/\d/)

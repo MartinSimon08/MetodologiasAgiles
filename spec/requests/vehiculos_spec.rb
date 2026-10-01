@@ -143,8 +143,64 @@ RSpec.describe "Vehiculos", type: :request do
       expect(response.parsed_body["vehiculos"].pluck("id")).to eq([ propio.id ])
     end
 
+    it "busca por patente priorizando la coincidencia exacta" do
+      parecido = create(:vehiculo, patente: "AB1234")
+      exacto = create(:vehiculo, patente: "AB123")
+      create(:vehiculo, patente: "ZZ999ZZ")
+
+      get "/vehiculos", params: { q: "ab 123" }, headers: auth_headers(admin)
+
+      expect(response.parsed_body["vehiculos"].pluck("id")).to eq([ exacto.id, parecido.id ])
+      expect(response.parsed_body["meta"]).to include("total" => 2)
+    end
+
+    it "busca por nombre o teléfono del dueño" do
+      propio = create(:vehiculo, cliente: cliente)
+      create(:vehiculo)
+
+      get "/vehiculos", params: { q: "ana" }, headers: auth_headers(admin)
+      expect(response.parsed_body["vehiculos"].pluck("id")).to eq([ propio.id ])
+
+      get "/vehiculos", params: { q: cliente.telefono }, headers: auth_headers(admin)
+      expect(response.parsed_body["vehiculos"].pluck("id")).to eq([ propio.id ])
+    end
+
     it "prohíbe el listado a un mecánico" do
       get "/vehiculos", headers: auth_headers(mecanico)
+
+      expect(response).to have_http_status(:forbidden)
+    end
+  end
+
+  describe "GET /vehiculos/verificar_patente" do
+    it "avisa que la patente ya existe y a nombre de quién" do
+      vehiculo = create(:vehiculo, patente: "AB123CD", cliente: cliente)
+
+      get "/vehiculos/verificar_patente", params: { patente: "ab 123-cd" }, headers: auth_headers(admin)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body).to include("patente" => "AB123CD", "existe" => true)
+      expect(response.parsed_body["vehiculo"]).to include("id" => vehiculo.id, "patente" => "AB123CD")
+      expect(response.parsed_body["vehiculo"]["cliente"]).to include("nombre" => "Ana Gómez")
+    end
+
+    it "indica que la patente está libre" do
+      create(:vehiculo, patente: "AB123CDE")
+
+      get "/vehiculos/verificar_patente", params: { patente: "AB123CD" }, headers: auth_headers(admin)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body).to eq("patente" => "AB123CD", "existe" => false, "vehiculo" => nil)
+    end
+
+    it "exige la patente" do
+      get "/vehiculos/verificar_patente", headers: auth_headers(admin)
+
+      expect(response).to have_http_status(:bad_request)
+    end
+
+    it "prohíbe la verificación a un mecánico" do
+      get "/vehiculos/verificar_patente", params: { patente: "AB123CD" }, headers: auth_headers(mecanico)
 
       expect(response).to have_http_status(:forbidden)
     end

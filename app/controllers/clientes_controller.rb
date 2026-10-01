@@ -4,7 +4,7 @@ class ClientesController < ApplicationController
   before_action :require_administrador!
 
   def index
-    clientes, meta = paginar(Cliente.order(:nombre, :id))
+    clientes, meta = paginar(ClienteBuscar.call(params[:q]))
     render json: { clientes: clientes.map { |cliente| serialize(cliente) }, meta: meta }
   end
 

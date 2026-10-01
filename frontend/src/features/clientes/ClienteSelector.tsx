@@ -1,8 +1,10 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
+import { Buscador } from '../../components/Buscador'
 import { ErroresCampo } from '../../components/ErroresCampo'
 import { Paginacion } from '../../components/Paginacion'
 import { errorMessage } from '../../lib/api'
+import { useDebounce } from '../../lib/useDebounce'
 import { listarClientes } from './api'
 
 interface Props {
@@ -16,10 +18,12 @@ interface Props {
 
 export function ClienteSelector({ etiqueta, valor, onCambiar, excluirId, errores, autoFocus }: Props) {
   const [pagina, setPagina] = useState(1)
+  const [busqueda, setBusqueda] = useState('')
+  const q = useDebounce(busqueda.trim())
 
   const clientes = useQuery({
-    queryKey: ['clientes', pagina],
-    queryFn: () => listarClientes(pagina),
+    queryKey: ['clientes', pagina, q],
+    queryFn: () => listarClientes(pagina, q),
     placeholderData: keepPreviousData,
   })
 
@@ -27,10 +31,20 @@ export function ClienteSelector({ etiqueta, valor, onCambiar, excluirId, errores
 
   return (
     <div className="selector-cliente">
+      <Buscador
+        etiqueta="Buscar cliente"
+        autoFocus={autoFocus}
+        placeholder="Nombre, teléfono o patente"
+        valor={busqueda}
+        onCambiar={(valor) => {
+          onCambiar(null)
+          setPagina(1)
+          setBusqueda(valor)
+        }}
+      />
       <label>
         {etiqueta}
         <select
-          autoFocus={autoFocus}
           value={valor ?? ''}
           onChange={(e) => onCambiar(e.target.value ? Number(e.target.value) : null)}
           disabled={clientes.isPending}
@@ -40,7 +54,9 @@ export function ClienteSelector({ etiqueta, valor, onCambiar, excluirId, errores
             {clientes.isPending
               ? 'Cargando clientes…'
               : opciones.length === 0
-                ? 'No hay clientes para elegir'
+                ? q
+                  ? 'Ningún cliente coincide con la búsqueda'
+                  : 'No hay clientes para elegir'
                 : 'Elegí un cliente'}
           </option>
           {opciones.map((cliente) => (

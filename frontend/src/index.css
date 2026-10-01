@@ -269,6 +269,7 @@ button.accion-catalogo.eliminar:focus-visible {
 .mis-tareas,
 .usuarios,
 .clientes,
+.vehiculos,
 .repuestos,
 .configuracion {
   display: flex;
@@ -564,4 +565,19 @@ button.secundario.peligro {
   .tarea-movil .acciones button {
     flex: 1;
   }
+}
+
+.buscador {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-weight: 500;
+}
+
+.advertencia-patente {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
 }

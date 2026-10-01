@@ -1,9 +1,18 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
 import { ErroresCampo } from '../../components/ErroresCampo'
 import { errorMessage, fieldErrors } from '../../lib/api'
+import { useDebounce } from '../../lib/useDebounce'
 import { ClienteSelector } from '../clientes/ClienteSelector'
-import { registrarVehiculo, type NuevoVehiculo, type Vehiculo } from './api'
+import {
+  normalizarPatente,
+  registrarVehiculo,
+  verificarPatente,
+  type NuevoVehiculo,
+  type Vehiculo,
+} from './api'
+
+const PATENTE_LARGO_MINIMO = 5
 
 const VACIO: NuevoVehiculo = {
   cliente_id: null,
@@ -16,12 +25,25 @@ const VACIO: NuevoVehiculo = {
 
 interface Props {
   onRegistrado: (vehiculo: Vehiculo) => void
+  onVerExistente: (patente: string) => void
   onCancelar: () => void
 }
 
-export function NuevoVehiculoForm({ onRegistrado, onCancelar }: Props) {
+export function NuevoVehiculoForm({ onRegistrado, onVerExistente, onCancelar }: Props) {
   const queryClient = useQueryClient()
   const [datos, setDatos] = useState<NuevoVehiculo>(VACIO)
+
+  const patente = normalizarPatente(datos.patente)
+  const patenteDiferida = useDebounce(patente, 400)
+
+  const verificacion = useQuery({
+    queryKey: ['vehiculos', 'verificar_patente', patenteDiferida],
+    queryFn: () => verificarPatente(patenteDiferida),
+    enabled: patenteDiferida.length >= PATENTE_LARGO_MINIMO,
+  })
+
+  const existente =
+    patente === patenteDiferida && verificacion.data?.patente === patente ? verificacion.data.vehiculo : null
 
   const mutation = useMutation({
     mutationFn: registrarVehiculo,
@@ -66,6 +88,17 @@ export function NuevoVehiculoForm({ onRegistrado, onCancelar }: Props) {
         <small>Obligatoria. Ej.: AB 123 CD o ABC 123.</small>
         <ErroresCampo errores={errores.patente} />
       </label>
+      {existente && (
+        <div className="advertencia-patente" role="alert">
+          <p className="advertencia">
+            La patente {existente.patente} ya está registrada a nombre de {existente.cliente.nombre} (
+            {existente.cliente.telefono}).
+          </p>
+          <button type="button" className="secundario" onClick={() => onVerExistente(existente.patente)}>
+            Ver vehículo
+          </button>
+        </div>
+      )}
       <div className="campos-vehiculo">
         <label>
           Marca
@@ -107,7 +140,7 @@ export function NuevoVehiculoForm({ onRegistrado, onCancelar }: Props) {
         <button type="button" className="secundario" onClick={onCancelar}>
           Cancelar
         </button>
-        <button type="submit" disabled={mutation.isPending}>
+        <button type="submit" disabled={mutation.isPending || existente !== null}>
           {mutation.isPending ? 'Registrando…' : 'Registrar vehículo'}
         </button>
       </div>

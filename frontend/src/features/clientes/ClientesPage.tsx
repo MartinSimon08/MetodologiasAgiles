@@ -1,8 +1,10 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { Buscador } from '../../components/Buscador'
 import { Paginacion } from '../../components/Paginacion'
 import { errorMessage } from '../../lib/api'
+import { useDebounce } from '../../lib/useDebounce'
 import { listarClientes } from './api'
 import { NuevoClienteForm } from './NuevoClienteForm'
 
@@ -12,15 +14,24 @@ export function ClientesPage() {
 
   const [searchParams, setSearchParams] = useSearchParams()
   const pagina = Math.max(1, Number(searchParams.get('pagina')) || 1)
+  const busqueda = searchParams.get('q') ?? ''
+  const q = useDebounce(busqueda.trim())
 
   const clientes = useQuery({
-    queryKey: ['clientes', pagina],
-    queryFn: () => listarClientes(pagina),
+    queryKey: ['clientes', pagina, q],
+    queryFn: () => listarClientes(pagina, q),
     placeholderData: keepPreviousData,
   })
 
+  function actualizarFiltros(nuevaPagina: number, nuevaBusqueda: string) {
+    const params: Record<string, string> = {}
+    if (nuevaBusqueda) params.q = nuevaBusqueda
+    if (nuevaPagina > 1) params.pagina = String(nuevaPagina)
+    setSearchParams(params, { replace: true })
+  }
+
   function irAPagina(nueva: number) {
-    setSearchParams(nueva === 1 ? {} : { pagina: String(nueva) })
+    actualizarFiltros(nueva, busqueda)
     window.scrollTo({ top: 0 })
   }
 
@@ -56,6 +67,13 @@ export function ClientesPage() {
         />
       )}
 
+      <Buscador
+        etiqueta="Buscar cliente"
+        placeholder="Nombre, teléfono o patente"
+        valor={busqueda}
+        onCambiar={(valor) => actualizarFiltros(1, valor)}
+      />
+
       {clientes.isPending && <p className="estado">Cargando clientes…</p>}
       {clientes.isError && (
         <p className="error" role="alert">
@@ -64,7 +82,9 @@ export function ClientesPage() {
       )}
 
       {clientes.data?.clientes.length === 0 && (
-        <p className="estado">Todavía no hay clientes registrados.</p>
+        <p className="estado">
+          {q ? `No hay clientes que coincidan con “${q}”.` : 'Todavía no hay clientes registrados.'}
+        </p>
       )}
 
       {clientes.data && clientes.data.clientes.length > 0 && (

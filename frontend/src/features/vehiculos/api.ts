@@ -25,8 +25,21 @@ export interface PaginaVehiculos {
   meta: MetaPaginacion
 }
 
-export async function listarVehiculos(pagina: number) {
-  const { data } = await api.get<PaginaVehiculos>('/vehiculos', { params: { pagina } })
+export interface VerificacionPatente {
+  patente: string
+  existe: boolean
+  vehiculo: Vehiculo | null
+}
+
+export const normalizarPatente = (patente: string) => patente.toUpperCase().replace(/[\s\-.]/g, '')
+
+export async function listarVehiculos(pagina: number, q = '') {
+  const { data } = await api.get<PaginaVehiculos>('/vehiculos', { params: { pagina, q: q || undefined } })
+  return data
+}
+
+export async function verificarPatente(patente: string) {
+  const { data } = await api.get<VerificacionPatente>('/vehiculos/verificar_patente', { params: { patente } })
   return data
 }
 

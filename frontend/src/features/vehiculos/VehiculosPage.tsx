@@ -1,8 +1,10 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { Buscador } from '../../components/Buscador'
 import { Paginacion } from '../../components/Paginacion'
 import { errorMessage } from '../../lib/api'
+import { useDebounce } from '../../lib/useDebounce'
 import { listarVehiculos, type Vehiculo } from './api'
 import { CambiarDuenioForm } from './CambiarDuenioForm'
 import { NuevoVehiculoForm } from './NuevoVehiculoForm'
@@ -18,16 +20,25 @@ export function VehiculosPage() {
 
   const [searchParams, setSearchParams] = useSearchParams()
   const pagina = Math.max(1, Number(searchParams.get('pagina')) || 1)
+  const busqueda = searchParams.get('q') ?? ''
+  const q = useDebounce(busqueda.trim())
 
   const vehiculos = useQuery({
-    queryKey: ['vehiculos', pagina],
-    queryFn: () => listarVehiculos(pagina),
+    queryKey: ['vehiculos', pagina, q],
+    queryFn: () => listarVehiculos(pagina, q),
     placeholderData: keepPreviousData,
   })
 
-  function irAPagina(nueva: number) {
+  function actualizarFiltros(nuevaPagina: number, nuevaBusqueda: string) {
+    const params: Record<string, string> = {}
+    if (nuevaBusqueda) params.q = nuevaBusqueda
+    if (nuevaPagina > 1) params.pagina = String(nuevaPagina)
     setCambiandoId(null)
-    setSearchParams(nueva === 1 ? {} : { pagina: String(nueva) })
+    setSearchParams(params, { replace: true })
+  }
+
+  function irAPagina(nueva: number) {
+    actualizarFiltros(nueva, busqueda)
     window.scrollTo({ top: 0 })
   }
 
@@ -59,9 +70,20 @@ export function VehiculosPage() {
             setRegistrando(false)
             setAviso(`Se registró ${vehiculo.patente} a nombre de ${vehiculo.cliente.nombre}.`)
           }}
+          onVerExistente={(patente) => {
+            setRegistrando(false)
+            actualizarFiltros(1, patente)
+          }}
           onCancelar={() => setRegistrando(false)}
         />
       )}
+
+      <Buscador
+        etiqueta="Buscar vehículo"
+        placeholder="Patente, nombre o teléfono del dueño"
+        valor={busqueda}
+        onCambiar={(valor) => actualizarFiltros(1, valor)}
+      />
 
       {vehiculos.isPending && <p className="estado">Cargando vehículos…</p>}
       {vehiculos.isError && (
@@ -71,7 +93,9 @@ export function VehiculosPage() {
       )}
 
       {vehiculos.data?.vehiculos.length === 0 && (
-        <p className="estado">Todavía no hay vehículos registrados.</p>
+        <p className="estado">
+          {q ? `No hay vehículos que coincidan con “${q}”.` : 'Todavía no hay vehículos registrados.'}
+        </p>
       )}
 
       {vehiculos.data && vehiculos.data.vehiculos.length > 0 && (

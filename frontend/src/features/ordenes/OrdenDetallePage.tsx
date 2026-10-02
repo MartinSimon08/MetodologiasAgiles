@@ -1,11 +1,12 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link, useParams } from 'react-router-dom'
 import { errorMessage } from '../../lib/api'
+import { fechaHora } from '../../lib/formato'
 import { useAuth } from '../auth/AuthContext'
 import { RepuestosPanel } from '../repuestos/RepuestosPanel'
 import { TareasPanel } from '../tareas/TareasPanel'
 import { obtenerOrden } from './api'
-import { ESTADO_ORDEN_LABELS } from './types'
+import { describirVehiculo, ESTADO_ORDEN_LABELS } from './types'
 
 export function OrdenDetallePage() {
   const { usuario } = useAuth()
@@ -35,12 +36,18 @@ export function OrdenDetallePage() {
           <header className="encabezado">
             <div>
               <h1>{orden.data.cliente.nombre}</h1>
-              <p className="estado">{orden.data.vehiculo}</p>
+              <p className="estado">{describirVehiculo(orden.data.vehiculo)}</p>
+              <p className="estado">Ingreso: {fechaHora(orden.data.created_at)}</p>
             </div>
             <span className={`insignia insignia-${orden.data.estado}`}>
               {ESTADO_ORDEN_LABELS[orden.data.estado]}
             </span>
           </header>
+
+          <section className="tarjeta motivo-orden">
+            <h2>Motivo de ingreso</h2>
+            <p>{orden.data.motivo}</p>
+          </section>
 
           <TareasPanel ordenId={ordenId} ordenAbierta={orden.data.estado === 'abierta'} />
           {usuario?.rol === 'administrador' && (

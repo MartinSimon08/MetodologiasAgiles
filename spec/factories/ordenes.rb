@@ -1,7 +1,8 @@
 FactoryBot.define do
   factory :orden do
-    cliente
-    sequence(:vehiculo) { |n| "Vehículo #{n}" }
+    vehiculo
+    cliente { vehiculo.cliente }
+    sequence(:motivo) { |n| "Motivo de ingreso #{n}" }
     estado { :abierta }
 
     trait :cerrada do

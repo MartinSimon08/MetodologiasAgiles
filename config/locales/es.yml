@@ -23,6 +23,7 @@ es:
       orden:
         cliente: Cliente
         vehiculo: Vehículo
+        motivo: Motivo de ingreso
         estado: Estado
       tarea:
         orden: Orden

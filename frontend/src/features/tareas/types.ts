@@ -1,3 +1,5 @@
+import type { VehiculoOrden } from '../ordenes/types'
+
 export type EstadoTarea = 'pendiente' | 'en_curso' | 'terminada'
 
 export interface Tarea {
@@ -27,7 +29,7 @@ export interface TareaMecanico {
   mecanico_id: number | null
   tomada_en: string | null
   created_at: string
-  orden: { id: number; vehiculo: string; cliente: string }
+  orden: { id: number; vehiculo: VehiculoOrden; cliente: string }
 }
 
 export interface TareasMecanico {

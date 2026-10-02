@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { errorMessage } from '../../lib/api'
+import { describirVehiculo } from '../ordenes/types'
 import { completarTarea, liberarTarea, listarTareasMecanico, tomarTarea } from './api'
 import type { TareaMecanico } from './types'
 
@@ -49,7 +50,8 @@ export function MisTareasPage() {
       <div className="item-datos">
         <strong>{tarea.descripcion}</strong>
         <span>
-          <Link to={`/ordenes/${tarea.orden.id}`}>Orden #{tarea.orden.id}</Link> · {tarea.orden.vehiculo}
+          <Link to={`/ordenes/${tarea.orden.id}`}>Orden #{tarea.orden.id}</Link> ·{' '}
+          {describirVehiculo(tarea.orden.vehiculo)}
         </span>
         <span>{tarea.orden.cliente}</span>
       </div>

@@ -36,6 +36,7 @@ RSpec.describe TareaTomar do
     after do
       Tarea.delete_all
       Orden.delete_all
+      Vehiculo.delete_all
       Cliente.delete_all
       Usuario.delete_all
     end

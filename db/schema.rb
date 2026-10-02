@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_01_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_02_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "unaccent"
@@ -38,9 +38,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_01_120000) do
     t.bigint "cliente_id", null: false
     t.datetime "created_at", null: false
     t.string "estado", default: "abierta", null: false
+    t.text "motivo", null: false
     t.datetime "updated_at", null: false
-    t.string "vehiculo", null: false
+    t.bigint "vehiculo_id", null: false
     t.index ["cliente_id"], name: "index_ordenes_on_cliente_id"
+    t.index ["vehiculo_id"], name: "index_ordenes_on_vehiculo_id"
   end
 
   create_table "repuestos", force: :cascade do |t|
@@ -121,6 +123,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_01_120000) do
   end
 
   add_foreign_key "ordenes", "clientes"
+  add_foreign_key "ordenes", "vehiculos"
   add_foreign_key "repuestos", "ordenes"
   add_foreign_key "repuestos", "repuestos_catalogo", column: "repuesto_catalogo_id"
   add_foreign_key "repuestos", "usuarios", column: "registrado_por_id"

@@ -1,11 +1,18 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
-import { Link, useSearchParams } from 'react-router-dom'
+import { useState } from 'react'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { Paginacion } from '../../components/Paginacion'
 import { errorMessage } from '../../lib/api'
+import { fechaHora } from '../../lib/formato'
+import { useAuth } from '../auth/AuthContext'
 import { listarOrdenes } from './api'
-import { ESTADO_ORDEN_LABELS } from './types'
+import { NuevaOrdenForm } from './NuevaOrdenForm'
+import { describirVehiculo, ESTADO_ORDEN_LABELS } from './types'
 
 export function OrdenesPage() {
+  const { usuario } = useAuth()
+  const navigate = useNavigate()
+  const [abriendo, setAbriendo] = useState(false)
   const [searchParams, setSearchParams] = useSearchParams()
   const pagina = Math.max(1, Number(searchParams.get('pagina')) || 1)
 
@@ -24,7 +31,17 @@ export function OrdenesPage() {
     <section className="ordenes">
       <header className="encabezado">
         <h1>Órdenes</h1>
+        {usuario?.rol === 'administrador' && !abriendo && (
+          <button onClick={() => setAbriendo(true)}>Nueva orden</button>
+        )}
       </header>
+
+      {abriendo && (
+        <NuevaOrdenForm
+          onAbierta={(orden) => navigate(`/ordenes/${orden.id}`)}
+          onCancelar={() => setAbriendo(false)}
+        />
+      )}
 
       {ordenes.isPending && <p className="estado">Cargando órdenes…</p>}
       {ordenes.isError && (
@@ -43,7 +60,8 @@ export function OrdenesPage() {
             <li key={orden.id} className="tarjeta fila-item">
               <Link to={`/ordenes/${orden.id}`} className="item-datos">
                 <strong>{orden.cliente.nombre}</strong>
-                <span>{orden.vehiculo}</span>
+                <span>{describirVehiculo(orden.vehiculo)}</span>
+                <span>Ingreso: {fechaHora(orden.created_at)}</span>
               </Link>
               <span className={`insignia insignia-${orden.estado}`}>
                 {ESTADO_ORDEN_LABELS[orden.estado]}

@@ -3,7 +3,8 @@ require "rails_helper"
 RSpec.describe "Tareas del mecánico", type: :request do
   let!(:mecanico) { create(:usuario) }
   let!(:otro_mecanico) { create(:usuario) }
-  let!(:orden) { create(:orden, vehiculo: "Fiat Palio") }
+  let!(:vehiculo) { create(:vehiculo, patente: "AB123CD", marca: "Fiat", modelo: "Palio", anio: 2012) }
+  let!(:orden) { create(:orden, vehiculo: vehiculo) }
 
   describe "GET /tareas_mecanico" do
     it "devuelve las tareas propias en curso y las disponibles de órdenes abiertas" do
@@ -19,7 +20,10 @@ RSpec.describe "Tareas del mecánico", type: :request do
       expect(response.parsed_body["mias"].pluck("id")).to eq([ propia.id ])
       expect(response.parsed_body["disponibles"].pluck("id")).to eq([ disponible.id ])
       expect(response.parsed_body["disponibles"].first["orden"]).to eq(
-        "id" => orden.id, "vehiculo" => "Fiat Palio", "cliente" => orden.cliente.nombre
+        "id" => orden.id,
+        "vehiculo" => { "id" => vehiculo.id, "patente" => "AB123CD", "marca" => "Fiat", "modelo" => "Palio",
+                        "anio" => 2012 },
+        "cliente" => orden.cliente.nombre
       )
     end
 

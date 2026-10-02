@@ -12,6 +12,21 @@ RSpec.describe Orden, type: :model do
     expect(orden.errors.attribute_names).to include(:cliente, :vehiculo)
   end
 
+  it "exige el motivo de ingreso" do
+    orden = build(:orden, motivo: "  ")
+
+    expect(orden).not_to be_valid
+    expect(orden.errors[:motivo]).to include("no puede estar en blanco")
+  end
+
+  it "rechaza un motivo demasiado largo" do
+    expect(build(:orden, motivo: "a" * (Orden::MOTIVO_MAXIMO + 1))).not_to be_valid
+  end
+
+  it "quita los espacios sobrantes del motivo" do
+    expect(build(:orden, motivo: "  Ruido al frenar ").motivo).to eq("Ruido al frenar")
+  end
+
   it "nace abierta" do
     expect(create(:orden)).to be_abierta
   end

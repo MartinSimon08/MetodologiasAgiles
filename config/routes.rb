@@ -29,7 +29,7 @@ Rails.application.routes.draw do
   resources :tareas_frecuentes, only: %i[index create]
   resources :tareas_mecanico, only: :index
 
-  resources :ordenes, only: %i[index show] do
+  resources :ordenes, only: %i[index show create] do
     resources :repuestos, only: %i[index create]
     resources :tareas, only: %i[index create], shallow: true do
       member do

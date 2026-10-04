@@ -14,6 +14,9 @@ export interface Repuesto {
   margen: string
   precio_cliente: string
   ganancia: string
+  proveedor: string | null
+  created_at: string
+  registrado_por: { id: number; nombre: string }
 }
 
 export interface NuevoRepuesto {
@@ -44,9 +47,11 @@ export async function eliminarCatalogo(id: number) {
 }
 
 export async function listarRepuestos(ordenId: number, pagina: number) {
-  const { data } = await api.get<{ repuestos: Repuesto[]; meta: MetaPaginacion }>(
-    `/ordenes/${ordenId}/repuestos`, { params: { pagina } },
-  )
+  const { data } = await api.get<{
+    repuestos: Repuesto[]
+    meta: MetaPaginacion
+    margen_por_defecto: string
+  }>(`/ordenes/${ordenId}/repuestos`, { params: { pagina } })
   return data
 }
 

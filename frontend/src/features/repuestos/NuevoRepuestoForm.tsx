@@ -2,16 +2,19 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
 import { ErroresCampo } from '../../components/ErroresCampo'
 import { errorMessage, fieldErrors } from '../../lib/api'
+import { importe } from '../../lib/formato'
+import { calcularPrecioRepuesto } from '../../lib/precioRepuesto'
 import { agregarRepuesto, type RepuestoCatalogo } from './api'
 import { CatalogoRepuestos } from './CatalogoRepuestos'
 
 interface Props {
   ordenId: number
+  margenPorDefecto: string
   onGuardado: () => void
   onCancelar: () => void
 }
 
-export function NuevoRepuestoForm({ ordenId, onGuardado, onCancelar }: Props) {
+export function NuevoRepuestoForm({ ordenId, margenPorDefecto, onGuardado, onCancelar }: Props) {
   const queryClient = useQueryClient()
   const [seleccionado, setSeleccionado] = useState<RepuestoCatalogo | null>(null)
   const [descripcion, setDescripcion] = useState('')
@@ -30,6 +33,9 @@ export function NuevoRepuestoForm({ ordenId, onGuardado, onCancelar }: Props) {
     },
   })
   const errores = fieldErrors(mutation.error)
+  const usaMargenDelTaller = margen.trim() === ''
+  const margenAplicado = usaMargenDelTaller ? margenPorDefecto : margen
+  const calculo = calcularPrecioRepuesto(costo, cantidad, margenAplicado)
 
   function seleccionar(repuesto: RepuestoCatalogo) {
     setSeleccionado(repuesto)
@@ -87,6 +93,10 @@ export function NuevoRepuestoForm({ ordenId, onGuardado, onCancelar }: Props) {
           <input value={proveedor} onChange={(event) => setProveedor(event.target.value)} />
         </label>
       </fieldset>
+      {calculo && <p className="resumen-repuesto" role="status">
+        <span>Precio al cliente: $ {importe(calculo.precio)} · Ganancia: $ {importe(calculo.ganancia)}</span>
+        {usaMargenDelTaller && <small>Con el margen del taller ({importe(margenPorDefecto)}%).</small>}
+      </p>}
       <ErroresCampo errores={errores.orden} />
       {mutation.isError && Object.keys(errores).length === 0 && <p className="error" role="alert">
         {errorMessage(mutation.error, 'No se pudo agregar el repuesto.')}

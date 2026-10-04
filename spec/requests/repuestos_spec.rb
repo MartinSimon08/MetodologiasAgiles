@@ -107,14 +107,21 @@ RSpec.describe "Repuestos", type: :request do
 
   describe "GET /ordenes/:orden_id/repuestos" do
     it "lista exclusivamente las compras de la orden y pagina los resultados" do
-      RepuestoAgregar.call(orden: orden, registrado_por: admin, **atributos)
+      ConfiguracionTaller.actual.update!(margen_repuestos: "25.25")
+      RepuestoAgregar.call(orden: orden, registrado_por: admin, **atributos, proveedor: "Casa Central")
       RepuestoAgregar.call(orden: create(:orden), registrado_por: admin, **atributos.merge(descripcion: "Otra compra"))
 
       get "/ordenes/#{orden.id}/repuestos", params: { por_pagina: 1 }, headers: auth_headers(admin)
 
       expect(response).to have_http_status(:ok)
-      expect(response.parsed_body["repuestos"]).to contain_exactly(include("descripcion" => "Filtro", "costo_unitario" => "123.45"))
+      expect(response.parsed_body["repuestos"]).to contain_exactly(include(
+        "descripcion" => "Filtro", "costo_unitario" => "123.45", "precio_cliente" => "296.28",
+        "ganancia" => "49.38", "proveedor" => "Casa Central",
+        "registrado_por" => { "id" => admin.id, "nombre" => admin.nombre }
+      ))
+      expect(response.parsed_body["repuestos"].first["created_at"]).to be_present
       expect(response.parsed_body["meta"]).to include("total" => 1)
+      expect(response.parsed_body["margen_por_defecto"]).to eq("25.25")
     end
   end
 

@@ -15,3 +15,8 @@ export async function obtenerOrden(id: number) {
   const { data } = await api.get<Orden>(`/ordenes/${id}`)
   return data
 }
+
+export async function abrirOrden(vehiculoId: number | null, motivo: string) {
+  const { data } = await api.post<Orden>('/ordenes', { orden: { vehiculo_id: vehiculoId, motivo } })
+  return data
+}

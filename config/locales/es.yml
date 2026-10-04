@@ -23,6 +23,7 @@ es:
       orden:
         cliente: Cliente
         vehiculo: Vehículo
+        motivo: Motivo de ingreso
         estado: Estado
       tarea:
         orden: Orden
@@ -63,6 +64,10 @@ es:
             base:
               ya_desactivado: El usuario ya está desactivado
               ultimo_administrador: No se puede desactivar al último administrador activo
+        orden:
+          attributes:
+            vehiculo:
+              con_orden_abierta: ya tiene una orden abierta
         tarea:
           attributes:
             estado:

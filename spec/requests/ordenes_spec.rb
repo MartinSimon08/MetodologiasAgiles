@@ -86,6 +86,25 @@ RSpec.describe "Ordenes", type: :request do
       expect(response.parsed_body["errors"]["motivo"]).to include("Motivo de ingreso no puede estar en blanco")
     end
 
+    it "rechaza abrir otra orden si el vehículo ya tiene una abierta" do
+      create(:orden, vehiculo: vehiculo)
+
+      expect {
+        post "/ordenes", params: params, headers: auth_headers(administrador)
+      }.not_to change(Orden, :count)
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body["errors"]["vehiculo"]).to include("Vehículo ya tiene una orden abierta")
+    end
+
+    it "permite abrir otra orden si la anterior del vehículo está cerrada" do
+      create(:orden, :cerrada, vehiculo: vehiculo)
+
+      post "/ordenes", params: params, headers: auth_headers(administrador)
+
+      expect(response).to have_http_status(:created)
+    end
+
     it "devuelve 400 si faltan los datos de la orden" do
       post "/ordenes", headers: auth_headers(administrador)
 

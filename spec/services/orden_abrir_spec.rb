@@ -57,4 +57,60 @@ RSpec.describe OrdenAbrir do
     }
     expect(Orden.count).to eq(0)
   end
+
+  it "rechaza abrir otra orden si el vehículo ya tiene una abierta" do
+    described_class.call(vehiculo_id: vehiculo.id, motivo: "Ruido al frenar")
+
+    expect {
+      described_class.call(vehiculo_id: vehiculo.id, motivo: "Pierde aceite")
+    }.to raise_error(ActiveRecord::RecordInvalid) { |error|
+      expect(error.record.errors[:vehiculo]).to include("ya tiene una orden abierta")
+    }
+    expect(Orden.count).to eq(1)
+  end
+
+  it "permite abrir una orden nueva cuando la anterior del vehículo ya se cerró" do
+    described_class.call(vehiculo_id: vehiculo.id, motivo: "Ruido al frenar").update!(estado: :cerrada)
+
+    orden = described_class.call(vehiculo_id: vehiculo.id, motivo: "Pierde aceite")
+
+    expect(orden).to be_abierta
+    expect(Orden.where(vehiculo: vehiculo).count).to eq(2)
+  end
+
+  it "permite tener órdenes abiertas para vehículos distintos" do
+    described_class.call(vehiculo_id: vehiculo.id, motivo: "Ruido al frenar")
+
+    expect(described_class.call(vehiculo_id: create(:vehiculo).id, motivo: "Service")).to be_persisted
+  end
+
+  context "con dos conexiones reales a la base" do
+    self.use_transactional_tests = false
+
+    after do
+      Orden.delete_all
+      Vehiculo.delete_all
+      Cliente.delete_all
+    end
+
+    it "impide que dos pedidos simultáneos abran dos órdenes para el mismo vehículo" do
+      vehiculo = create(:vehiculo)
+      resultados = Queue.new
+
+      hilos = Array.new(2) do
+        Thread.new do
+          ActiveRecord::Base.connection_pool.with_connection do
+            described_class.call(vehiculo_id: vehiculo.id, motivo: "Ruido al frenar")
+            resultados << :ok
+          rescue ActiveRecord::RecordInvalid
+            resultados << :rechazada
+          end
+        end
+      end
+      hilos.each(&:join)
+
+      expect(Array.new(2) { resultados.pop }).to contain_exactly(:ok, :rechazada)
+      expect(Orden.abierta.where(vehiculo: vehiculo).count).to eq(1)
+    end
+  end
 end

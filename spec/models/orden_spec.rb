@@ -35,6 +35,39 @@ RSpec.describe Orden, type: :model do
     expect(build(:orden, estado: "pausada")).not_to be_valid
   end
 
+  it "rechaza una segunda orden abierta para el mismo vehículo" do
+    abierta = create(:orden)
+    orden = build(:orden, vehiculo: abierta.vehiculo)
+
+    expect(orden).not_to be_valid
+    expect(orden.errors[:vehiculo]).to include("ya tiene una orden abierta")
+  end
+
+  it "permite abrir otra orden si la anterior del vehículo está cerrada" do
+    cerrada = create(:orden, :cerrada)
+
+    expect(build(:orden, vehiculo: cerrada.vehiculo)).to be_valid
+  end
+
+  it "permite varias órdenes cerradas para el mismo vehículo" do
+    cerrada = create(:orden, :cerrada)
+
+    expect(build(:orden, :cerrada, vehiculo: cerrada.vehiculo)).to be_valid
+  end
+
+  it "permite modificar una orden abierta" do
+    orden = create(:orden)
+
+    expect(orden.update(motivo: "Cambio de aceite")).to be true
+  end
+
+  it "la base impide dos órdenes abiertas para el mismo vehículo aunque se saltee la validación" do
+    abierta = create(:orden)
+    orden = build(:orden, vehiculo: abierta.vehiculo)
+
+    expect { orden.save(validate: false) }.to raise_error(ActiveRecord::RecordNotUnique)
+  end
+
   it "no permite eliminarla si tiene tareas" do
     orden = create(:orden)
     create(:tarea, orden: orden)

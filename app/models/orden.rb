@@ -11,4 +11,5 @@ class Orden < ApplicationRecord
   normalizes :motivo, with: ->(motivo) { motivo.strip }
 
   validates :motivo, presence: true, length: { maximum: MOTIVO_MAXIMO }
+  validates :vehiculo, uniqueness: { conditions: -> { abierta }, message: :con_orden_abierta }, if: :abierta?
 end

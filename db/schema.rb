@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_04_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_05_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "unaccent"
@@ -48,12 +48,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_04_120000) do
 
   create_table "repuestos", force: :cascade do |t|
     t.integer "cantidad", null: false
-    t.decimal "costo_unitario", precision: 12, scale: 2, null: false
+    t.decimal "costo_unitario", precision: 12, scale: 2
     t.datetime "created_at", null: false
     t.string "descripcion", null: false
-    t.decimal "margen", precision: 5, scale: 2, null: false
+    t.string "estado", default: "valorizado", null: false
+    t.decimal "margen", precision: 5, scale: 2
     t.bigint "orden_id", null: false
-    t.decimal "precio_cliente", precision: 24, scale: 2, null: false
+    t.decimal "precio_cliente", precision: 24, scale: 2
     t.string "proveedor"
     t.bigint "registrado_por_id", null: false
     t.bigint "repuesto_catalogo_id"

@@ -12,4 +12,11 @@ class Orden < ApplicationRecord
 
   validates :motivo, presence: true, length: { maximum: MOTIVO_MAXIMO }
   validates :vehiculo, uniqueness: { conditions: -> { abierta }, message: :con_orden_abierta }, if: :abierta?
+  validate :sin_repuestos_pendientes_de_valorizar, if: :cerrada?
+
+  private
+
+  def sin_repuestos_pendientes_de_valorizar
+    errors.add(:base, :repuestos_pendientes) if repuestos.pendiente_de_valorizar.exists?
+  end
 end

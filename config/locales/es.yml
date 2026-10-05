@@ -40,6 +40,7 @@ es:
         cantidad: Cantidad
         costo_unitario: Costo unitario real
         margen: Margen
+        estado: Estado
         repuesto_catalogo: Repuesto del catálogo
         registrado_por: Administrador
       repuesto_catalogo:
@@ -68,6 +69,12 @@ es:
           attributes:
             vehiculo:
               con_orden_abierta: ya tiene una orden abierta
+            base:
+              repuestos_pendientes: No se puede cerrar la orden porque tiene repuestos pendientes de valorizar
+        repuesto:
+          attributes:
+            estado:
+              ya_valorizado: ya fue valorizado
         tarea:
           attributes:
             estado:

@@ -61,6 +61,23 @@ RSpec.describe Orden, type: :model do
     expect(orden.update(motivo: "Cambio de aceite")).to be true
   end
 
+  it "no permite cerrar una orden con repuestos pendientes de valorizar" do
+    orden = create(:orden)
+    mecanico = create(:usuario)
+    RepuestoAvisar.call(orden: orden, registrado_por: mecanico, descripcion: "Filtro de aceite", cantidad: 1)
+
+    expect(orden.update(estado: :cerrada)).to be false
+    expect(orden.errors[:base]).to include("No se puede cerrar la orden porque tiene repuestos pendientes de valorizar")
+  end
+
+  it "permite cerrar una orden sin repuestos pendientes de valorizar" do
+    orden = create(:orden)
+    admin = create(:usuario, :administrador)
+    RepuestoAgregar.call(orden: orden, registrado_por: admin, descripcion: "Filtro de aceite", cantidad: 1, costo_unitario: "100")
+
+    expect(orden.update(estado: :cerrada)).to be true
+  end
+
   it "la base impide dos órdenes abiertas para el mismo vehículo aunque se saltee la validación" do
     abierta = create(:orden)
     orden = build(:orden, vehiculo: abierta.vehiculo)

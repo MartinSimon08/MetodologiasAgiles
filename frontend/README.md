@@ -2,6 +2,8 @@
 
 Aplicación React que consume la API de Rails del proyecto (carpeta `../` en la raíz del repo). Pensada como panel único usado tanto desde web (recepción/administración) como desde el celular (mecánicos), con vistas adaptadas según el rol.
 
+La base, el usuario administrador y el servidor de la API se levantan como dice el [README de la raíz](../README.md).
+
 ## Stack
 
 - [Vite](https://vitejs.dev/) + React + TypeScript
@@ -12,9 +14,9 @@ Aplicación React que consume la API de Rails del proyecto (carpeta `../` en la 
 
 ## Requisitos previos
 
-- Node.js (versión que uses en el backend/monorepo, o la última LTS)
-- pnpm (`corepack enable` si no lo tenés instalado)
-- El backend corriendo en `http://localhost:3000` (ver README de la raíz del repo)
+- Node.js `^20.19.0` o `>=22.12.0` (lo exige Vite 8)
+- pnpm (`corepack enable` si no lo tenés). El lockfile es `pnpm-lock.yaml`.
+- El backend corriendo en `http://localhost:3000`
 
 ## Setup local
 
@@ -26,15 +28,18 @@ Aplicación React que consume la API de Rails del proyecto (carpeta `../` en la 
    ```
    pnpm install
    ```
-3. Copiá `.env.example` a `.env` y ajustá si hace falta:
+3. Copiá `.env.example` a `.env`:
    ```
    VITE_API_URL=http://localhost:3000
    ```
+   Si la variable no está definida, `src/lib/api.ts` usa ese mismo valor.
 4. Levantá el servidor de desarrollo:
    ```
    pnpm dev
    ```
-   La app queda disponible en `http://localhost:5173`.
+   La app queda en `http://localhost:5173`. El ingreso es `http://localhost:5173/login`, con el email y la contraseña de `ADMIN_EMAIL` y `ADMIN_PASSWORD` del `.env` de la raíz.
+
+Abrí esa URL con `localhost`. CORS del backend solo permite `http://localhost:5173`. Si ese puerto está ocupado, Vite pasa a otro y las llamadas a la API fallan hasta que 5173 quede libre.
 
 ## Scripts
 

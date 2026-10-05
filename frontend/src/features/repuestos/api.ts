@@ -25,7 +25,7 @@ export interface NuevoRepuesto {
   cantidad: string
   costo_unitario: string
   margen?: string
-  proveedor: string
+  proveedor?: string
 }
 
 export async function guardarCatalogo(repuesto: { nombre: string; precio: string }, id?: number) {
@@ -46,12 +46,23 @@ export async function eliminarCatalogo(id: number) {
   await api.delete(`/repuestos_catalogo/${id}`)
 }
 
+export interface VistaPreviaRepuesto {
+  precio_cliente: string
+  ganancia: string
+  margen: string
+}
+
 export async function listarRepuestos(ordenId: number, pagina: number) {
-  const { data } = await api.get<{
-    repuestos: Repuesto[]
-    meta: MetaPaginacion
-    margen_por_defecto: string
-  }>(`/ordenes/${ordenId}/repuestos`, { params: { pagina } })
+  const { data } = await api.get<{ repuestos: Repuesto[]; meta: MetaPaginacion }>(
+    `/ordenes/${ordenId}/repuestos`, { params: { pagina } },
+  )
+  return data
+}
+
+export async function previsualizarRepuesto(ordenId: number, repuesto: NuevoRepuesto, signal?: AbortSignal) {
+  const { data } = await api.post<VistaPreviaRepuesto>(
+    `/ordenes/${ordenId}/repuestos/vista_previa`, { repuesto }, { signal },
+  )
   return data
 }
 

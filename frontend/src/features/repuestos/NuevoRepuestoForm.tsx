@@ -1,20 +1,19 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
 import { ErroresCampo } from '../../components/ErroresCampo'
 import { errorMessage, fieldErrors } from '../../lib/api'
 import { importe } from '../../lib/formato'
-import { calcularPrecioRepuesto } from '../../lib/precioRepuesto'
-import { agregarRepuesto, type RepuestoCatalogo } from './api'
+import { useDebounce } from '../../lib/useDebounce'
+import { agregarRepuesto, previsualizarRepuesto, type RepuestoCatalogo } from './api'
 import { CatalogoRepuestos } from './CatalogoRepuestos'
 
 interface Props {
   ordenId: number
-  margenPorDefecto: string
   onGuardado: () => void
   onCancelar: () => void
 }
 
-export function NuevoRepuestoForm({ ordenId, margenPorDefecto, onGuardado, onCancelar }: Props) {
+export function NuevoRepuestoForm({ ordenId, onGuardado, onCancelar }: Props) {
   const queryClient = useQueryClient()
   const [seleccionado, setSeleccionado] = useState<RepuestoCatalogo | null>(null)
   const [descripcion, setDescripcion] = useState('')
@@ -33,9 +32,25 @@ export function NuevoRepuestoForm({ ordenId, margenPorDefecto, onGuardado, onCan
     },
   })
   const errores = fieldErrors(mutation.error)
-  const usaMargenDelTaller = margen.trim() === ''
-  const margenAplicado = usaMargenDelTaller ? margenPorDefecto : margen
-  const calculo = calcularPrecioRepuesto(costo, cantidad, margenAplicado)
+  const borrador = useDebounce({
+    descripcion, cantidad, costo, margen, catalogoId: seleccionado?.id,
+  })
+  const puedeConsultar = borrador.descripcion.trim() !== ''
+    && borrador.cantidad.trim() !== ''
+    && borrador.costo.trim() !== ''
+  const vista = useQuery({
+    queryKey: ['repuestos', ordenId, 'vista-previa', borrador],
+    queryFn: ({ signal }) => previsualizarRepuesto(ordenId, {
+      repuesto_catalogo_id: borrador.catalogoId,
+      descripcion: borrador.descripcion,
+      cantidad: borrador.cantidad,
+      costo_unitario: borrador.costo,
+      margen: borrador.margen.trim() === '' ? undefined : borrador.margen,
+    }, signal),
+    enabled: puedeConsultar,
+    retry: false,
+  })
+  const erroresVista = fieldErrors(vista.error)
 
   function seleccionar(repuesto: RepuestoCatalogo) {
     setSeleccionado(repuesto)
@@ -93,9 +108,13 @@ export function NuevoRepuestoForm({ ordenId, margenPorDefecto, onGuardado, onCan
           <input value={proveedor} onChange={(event) => setProveedor(event.target.value)} />
         </label>
       </fieldset>
-      {calculo && <p className="resumen-repuesto" role="status">
-        <span>Precio al cliente: $ {importe(calculo.precio)} · Ganancia: $ {importe(calculo.ganancia)}</span>
-        {usaMargenDelTaller && <small>Con el margen del taller ({importe(margenPorDefecto)}%).</small>}
+      {puedeConsultar && vista.isSuccess && <p className="resumen-repuesto" role="status">
+        <span>Precio al cliente: $ {importe(vista.data.precio_cliente)} · Ganancia: $ {importe(vista.data.ganancia)}</span>
+        {borrador.margen.trim() === '' && <small>Con el margen del taller ({importe(vista.data.margen)}%).</small>}
+      </p>}
+      {puedeConsultar && vista.isFetching && !vista.isSuccess && <p className="estado">Calculando precio…</p>}
+      {puedeConsultar && vista.isError && Object.keys(erroresVista).length === 0 && <p className="error" role="alert">
+        {errorMessage(vista.error, 'No se pudo calcular el precio.')}
       </p>}
       <ErroresCampo errores={errores.orden} />
       {mutation.isError && Object.keys(errores).length === 0 && <p className="error" role="alert">

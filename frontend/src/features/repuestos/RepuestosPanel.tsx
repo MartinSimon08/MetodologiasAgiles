@@ -26,7 +26,6 @@ export function RepuestosPanel({ ordenId, ordenAbierta }: { ordenId: number; ord
       </header>
       {aviso && <p className="aviso" role="status">Repuesto agregado a la orden.</p>}
       {creando && ordenAbierta && <NuevoRepuestoForm ordenId={ordenId}
-        margenPorDefecto={repuestos.data?.margen_por_defecto ?? ''}
         onCancelar={() => setCreando(false)}
         onGuardado={() => {
           setCreando(false)

@@ -6,16 +6,21 @@ class RepuestosController < ApplicationController
 
   def index
     repuestos, meta = paginar(@orden.repuestos.includes(:registrado_por).order(created_at: :desc, id: :desc))
-    render json: {
-      repuestos: repuestos.map { |repuesto| serialize(repuesto) },
-      meta: meta,
-      margen_por_defecto: ConfiguracionTaller.actual.margen_repuestos.to_s("F")
-    }
+    render json: { repuestos: repuestos.map { |repuesto| serialize(repuesto) }, meta: meta }
   end
 
   def create
     repuesto = RepuestoAgregar.call(orden: @orden, registrado_por: current_usuario, **repuesto_params.to_h.symbolize_keys)
     render json: serialize(repuesto), status: :created
+  end
+
+  def vista_previa
+    repuesto = RepuestoAgregar.vista_previa(orden: @orden, registrado_por: current_usuario, **repuesto_params.to_h.symbolize_keys)
+    render json: {
+      precio_cliente: repuesto.precio_cliente.to_s("F"),
+      ganancia: ganancia(repuesto),
+      margen: repuesto.margen.to_s("F")
+    }
   end
 
   private
@@ -30,8 +35,12 @@ class RepuestosController < ApplicationController
 
   def serialize(repuesto)
     datos = repuesto.as_json(only: %i[id orden_id repuesto_catalogo_id descripcion cantidad costo_unitario margen precio_cliente proveedor registrado_por_id created_at])
-    datos[:ganancia] = (repuesto.precio_cliente - repuesto.costo_unitario * repuesto.cantidad).to_s("F")
+    datos[:ganancia] = ganancia(repuesto)
     datos[:registrado_por] = repuesto.registrado_por.as_json(only: %i[id nombre])
     datos
+  end
+
+  def ganancia(repuesto)
+    (repuesto.precio_cliente - repuesto.costo_unitario * repuesto.cantidad).to_s("F")
   end
 end

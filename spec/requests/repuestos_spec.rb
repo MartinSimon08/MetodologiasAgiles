@@ -107,7 +107,6 @@ RSpec.describe "Repuestos", type: :request do
 
   describe "GET /ordenes/:orden_id/repuestos" do
     it "lista exclusivamente las compras de la orden y pagina los resultados" do
-      ConfiguracionTaller.actual.update!(margen_repuestos: "25.25")
       RepuestoAgregar.call(orden: orden, registrado_por: admin, **atributos, proveedor: "Casa Central")
       RepuestoAgregar.call(orden: create(:orden), registrado_por: admin, **atributos.merge(descripcion: "Otra compra"))
 
@@ -121,7 +120,82 @@ RSpec.describe "Repuestos", type: :request do
       ))
       expect(response.parsed_body["repuestos"].first["created_at"]).to be_present
       expect(response.parsed_body["meta"]).to include("total" => 1)
-      expect(response.parsed_body["margen_por_defecto"]).to eq("25.25")
+    end
+  end
+
+  describe "POST /ordenes/:orden_id/repuestos/vista_previa" do
+    it "devuelve el mismo precio y la misma ganancia que quedan guardados" do
+      post "/ordenes/#{orden.id}/repuestos/vista_previa", params: { repuesto: atributos },
+        headers: auth_headers(admin), as: :json
+
+      expect(response).to have_http_status(:ok)
+      previa = response.parsed_body
+      expect(previa).to include("precio_cliente" => "296.28", "ganancia" => "49.38", "margen" => "20.0")
+      expect(Repuesto.count).to eq(0)
+
+      post "/ordenes/#{orden.id}/repuestos", params: { repuesto: atributos }, headers: auth_headers(admin), as: :json
+
+      expect(response.parsed_body).to include(previa)
+    end
+
+    it "aplica el margen del taller cuando no se envía uno y no guarda la compra" do
+      ConfiguracionTaller.actual.update!(margen_repuestos: "30.25")
+
+      expect {
+        post "/ordenes/#{orden.id}/repuestos/vista_previa",
+          params: { repuesto: atributos.except(:margen) }, headers: auth_headers(admin), as: :json
+      }.not_to change(Repuesto, :count)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body).to include("precio_cliente" => "321.59", "ganancia" => "74.69", "margen" => "30.25")
+    end
+
+    it "coincide con lo guardado cuando el costo trae más de dos decimales" do
+      compra = atributos.merge(costo_unitario: "100.505")
+
+      post "/ordenes/#{orden.id}/repuestos/vista_previa", params: { repuesto: compra },
+        headers: auth_headers(admin), as: :json
+      previa = response.parsed_body
+
+      post "/ordenes/#{orden.id}/repuestos", params: { repuesto: compra }, headers: auth_headers(admin), as: :json
+
+      expect(response).to have_http_status(:created)
+      expect(response.parsed_body).to include(previa)
+      expect(Repuesto.count).to eq(1)
+    end
+
+    it "devuelve errores de campo sin crear la compra" do
+      expect {
+        post "/ordenes/#{orden.id}/repuestos/vista_previa", params: { repuesto: atributos.merge(margen: "101") },
+          headers: auth_headers(admin), as: :json
+      }.not_to change(Repuesto, :count)
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body["errors"]).to have_key("margen")
+    end
+
+    it "rechaza una orden cerrada" do
+      orden.update!(estado: :cerrada)
+
+      post "/ordenes/#{orden.id}/repuestos/vista_previa", params: { repuesto: atributos },
+        headers: auth_headers(admin), as: :json
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body["errors"]).to have_key("orden")
+      expect(Repuesto.count).to eq(0)
+    end
+
+    it "exige autenticación" do
+      post "/ordenes/#{orden.id}/repuestos/vista_previa", params: { repuesto: atributos }, as: :json
+
+      expect(response).to have_http_status(:unauthorized)
+    end
+
+    it "prohíbe a los mecánicos calcular el precio" do
+      post "/ordenes/#{orden.id}/repuestos/vista_previa", params: { repuesto: atributos },
+        headers: auth_headers(mecanico), as: :json
+
+      expect(response).to have_http_status(:forbidden)
     end
   end
 

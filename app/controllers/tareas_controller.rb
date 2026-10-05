@@ -52,7 +52,7 @@ class TareasController < ApplicationController
 
   def serialize(tarea)
     datos = tarea.as_json(only: %i[id orden_id descripcion estado mecanico_id tomada_en terminada_en created_at])
-    datos["precio"] = tarea.precio&.to_f
+    datos["precio"] = tarea.precio&.to_f if current_usuario.administrador?
     datos[:mecanico] = tarea.mecanico&.as_json(only: %i[id nombre])
     datos
   end

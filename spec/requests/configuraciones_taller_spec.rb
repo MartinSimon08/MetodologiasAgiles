@@ -14,10 +14,11 @@ RSpec.describe "Configuración del taller", type: :request do
       expect(response.parsed_body).to eq("margen_repuestos" => 27.5)
     end
 
-    it "permite que un mecánico consulte el margen" do
+    it "prohíbe a un mecánico consultar el margen" do
       get "/configuracion_taller", headers: auth_headers(mecanico)
 
-      expect(response).to have_http_status(:ok)
+      expect(response).to have_http_status(:forbidden)
+      expect(response.body).to be_empty
     end
 
     it "exige autenticación" do

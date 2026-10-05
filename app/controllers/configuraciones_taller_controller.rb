@@ -1,5 +1,5 @@
 class ConfiguracionesTallerController < ApplicationController
-  before_action :require_administrador!, only: :update
+  before_action :require_administrador!
 
   def show
     render json: serialize(ConfiguracionTaller.actual)

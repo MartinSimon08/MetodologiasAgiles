@@ -1,7 +1,7 @@
 class TareasFrecuentesController < ApplicationController
   include Paginable
 
-  before_action :require_administrador!, only: :create
+  before_action :require_administrador!
 
   def index
     tareas_frecuentes, meta = paginar(TareaFrecuente.order(:descripcion, :id))

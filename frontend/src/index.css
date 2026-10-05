@@ -500,6 +500,33 @@ button.secundario.peligro {
   color: var(--mecanico);
 }
 
+.insignia-cancelada {
+  color: var(--error);
+}
+
+.filtro-estado {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-weight: 500;
+  max-width: 16rem;
+}
+
+.orden-cancelada {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  border-color: var(--error);
+}
+
+.orden-cancelada strong {
+  color: var(--error);
+}
+
+.cancelar-orden p {
+  margin: 0;
+}
+
 .volver {
   color: var(--acento);
   text-decoration: none;

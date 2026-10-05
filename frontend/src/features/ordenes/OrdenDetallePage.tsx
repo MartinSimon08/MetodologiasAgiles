@@ -6,6 +6,7 @@ import { useAuth } from '../auth/AuthContext'
 import { RepuestosPanel } from '../repuestos/RepuestosPanel'
 import { TareasPanel } from '../tareas/TareasPanel'
 import { obtenerOrden } from './api'
+import { CancelarOrden } from './CancelarOrden'
 import { describirVehiculo, ESTADO_ORDEN_LABELS } from './types'
 
 export function OrdenDetallePage() {
@@ -43,6 +44,8 @@ export function OrdenDetallePage() {
               {ESTADO_ORDEN_LABELS[orden.data.estado]}
             </span>
           </header>
+
+          <CancelarOrden orden={orden.data} />
 
           <section className="tarjeta motivo-orden">
             <h2>Motivo de ingreso</h2>

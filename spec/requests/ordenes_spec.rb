@@ -16,6 +16,16 @@ RSpec.describe "Ordenes", type: :request do
       expect(nombres).to contain_exactly("Carla Gómez", "Bruno Díaz")
     end
 
+    it "le devuelve las órdenes sin costos ni márgenes al mecánico" do
+      create(:orden)
+
+      get "/ordenes", headers: auth_headers(mecanico)
+
+      expect(response.parsed_body["ordenes"].first.keys).to contain_exactly(
+        "id", "motivo", "estado", "created_at", "cliente", "vehiculo"
+      )
+    end
+
     it "exige autenticación" do
       get "/ordenes"
 
@@ -37,6 +47,16 @@ RSpec.describe "Ordenes", type: :request do
       expect(response.parsed_body["vehiculo"]).to eq(
         "id" => vehiculo.id, "patente" => "ABC123", "marca" => "Fiat", "modelo" => "Cronos", "anio" => 2021
       )
+    end
+
+    it "le devuelve la orden sin costos ni márgenes al mecánico" do
+      orden = create(:orden)
+      create(:tarea, orden: orden, precio: 15_000)
+
+      get "/ordenes/#{orden.id}", headers: auth_headers(mecanico)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body.keys).to contain_exactly("id", "motivo", "estado", "created_at", "cliente", "vehiculo")
     end
 
     it "devuelve 404 si la orden no existe" do

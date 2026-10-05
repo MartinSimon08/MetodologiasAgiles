@@ -50,6 +50,15 @@ RSpec.describe "Tareas", type: :request do
       expect(response.parsed_body["errors"]).to have_key("orden")
     end
 
+    it "rechaza crear tareas en una orden cancelada" do
+      orden.update!(estado: :cancelada, cancelada_en: Time.current)
+
+      post "/ordenes/#{orden.id}/tareas", params: params, headers: auth_headers(admin), as: :json
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body["errors"]["orden"]).to include("Orden está cancelada")
+    end
+
     it "prohíbe a un mecánico crear tareas" do
       post "/ordenes/#{orden.id}/tareas", params: params, headers: auth_headers(mecanico), as: :json
 
@@ -128,6 +137,16 @@ RSpec.describe "Tareas", type: :request do
       patch "/tareas/#{tarea.id}/tomar", headers: auth_headers(mecanico)
 
       expect(response).to have_http_status(:unprocessable_content)
+    end
+
+    it "rechaza tomar una tarea de una orden cancelada" do
+      orden.update!(estado: :cancelada, cancelada_en: Time.current)
+
+      patch "/tareas/#{tarea.id}/tomar", headers: auth_headers(mecanico)
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body["errors"]["orden"]).to include("Orden está cancelada")
+      expect(tarea.reload).to be_pendiente
     end
 
     it "prohíbe a un administrador tomar tareas" do

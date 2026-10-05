@@ -11,6 +11,6 @@ class Tarea < ApplicationRecord
   private
 
   def orden_abierta
-    errors.add(:orden, :cerrada) if orden&.cerrada?
+    errors.add(:orden, orden.estado.to_sym) if orden && !orden.abierta?
   end
 end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_04_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_05_130000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "unaccent"
@@ -41,9 +41,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_04_120000) do
     t.text "motivo", null: false
     t.datetime "updated_at", null: false
     t.bigint "vehiculo_id", null: false
+    t.datetime "cancelada_en"
     t.index ["cliente_id"], name: "index_ordenes_on_cliente_id"
     t.index ["vehiculo_id"], name: "index_ordenes_on_vehiculo_id"
     t.index ["vehiculo_id"], name: "index_ordenes_on_vehiculo_id_abierta", unique: true, where: "((estado)::text = 'abierta'::text)"
+    t.check_constraint "(estado::text = 'cancelada'::text) = (cancelada_en IS NOT NULL)", name: "ordenes_cancelada_en_consistente"
   end
 
   create_table "repuestos", force: :cascade do |t|

@@ -44,10 +44,30 @@ artículo del catálogo. Una orden cerrada no admite compras. Este ticket incorp
 la carga necesaria para utilizar el catálogo, alineada con los campos de HU03
 (#20); no agrega edición o eliminación de compras.
 
+## Aviso del mecánico y valorización (HU14)
+
+Un mecánico sin acceso al catálogo ni a los costos puede avisar, desde el detalle
+de una orden abierta, que usó un repuesto. Solo carga **descripción** y
+**cantidad**; no envía costo, margen ni precio. La compra queda con estado
+`pendiente_de_valorizar` y sin costo, margen ni precio al cliente.
+
+Administración ve estas compras marcadas como "pendiente de valorizar" en el
+listado de la orden y completa el costo real (y opcionalmente el margen, que si
+se omite usa el configurado en el taller) desde **Cargar costo**. Al guardarlo, la
+compra pasa a estado `valorizado` y se calcula el precio al cliente con la misma
+fórmula que una compra directa. Un repuesto ya valorizado no se puede volver a
+valorizar, y no se puede valorizar en una orden cerrada.
+
+Una orden con compras pendientes de valorizar no se puede cerrar: la validación
+vive en el modelo `Orden`, de modo que cualquier camino que intente cerrarla
+(incluido un futuro flujo de cierre y cobro) queda bloqueado mientras existan
+compras sin costo cargado.
+
 ## API
 
-Todos estos endpoints requieren JWT de administrador. Los importes se devuelven
-como cadenas decimales. Un mecánico recibe 403; sin sesión se devuelve 401.
+Todos estos endpoints requieren JWT. Salvo donde se indica, son de administrador;
+un mecánico recibe 403 y sin sesión se devuelve 401. Los importes se devuelven
+como cadenas decimales.
 
 | Método y ruta | Uso |
 | --- | --- |
@@ -56,7 +76,8 @@ como cadenas decimales. Un mecánico recibe 403; sin sesión se devuelve 401.
 | `PATCH /repuestos_catalogo/:id` | Editar nombre y/o precio del catálogo |
 | `DELETE /repuestos_catalogo/:id` | Eliminar del catálogo conservando las líneas de las órdenes; devuelve 204 |
 | `GET /ordenes/:orden_id/repuestos?pagina=1` | Compras registradas en esa orden, con precio y ganancia |
-| `POST /ordenes/:orden_id/repuestos` | Registrar una compra en la orden |
+| `POST /ordenes/:orden_id/repuestos` | Administrador: registra una compra valorizada. Mecánico: avisa un repuesto pendiente de valorizar (solo `descripcion` y `cantidad`) |
+| `PATCH /ordenes/:orden_id/repuestos/:id/valorizar` | Administrador: carga el costo (y opcionalmente el margen) de un aviso pendiente |
 
 Los listados aceptan `por_pagina` (20 por defecto, máximo 100).
 
@@ -91,6 +112,28 @@ y 100. Los nombres del catálogo son únicos y tienen hasta 200 caracteres; su p
 es no negativo y menor que 10000000000. Los errores de validación devuelven 422 con
 mensajes por campo.
 
+Ejemplo de aviso de un mecánico:
+
+```json
+{
+  "repuesto": {
+    "descripcion": "Filtro de aceite",
+    "cantidad": 2
+  }
+}
+```
+
+Ejemplo de valorización de ese aviso por administración:
+
+```json
+{
+  "repuesto": {
+    "costo_unitario": "12500.50",
+    "margen": "25"
+  }
+}
+```
+
 ## Migración y verificación
 
 Aplicar `bin/rails db:migrate`. La nueva migración conserva los artículos existentes
@@ -109,6 +152,12 @@ API deben usar el nuevo campo `precio` del catálogo.
 9. Eliminar el artículo desde **Repuestos**: cancelar conserva el artículo;
    confirmar lo quita del catálogo y de las sugerencias, conservando las compras
    anteriores. Un mecánico no puede eliminar artículos.
+10. Como mecánico, entrar a una orden abierta y avisar un repuesto con
+    descripción y cantidad: queda "pendiente de valorizar", sin costo.
+11. Como administrador, cargar el costo de ese aviso desde **Cargar costo**: pasa
+    a valorizado y muestra precio al cliente y ganancia.
+12. Confirmar que no se puede cerrar la orden mientras tenga avisos pendientes
+    de valorizar.
 
 Pruebas automatizadas:
 
@@ -118,7 +167,9 @@ incluso con `RAILS_ENV=test`: apuntarla siempre a una base exclusiva para prueba
 La demo local usa `metodologias_hu18_demo`; las pruebas, `metodologias_hu18_test`.
 
 ```sh
-bundle exec rspec spec/services/repuesto_agregar_spec.rb spec/requests/repuestos_spec.rb spec/requests/repuestos_catalogo_spec.rb
+bundle exec rspec spec/services/repuesto_agregar_spec.rb spec/services/repuesto_avisar_spec.rb \
+  spec/services/repuesto_valorizar_spec.rb spec/requests/repuestos_spec.rb \
+  spec/requests/repuestos_catalogo_spec.rb spec/models/orden_spec.rb
 bin/rubocop
 cd frontend
 npm run build

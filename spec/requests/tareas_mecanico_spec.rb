@@ -27,6 +27,15 @@ RSpec.describe "Tareas del mecánico", type: :request do
       )
     end
 
+    it "no ofrece tareas de órdenes canceladas" do
+      create(:tarea, orden: orden)
+      orden.update!(estado: :cancelada, cancelada_en: Time.current)
+
+      get "/tareas_mecanico", headers: auth_headers(mecanico)
+
+      expect(response.parsed_body).to eq("mias" => [], "disponibles" => [])
+    end
+
     it "devuelve las tareas sin importes" do
       create(:tarea, :en_curso, orden: orden, mecanico: mecanico, precio: 15_000)
       create(:tarea, orden: orden, precio: 20_000)

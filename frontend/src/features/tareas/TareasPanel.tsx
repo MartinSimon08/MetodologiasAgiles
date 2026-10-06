@@ -112,7 +112,7 @@ export function TareasPanel({ ordenId, ordenAbierta }: Props) {
               <span className={`insignia insignia-${tarea.estado}`}>
                 {ESTADO_TAREA_LABELS[tarea.estado]}
               </span>
-              {esMecanico && tarea.estado === 'pendiente' && (
+              {esMecanico && ordenAbierta && tarea.estado === 'pendiente' && (
                 <button
                   className="secundario"
                   disabled={tomar.isPending}

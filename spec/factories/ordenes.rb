@@ -8,5 +8,10 @@ FactoryBot.define do
     trait :cerrada do
       estado { :cerrada }
     end
+
+    trait :cancelada do
+      estado { :cancelada }
+      cancelada_en { Time.current }
+    end
   end
 end

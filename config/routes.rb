@@ -38,5 +38,9 @@ Rails.application.routes.draw do
         patch :liberar
       end
     end
+
+    member do
+      patch :cancelar
+    end
   end
 end

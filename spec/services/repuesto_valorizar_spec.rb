@@ -32,6 +32,16 @@ RSpec.describe RepuestoValorizar do
       .to raise_error(ActiveRecord::RecordInvalid) { |error| expect(error.record.errors).to have_key(:estado) }
   end
 
+  it "rechaza valorizar un repuesto ya valorizado por otra instancia, como pasaría con dos requests concurrentes" do
+    copia_de_otro_request = Repuesto.find(repuesto.id)
+
+    described_class.call(repuesto: repuesto, costo_unitario: "100")
+
+    expect { described_class.call(repuesto: copia_de_otro_request, costo_unitario: "120") }
+      .to raise_error(ActiveRecord::RecordInvalid) { |error| expect(error.record.errors).to have_key(:estado) }
+    expect(repuesto.reload).to have_attributes(costo_unitario: BigDecimal("100"))
+  end
+
   it "rechaza valorizar en una orden cerrada" do
     pendiente = repuesto
     orden.update_column(:estado, "cerrada")

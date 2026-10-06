@@ -1,6 +1,7 @@
 class RepuestoValorizar
   def self.call(repuesto:, costo_unitario: nil, margen: nil)
     repuesto.orden.with_lock do
+      repuesto.lock!
       repuesto.errors.add(:estado, :ya_valorizado) if repuesto.valorizado?
       repuesto.errors.add(:orden, "está cerrada") unless repuesto.orden.abierta?
       raise ActiveRecord::RecordInvalid, repuesto if repuesto.errors.any?

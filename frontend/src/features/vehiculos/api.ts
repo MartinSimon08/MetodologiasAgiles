@@ -33,8 +33,14 @@ export interface VerificacionPatente {
 
 export const normalizarPatente = (patente: string) => patente.toUpperCase().replace(/[\s\-.]/g, '')
 
-export async function listarVehiculos(pagina: number, q = '') {
-  const { data } = await api.get<PaginaVehiculos>('/vehiculos', { params: { pagina, q: q || undefined } })
+export async function listarVehiculos(pagina: number, q = '', porPagina?: number) {
+  const { data } = await api.get<PaginaVehiculos>('/vehiculos', {
+    params: {
+      pagina,
+      ...(q ? { q } : {}),
+      ...(porPagina ? { por_pagina: porPagina } : {}),
+    },
+  })
   return data
 }
 

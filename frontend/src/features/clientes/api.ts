@@ -19,8 +19,14 @@ export interface PaginaClientes {
   meta: MetaPaginacion
 }
 
-export async function listarClientes(pagina: number, q = '') {
-  const { data } = await api.get<PaginaClientes>('/clientes', { params: { pagina, q: q || undefined } })
+export async function listarClientes(pagina: number, q = '', porPagina?: number) {
+  const { data } = await api.get<PaginaClientes>('/clientes', {
+    params: {
+      pagina,
+      ...(q ? { q } : {}),
+      ...(porPagina ? { por_pagina: porPagina } : {}),
+    },
+  })
   return data
 }
 

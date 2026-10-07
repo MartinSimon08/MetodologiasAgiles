@@ -610,10 +610,6 @@ button.secundario.peligro {
   gap: 0.6rem;
 }
 
-.nueva-orden .selector-vehiculo {
-  gap: 1rem;
-}
-
 .nueva-orden .acciones {
   margin-top: 0.25rem;
   padding-top: 1.1rem;
@@ -647,6 +643,82 @@ button.secundario.peligro {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+}
+
+.selector-cliente small,
+.selector-vehiculo small {
+  font-weight: 400;
+  color: var(--texto-suave);
+}
+
+.sugerencias-bloque {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.sugerencias {
+  list-style: none;
+  margin: 0;
+  padding: 0.25rem;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--superficie);
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.sugerencias button {
+  width: 100%;
+  background: transparent;
+  color: var(--texto);
+  border: 0;
+  text-align: left;
+  padding: 0.4rem 0.7rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0;
+  font-weight: 600;
+}
+
+.sugerencias button small {
+  font-weight: 400;
+  color: var(--texto-suave);
+}
+
+.sugerencias button[aria-selected='true'] {
+  background: color-mix(in srgb, var(--acento) 14%, var(--superficie));
+}
+
+@media (hover: hover) {
+  .sugerencias button:hover {
+    background: color-mix(in srgb, var(--acento) 14%, var(--superficie));
+  }
+}
+
+.sugerencias-estado,
+.sugerencias-aviso {
+  margin: 0;
+}
+
+.seleccion-actual {
+  margin: 0;
+  padding: 0.65rem 0.8rem;
+  border-radius: var(--radio);
+  background: var(--ok-fondo);
+  color: var(--ok-texto);
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.seleccion-actual span,
+.seleccion-actual small {
+  font-weight: 400;
+  color: var(--ok-texto);
 }
 
 .campos-vehiculo {

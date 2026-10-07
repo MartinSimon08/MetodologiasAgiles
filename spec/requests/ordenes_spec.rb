@@ -64,6 +64,52 @@ RSpec.describe "Ordenes", type: :request do
     end
   end
 
+  describe "GET /ordenes/:id/adelantos" do
+    it "lista los adelantos y el saldo de la orden" do
+      orden = create(:orden)
+      create(:tarea, orden: orden, precio: 5_000)
+      create(:adelanto, orden: orden, importe: "2_000.00")
+      create(:adelanto, orden: orden, importe: "1_000.00")
+
+      get "/ordenes/#{orden.id}/adelantos", headers: auth_headers(administrador)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body["adelantos"]).to contain_exactly(
+        a_hash_including("importe" => "2.0"),
+        a_hash_including("importe" => "1.0")
+      )
+      expect(response.parsed_body["saldo"]).to eq("2.0")
+    end
+  end
+
+  describe "POST /ordenes/:id/adelantos" do
+    let(:orden) { create(:orden) }
+
+    it "crea un adelanto asociado a una orden abierta" do
+      expect {
+        post "/ordenes/#{orden.id}/adelantos", params: { adelanto: { importe: "1500.50" } }, headers: auth_headers(administrador)
+      }.to change(Adelanto, :count).by(1)
+
+      expect(response).to have_http_status(:created)
+      expect(response.parsed_body).to include("orden_id" => orden.id, "importe" => "1500.5")
+    end
+
+    it "rechaza un adelanto para una orden cerrada" do
+      orden.update!(estado: :cerrada)
+
+      post "/ordenes/#{orden.id}/adelantos", params: { adelanto: { importe: "1500.50" } }, headers: auth_headers(administrador)
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body["errors"]["orden"]).to include("debe estar abierta")
+    end
+
+    it "prohíbe registrar adelantos a un mecánico" do
+      post "/ordenes/#{orden.id}/adelantos", params: { adelanto: { importe: "1500.50" } }, headers: auth_headers(mecanico)
+
+      expect(response).to have_http_status(:forbidden)
+    end
+  end
+
   describe "GET /ordenes/:id" do
     it "devuelve los datos de la orden" do
       cliente = create(:cliente, nombre: "Carla Gómez")

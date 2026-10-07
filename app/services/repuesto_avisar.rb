@@ -7,7 +7,7 @@ class RepuestoAvisar
       )
 
       repuesto.valid?
-      repuesto.errors.add(:orden, "está cerrada") unless orden.abierta?
+      repuesto.errors.add(:orden, orden.estado.to_sym) unless orden.abierta?
       raise ActiveRecord::RecordInvalid, repuesto if repuesto.errors.any?
 
       repuesto.save!

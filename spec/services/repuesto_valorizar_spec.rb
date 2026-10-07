@@ -47,7 +47,20 @@ RSpec.describe RepuestoValorizar do
     orden.update_column(:estado, "cerrada")
 
     expect { described_class.call(repuesto: pendiente, costo_unitario: "100") }
-      .to raise_error(ActiveRecord::RecordInvalid) { |error| expect(error.record.errors).to have_key(:orden) }
+      .to raise_error(ActiveRecord::RecordInvalid) { |error|
+        expect(error.record.errors[:orden]).to include("está cerrada")
+      }
+    expect(pendiente.reload).to be_pendiente_de_valorizar
+  end
+
+  it "rechaza valorizar en una orden cancelada" do
+    pendiente = repuesto
+    orden.update!(estado: :cancelada, cancelada_en: Time.current)
+
+    expect { described_class.call(repuesto: pendiente, costo_unitario: "100") }
+      .to raise_error(ActiveRecord::RecordInvalid) { |error|
+        expect(error.record.errors[:orden]).to include("está cancelada")
+      }
     expect(pendiente.reload).to be_pendiente_de_valorizar
   end
 

@@ -30,6 +30,26 @@ RSpec.describe TareaTomar do
       .to raise_error(ActiveRecord::RecordInvalid)
   end
 
+  it "rechaza tomar una tarea de una orden cancelada" do
+    tarea.orden.update!(estado: :cancelada, cancelada_en: Time.current)
+
+    expect { described_class.call(tarea: tarea, mecanico: mecanico) }
+      .to raise_error(ActiveRecord::RecordInvalid) { |error|
+        expect(error.record.errors[:orden]).to include("está cancelada")
+      }
+    expect(tarea.reload).to be_pendiente
+  end
+
+  it "rechaza tomar una tarea de una orden cerrada" do
+    tarea.orden.update!(estado: :cerrada)
+
+    expect { described_class.call(tarea: tarea, mecanico: mecanico) }
+      .to raise_error(ActiveRecord::RecordInvalid) { |error|
+        expect(error.record.errors[:orden]).to include("está cerrada")
+      }
+    expect(tarea.reload).to be_pendiente
+  end
+
   context "con dos conexiones reales a la base" do
     self.use_transactional_tests = false
 

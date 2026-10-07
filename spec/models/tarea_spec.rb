@@ -36,4 +36,11 @@ RSpec.describe Tarea, type: :model do
     expect(tarea).not_to be_valid
     expect(tarea.errors[:orden]).to be_present
   end
+
+  it "no puede crearse sobre una orden cancelada" do
+    tarea = build(:tarea, orden: create(:orden, :cancelada))
+
+    expect(tarea).not_to be_valid
+    expect(tarea.errors[:orden]).to include("está cancelada")
+  end
 end

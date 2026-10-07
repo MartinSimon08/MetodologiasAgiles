@@ -7,7 +7,9 @@ import { fechaHora } from '../../lib/formato'
 import { useAuth } from '../auth/AuthContext'
 import { listarOrdenes } from './api'
 import { NuevaOrdenForm } from './NuevaOrdenForm'
-import { describirVehiculo, ESTADO_ORDEN_LABELS } from './types'
+import { describirVehiculo, ESTADO_ORDEN_LABELS, type EstadoOrden } from './types'
+
+const ESTADOS = Object.keys(ESTADO_ORDEN_LABELS) as EstadoOrden[]
 
 export function OrdenesPage() {
   const { usuario } = useAuth()
@@ -15,15 +17,23 @@ export function OrdenesPage() {
   const [abriendo, setAbriendo] = useState(false)
   const [searchParams, setSearchParams] = useSearchParams()
   const pagina = Math.max(1, Number(searchParams.get('pagina')) || 1)
+  const estado = ESTADOS.find((valor) => valor === searchParams.get('estado'))
 
   const ordenes = useQuery({
-    queryKey: ['ordenes', pagina],
-    queryFn: () => listarOrdenes(pagina),
+    queryKey: ['ordenes', pagina, estado ?? 'todas'],
+    queryFn: () => listarOrdenes(pagina, estado),
     placeholderData: keepPreviousData,
   })
 
+  function navegar(nuevaPagina: number, nuevoEstado: EstadoOrden | undefined) {
+    setSearchParams({
+      ...(nuevoEstado ? { estado: nuevoEstado } : {}),
+      ...(nuevaPagina === 1 ? {} : { pagina: String(nuevaPagina) }),
+    })
+  }
+
   function irAPagina(nueva: number) {
-    setSearchParams(nueva === 1 ? {} : { pagina: String(nueva) })
+    navegar(nueva, estado)
     window.scrollTo({ top: 0 })
   }
 
@@ -43,6 +53,21 @@ export function OrdenesPage() {
         />
       )}
 
+      <label className="filtro-estado">
+        <span>Estado</span>
+        <select
+          value={estado ?? ''}
+          onChange={(e) => navegar(1, ESTADOS.find((valor) => valor === e.target.value))}
+        >
+          <option value="">Todas</option>
+          {ESTADOS.map((valor) => (
+            <option key={valor} value={valor}>
+              {ESTADO_ORDEN_LABELS[valor]}
+            </option>
+          ))}
+        </select>
+      </label>
+
       {ordenes.isPending && <p className="estado">Cargando órdenes…</p>}
       {ordenes.isError && (
         <p className="error" role="alert">
@@ -51,7 +76,7 @@ export function OrdenesPage() {
       )}
 
       {ordenes.data && ordenes.data.ordenes.length === 0 && (
-        <p className="estado">Todavía no hay órdenes cargadas.</p>
+        <p className="estado">{estado ? 'No hay órdenes en ese estado.' : 'Todavía no hay órdenes cargadas.'}</p>
       )}
 
       {ordenes.data && (

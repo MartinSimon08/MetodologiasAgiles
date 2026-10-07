@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Paginacion } from '../../components/Paginacion'
 import { errorMessage } from '../../lib/api'
-import { importe } from '../../lib/formato'
+import { fechaHora, importe } from '../../lib/formato'
 import { useAuth } from '../auth/AuthContext'
 import { AvisoRepuestoForm } from './AvisoRepuestoForm'
 import { listarRepuestos, ESTADO_REPUESTO_LABELS, type Repuesto } from './api'
@@ -53,13 +53,14 @@ export function RepuestosPanel({ ordenId, ordenAbierta }: { ordenId: number; ord
         }}>Agregar repuesto</button>}
       </header>
       {aviso && <p className="aviso" role="status">Repuesto agregado a la orden.</p>}
-      {creando && ordenAbierta && <NuevoRepuestoForm ordenId={ordenId} onCancelar={() => setCreando(false)}
+      {creando && ordenAbierta && <NuevoRepuestoForm ordenId={ordenId}
+        onCancelar={() => setCreando(false)}
         onGuardado={() => {
           setCreando(false)
           setPagina(1)
           setAviso(true)
         }} />}
-      {valorizando && <ValorizarRepuestoForm ordenId={ordenId} repuesto={valorizando}
+      {valorizando && <ValorizarRepuestoForm key={valorizando.id} ordenId={ordenId} repuesto={valorizando}
         onCancelar={() => setValorizando(null)} onGuardado={() => setValorizando(null)} />}
       {repuestos.isPending && <p className="estado">Cargando repuestos…</p>}
       {repuestos.isError && <p className="error" role="alert">
@@ -76,12 +77,15 @@ export function RepuestosPanel({ ordenId, ordenAbierta }: { ordenId: number; ord
                   {ESTADO_REPUESTO_LABELS[repuesto.estado]}
                 </span>
                 <span>Cantidad: {repuesto.cantidad}</span>
+                <span>Avisado por {repuesto.registrado_por.nombre} · {fechaHora(repuesto.created_at)}</span>
                 {ordenAbierta && <button className="secundario" onClick={() => setValorizando(repuesto)}>Cargar costo</button>}
               </>
             ) : (
               <>
                 <span>{repuesto.cantidad} × $ {importe(repuesto.costo_unitario!)} · Margen: {importe(repuesto.margen!)}%</span>
+                {repuesto.proveedor && <span>Proveedor: {repuesto.proveedor}</span>}
                 <span>Precio al cliente: $ {importe(repuesto.precio_cliente!)} · Ganancia: $ {importe(repuesto.ganancia!)}</span>
+                <span>Cargado por {repuesto.registrado_por.nombre} · {fechaHora(repuesto.created_at)}</span>
               </>
             )}
           </li>)}

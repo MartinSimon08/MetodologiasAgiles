@@ -85,6 +85,30 @@ RSpec.describe Orden, type: :model do
     expect { orden.save(validate: false) }.to raise_error(ActiveRecord::RecordNotUnique)
   end
 
+  it "exige la fecha de cancelación en una orden cancelada" do
+    orden = build(:orden, :cancelada, cancelada_en: nil)
+
+    expect(orden).not_to be_valid
+    expect(orden.errors[:cancelada_en]).to include("no puede estar en blanco")
+  end
+
+  it "rechaza una fecha de cancelación en una orden que no está cancelada" do
+    expect(build(:orden, cancelada_en: Time.current)).not_to be_valid
+    expect(build(:orden, :cerrada, cancelada_en: Time.current)).not_to be_valid
+  end
+
+  it "la base rechaza una orden cancelada sin fecha aunque se saltee la validación" do
+    orden = create(:orden)
+
+    expect { orden.update_columns(estado: "cancelada") }.to raise_error(ActiveRecord::StatementInvalid)
+  end
+
+  it "permite abrir otra orden si la anterior del vehículo está cancelada" do
+    cancelada = create(:orden, :cancelada)
+
+    expect(build(:orden, vehiculo: cancelada.vehiculo)).to be_valid
+  end
+
   it "no permite eliminarla si tiene tareas" do
     orden = create(:orden)
     create(:tarea, orden: orden)

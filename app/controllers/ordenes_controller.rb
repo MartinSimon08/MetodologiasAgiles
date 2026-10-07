@@ -1,10 +1,12 @@
 class OrdenesController < ApplicationController
   include Paginable
 
-  before_action :require_administrador!, only: :create
+  before_action :require_administrador!, only: %i[create cancelar]
 
   def index
-    ordenes, meta = paginar(Orden.includes(:cliente, :vehiculo).order(created_at: :desc, id: :desc))
+    ordenes = Orden.includes(:cliente, :vehiculo).order(created_at: :desc, id: :desc)
+    ordenes = ordenes.where(estado: params[:estado]) if Orden.estados.key?(params[:estado])
+    ordenes, meta = paginar(ordenes)
     render json: { ordenes: ordenes.map { |orden| serialize(orden) }, meta: meta }
   end
 
@@ -17,6 +19,13 @@ class OrdenesController < ApplicationController
     render json: serialize(orden), status: :created
   end
 
+  def cancelar
+    resultado = OrdenCancelar.call(orden: Orden.find(params[:id]))
+    render json: serialize(resultado.orden).merge(
+      tareas_liberadas: resultado.tareas_liberadas.map { |tarea| tarea.as_json(only: %i[id descripcion]) }
+    )
+  end
+
   private
 
   def orden_params
@@ -24,7 +33,7 @@ class OrdenesController < ApplicationController
   end
 
   def serialize(orden)
-    datos = orden.as_json(only: %i[id motivo estado created_at])
+    datos = orden.as_json(only: %i[id motivo estado created_at cancelada_en])
     datos[:cliente] = orden.cliente.as_json(only: %i[id nombre telefono email])
     datos[:vehiculo] = orden.vehiculo.as_json(only: %i[id patente marca modelo anio])
     datos

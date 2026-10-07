@@ -20,7 +20,18 @@ RSpec.describe RepuestoAvisar do
   it "rechaza avisos en órdenes cerradas" do
     orden.update!(estado: :cerrada)
 
-    expect { avisar }.to raise_error(ActiveRecord::RecordInvalid) { |error| expect(error.record.errors).to have_key(:orden) }
+    expect { avisar }.to raise_error(ActiveRecord::RecordInvalid) { |error|
+      expect(error.record.errors[:orden]).to include("está cerrada")
+    }
+    expect(Repuesto.count).to eq(0)
+  end
+
+  it "rechaza avisos en órdenes canceladas" do
+    orden.update!(estado: :cancelada, cancelada_en: Time.current)
+
+    expect { avisar }.to raise_error(ActiveRecord::RecordInvalid) { |error|
+      expect(error.record.errors[:orden]).to include("está cancelada")
+    }
     expect(Repuesto.count).to eq(0)
   end
 

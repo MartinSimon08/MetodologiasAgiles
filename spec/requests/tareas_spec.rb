@@ -50,6 +50,15 @@ RSpec.describe "Tareas", type: :request do
       expect(response.parsed_body["errors"]).to have_key("orden")
     end
 
+    it "rechaza crear tareas en una orden cancelada" do
+      orden.update!(estado: :cancelada, cancelada_en: Time.current)
+
+      post "/ordenes/#{orden.id}/tareas", params: params, headers: auth_headers(admin), as: :json
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body["errors"]["orden"]).to include("Orden está cancelada")
+    end
+
     it "prohíbe a un mecánico crear tareas" do
       post "/ordenes/#{orden.id}/tareas", params: params, headers: auth_headers(mecanico), as: :json
 
@@ -88,6 +97,25 @@ RSpec.describe "Tareas", type: :request do
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body["tareas"].pluck("descripcion")).to eq([ "Cambiar aceite" ])
     end
+
+    it "le muestra el precio de cada tarea al administrador" do
+      create(:tarea, orden: orden, precio: 15_000)
+
+      get "/ordenes/#{orden.id}/tareas", headers: auth_headers(admin)
+
+      expect(response.parsed_body["tareas"].first["precio"]).to eq(15_000.0)
+    end
+
+    it "le devuelve las tareas sin importes al mecánico" do
+      create(:tarea, :en_curso, orden: orden, mecanico: mecanico, precio: 15_000)
+
+      get "/ordenes/#{orden.id}/tareas", headers: auth_headers(mecanico)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body["tareas"].first.keys).to contain_exactly(
+        "id", "orden_id", "descripcion", "estado", "mecanico_id", "mecanico", "tomada_en", "terminada_en", "created_at"
+      )
+    end
   end
 
   describe "PATCH /tareas/:id/tomar" do
@@ -111,10 +139,29 @@ RSpec.describe "Tareas", type: :request do
       expect(response).to have_http_status(:unprocessable_content)
     end
 
+    it "rechaza tomar una tarea de una orden cancelada" do
+      orden.update!(estado: :cancelada, cancelada_en: Time.current)
+
+      patch "/tareas/#{tarea.id}/tomar", headers: auth_headers(mecanico)
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body["errors"]["orden"]).to include("Orden está cancelada")
+      expect(tarea.reload).to be_pendiente
+    end
+
     it "prohíbe a un administrador tomar tareas" do
       patch "/tareas/#{tarea.id}/tomar", headers: auth_headers(admin)
 
       expect(response).to have_http_status(:forbidden)
+    end
+
+    it "no le devuelve el precio de la tarea al mecánico" do
+      tarea.update!(precio: 15_000)
+
+      patch "/tareas/#{tarea.id}/tomar", headers: auth_headers(mecanico)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body).not_to have_key("precio")
     end
   end
 
@@ -136,6 +183,31 @@ RSpec.describe "Tareas", type: :request do
       expect(response).to have_http_status(:forbidden)
       expect(tarea.reload).to be_en_curso
     end
+
+    it "prohíbe completar una tarea que nadie tomó" do
+      pendiente = create(:tarea, orden: orden)
+
+      patch "/tareas/#{pendiente.id}/completar", headers: auth_headers(mecanico)
+
+      expect(response).to have_http_status(:forbidden)
+      expect(pendiente.reload).to be_pendiente
+    end
+
+    it "prohíbe a un administrador completarla" do
+      patch "/tareas/#{tarea.id}/completar", headers: auth_headers(admin)
+
+      expect(response).to have_http_status(:forbidden)
+      expect(tarea.reload).to be_en_curso
+    end
+
+    it "no le devuelve el precio de la tarea al mecánico" do
+      tarea.update!(precio: 15_000)
+
+      patch "/tareas/#{tarea.id}/completar", headers: auth_headers(mecanico)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body).not_to have_key("precio")
+    end
   end
 
   describe "PATCH /tareas/:id/liberar" do
@@ -155,6 +227,31 @@ RSpec.describe "Tareas", type: :request do
 
       expect(response).to have_http_status(:forbidden)
       expect(tarea.reload).to be_en_curso
+      expect(tarea.mecanico).to eq(mecanico)
+    end
+
+    it "prohíbe liberar una tarea que nadie tomó" do
+      pendiente = create(:tarea, orden: orden)
+
+      patch "/tareas/#{pendiente.id}/liberar", headers: auth_headers(mecanico)
+
+      expect(response).to have_http_status(:forbidden)
+    end
+
+    it "prohíbe a un administrador liberarla" do
+      patch "/tareas/#{tarea.id}/liberar", headers: auth_headers(admin)
+
+      expect(response).to have_http_status(:forbidden)
+      expect(tarea.reload.mecanico).to eq(mecanico)
+    end
+
+    it "no le devuelve el precio de la tarea al mecánico" do
+      tarea.update!(precio: 15_000)
+
+      patch "/tareas/#{tarea.id}/liberar", headers: auth_headers(mecanico)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body).not_to have_key("precio")
     end
   end
 end

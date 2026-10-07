@@ -3,7 +3,7 @@ class RepuestoValorizar
     repuesto.orden.with_lock do
       repuesto.lock!
       repuesto.errors.add(:estado, :ya_valorizado) if repuesto.valorizado?
-      repuesto.errors.add(:orden, "está cerrada") unless repuesto.orden.abierta?
+      repuesto.errors.add(:orden, repuesto.orden.estado.to_sym) unless repuesto.orden.abierta?
       raise ActiveRecord::RecordInvalid, repuesto if repuesto.errors.any?
 
       repuesto.assign_attributes(

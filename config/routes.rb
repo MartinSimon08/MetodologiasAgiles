@@ -34,6 +34,9 @@ Rails.application.routes.draw do
       member do
         patch :valorizar
       end
+      collection do
+        post :vista_previa
+      end
     end
     resources :tareas, only: %i[index create], shallow: true do
       member do
@@ -41,6 +44,10 @@ Rails.application.routes.draw do
         patch :completar
         patch :liberar
       end
+    end
+
+    member do
+      patch :cancelar
     end
   end
 end

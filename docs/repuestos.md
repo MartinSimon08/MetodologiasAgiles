@@ -157,7 +157,9 @@ API deben usar el nuevo campo `precio` del catálogo.
 11. Como administrador, cargar el costo de ese aviso desde **Cargar costo**: pasa
     a valorizado y muestra precio al cliente y ganancia.
 12. Confirmar que no se puede cerrar la orden mientras tenga avisos pendientes
-    de valorizar.
+    de valorizar. Todavía no hay endpoint ni pantalla para cerrar una orden, así
+    que este paso se verifica con los tests de `spec/models/orden_spec.rb`, no
+    a mano.
 
 Pruebas automatizadas:
 

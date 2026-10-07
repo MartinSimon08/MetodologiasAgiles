@@ -504,7 +504,8 @@ button.secundario.peligro {
 }
 
 .insignia-abierta,
-.insignia-pendiente {
+.insignia-pendiente,
+.insignia-pendiente_de_valorizar {
   color: var(--acento);
 }
 

@@ -2,7 +2,6 @@ import { useQuery } from '@tanstack/react-query'
 import { Link, useParams } from 'react-router-dom'
 import { errorMessage } from '../../lib/api'
 import { fechaHora } from '../../lib/formato'
-import { useAuth } from '../auth/AuthContext'
 import { RepuestosPanel } from '../repuestos/RepuestosPanel'
 import { TareasPanel } from '../tareas/TareasPanel'
 import { obtenerOrden } from './api'
@@ -10,7 +9,6 @@ import { CancelarOrden } from './CancelarOrden'
 import { describirVehiculo, ESTADO_ORDEN_LABELS } from './types'
 
 export function OrdenDetallePage() {
-  const { usuario } = useAuth()
   const { id } = useParams()
   const ordenId = Number(id)
 
@@ -53,9 +51,7 @@ export function OrdenDetallePage() {
           </section>
 
           <TareasPanel ordenId={ordenId} ordenAbierta={orden.data.estado === 'abierta'} />
-          {usuario?.rol === 'administrador' && (
-            <RepuestosPanel key={ordenId} ordenId={ordenId} ordenAbierta={orden.data.estado === 'abierta'} />
-          )}
+          <RepuestosPanel key={ordenId} ordenId={ordenId} ordenAbierta={orden.data.estado === 'abierta'} />
         </>
       )}
     </section>

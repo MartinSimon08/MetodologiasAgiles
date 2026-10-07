@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_05_130000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_07_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "unaccent"
@@ -50,12 +50,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_05_130000) do
 
   create_table "repuestos", force: :cascade do |t|
     t.integer "cantidad", null: false
-    t.decimal "costo_unitario", precision: 12, scale: 2, null: false
+    t.decimal "costo_unitario", precision: 12, scale: 2
     t.datetime "created_at", null: false
     t.string "descripcion", null: false
-    t.decimal "margen", precision: 5, scale: 2, null: false
+    t.string "estado", default: "valorizado", null: false
+    t.decimal "margen", precision: 5, scale: 2
     t.bigint "orden_id", null: false
-    t.decimal "precio_cliente", precision: 24, scale: 2, null: false
+    t.decimal "precio_cliente", precision: 24, scale: 2
     t.string "proveedor"
     t.bigint "registrado_por_id", null: false
     t.bigint "repuesto_catalogo_id"
@@ -65,6 +66,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_05_130000) do
     t.index ["repuesto_catalogo_id"], name: "index_repuestos_on_repuesto_catalogo_id"
     t.check_constraint "cantidad > 0", name: "repuestos_cantidad_positiva"
     t.check_constraint "costo_unitario >= 0::numeric", name: "repuestos_costo_no_negativo"
+    t.check_constraint "estado::text <> 'valorizado'::text OR costo_unitario IS NOT NULL AND margen IS NOT NULL AND precio_cliente IS NOT NULL", name: "repuestos_valorizado_completo"
     t.check_constraint "margen >= 0::numeric AND margen <= 100::numeric", name: "repuestos_margen_valido"
   end
 

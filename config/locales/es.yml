@@ -4,6 +4,7 @@ es:
       usuario: Usuario
       cliente: Cliente
       orden: Orden
+      adelanto: Adelanto
       tarea: Tarea
       repuesto: Repuesto
       repuesto_catalogo: Repuesto del catálogo
@@ -26,6 +27,10 @@ es:
         motivo: Motivo de ingreso
         estado: Estado
         cancelada_en: Fecha de cancelación
+      adelanto:
+        orden: Orden
+        importe: Importe
+        registrado_en: Fecha de registro
       tarea:
         orden: Orden
         mecanico: Mecánico
@@ -66,6 +71,12 @@ es:
             base:
               ya_desactivado: El usuario ya está desactivado
               ultimo_administrador: No se puede desactivar al último administrador activo
+        adelanto:
+          attributes:
+            orden:
+              must_be_open: debe estar abierta
+            importe:
+              mayor_que_monto_final: no puede ser mayor al monto final de la orden
         orden:
           attributes:
             vehiculo:

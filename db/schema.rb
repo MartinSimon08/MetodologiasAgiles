@@ -10,10 +10,22 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_07_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_07_130000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "unaccent"
+
+  create_table "adelantos", force: :cascade do |t|
+    t.bigint "orden_id", null: false
+    t.decimal "importe", precision: 12, scale: 2, null: false
+    t.datetime "registrado_en", null: false
+    t.bigint "registrado_por_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["orden_id"], name: "index_adelantos_on_orden_id"
+    t.index ["registrado_por_id"], name: "index_adelantos_on_registrado_por_id"
+    t.check_constraint "importe > 0::numeric", name: "adelantos_importe_positivo"
+  end
 
   create_table "clientes", force: :cascade do |t|
     t.datetime "created_at", null: false
@@ -127,6 +139,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_07_120000) do
     t.check_constraint "kilometraje >= 0", name: "vehiculos_kilometraje_no_negativo"
   end
 
+  add_foreign_key "adelantos", "ordenes"
+  add_foreign_key "adelantos", "usuarios", column: "registrado_por_id"
   add_foreign_key "ordenes", "clientes"
   add_foreign_key "ordenes", "vehiculos"
   add_foreign_key "repuestos", "ordenes"

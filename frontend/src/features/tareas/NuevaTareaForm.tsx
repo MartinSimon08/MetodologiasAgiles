@@ -29,6 +29,7 @@ export function NuevaTareaForm({ ordenId, onCreada, onCancelar }: Props) {
     mutationFn: () => crearTarea(ordenId, descripcion, precio),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tareas', ordenId] })
+      queryClient.invalidateQueries({ queryKey: ['adelantos', ordenId] })
       setDescripcion('')
       setPrecio('')
       setCatalogoId(SIN_CATALOGO)

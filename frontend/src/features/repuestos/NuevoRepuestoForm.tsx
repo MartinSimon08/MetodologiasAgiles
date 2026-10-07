@@ -28,6 +28,7 @@ export function NuevoRepuestoForm({ ordenId, onGuardado, onCancelar }: Props) {
     }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['repuestos', ordenId] })
+      queryClient.invalidateQueries({ queryKey: ['adelantos', ordenId] })
       onGuardado()
     },
   })

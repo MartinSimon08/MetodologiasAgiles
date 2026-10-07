@@ -19,6 +19,7 @@ export function ValorizarRepuestoForm({ ordenId, repuesto, onGuardado, onCancela
     mutationFn: () => valorizarRepuesto(ordenId, repuesto.id, { costo_unitario: costo, margen: margen || undefined }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['repuestos', ordenId] })
+      queryClient.invalidateQueries({ queryKey: ['adelantos', ordenId] })
       onGuardado()
     },
   })

@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Link, useParams } from 'react-router-dom'
 import { errorMessage } from '../../lib/api'
 import { fechaHora } from '../../lib/formato'
+import { AdelantosPanel } from '../adelantos/AdelantosPanel'
 import { RepuestosPanel } from '../repuestos/RepuestosPanel'
 import { TareasPanel } from '../tareas/TareasPanel'
 import { obtenerOrden } from './api'
@@ -52,6 +53,7 @@ export function OrdenDetallePage() {
 
           <TareasPanel ordenId={ordenId} ordenAbierta={orden.data.estado === 'abierta'} />
           <RepuestosPanel key={ordenId} ordenId={ordenId} ordenAbierta={orden.data.estado === 'abierta'} />
+          <AdelantosPanel ordenId={ordenId} ordenAbierta={orden.data.estado === 'abierta'} />
         </>
       )}
     </section>

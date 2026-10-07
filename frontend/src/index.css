@@ -195,6 +195,36 @@ button.accion-catalogo.eliminar:focus-visible {
   color: var(--ok-texto);
 }
 
+.resumen-saldo {
+  margin: 0;
+  padding: 0.75rem 0.9rem;
+  border-radius: var(--radio);
+  border: 1px solid var(--borde);
+  background: var(--superficie);
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.resumen-saldo strong {
+  font-size: 1.05rem;
+}
+
+.resumen-saldo span {
+  color: var(--texto-suave);
+}
+
+.adelantos .encabezado {
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 600px) {
+  .adelantos .encabezado button {
+    width: 100%;
+  }
+}
+
 .acciones {
   display: flex;
   gap: 0.5rem;
@@ -296,6 +326,7 @@ button.accion-catalogo.eliminar:focus-visible {
 .clientes,
 .vehiculos,
 .repuestos,
+.adelantos,
 .configuracion {
   display: flex;
   flex-direction: column;

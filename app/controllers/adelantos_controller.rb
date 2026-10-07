@@ -7,8 +7,11 @@ class AdelantosController < ApplicationController
   end
 
   def create
-    adelanto = @orden.adelantos.new(adelanto_params.merge(registrado_por: current_usuario, registrado_en: Time.current))
-    adelanto.save!
+    adelanto = nil
+    @orden.with_lock do
+      adelanto = @orden.adelantos.new(adelanto_params.merge(registrado_por: current_usuario, registrado_en: Time.current))
+      adelanto.save!
+    end
     render json: serialize_adelanto(adelanto), status: :created
   end
 

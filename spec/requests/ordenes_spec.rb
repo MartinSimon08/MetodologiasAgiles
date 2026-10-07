@@ -75,10 +75,10 @@ RSpec.describe "Ordenes", type: :request do
 
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body["adelantos"]).to contain_exactly(
-        a_hash_including("importe" => "2.0"),
-        a_hash_including("importe" => "1.0")
+        a_hash_including("importe" => "2000.0"),
+        a_hash_including("importe" => "1000.0")
       )
-      expect(response.parsed_body["saldo"]).to eq("2.0")
+      expect(response.parsed_body["saldo"]).to eq("2000.0")
     end
   end
 
@@ -86,6 +86,8 @@ RSpec.describe "Ordenes", type: :request do
     let(:orden) { create(:orden) }
 
     it "crea un adelanto asociado a una orden abierta" do
+      create(:tarea, orden: orden, precio: 2_000)
+
       expect {
         post "/ordenes/#{orden.id}/adelantos", params: { adelanto: { importe: "1500.50" } }, headers: auth_headers(administrador)
       }.to change(Adelanto, :count).by(1)
@@ -94,13 +96,25 @@ RSpec.describe "Ordenes", type: :request do
       expect(response.parsed_body).to include("orden_id" => orden.id, "importe" => "1500.5")
     end
 
+    it "rechaza un importe mayor al monto final" do
+      create(:tarea, orden: orden, precio: 1_000)
+
+      expect {
+        post "/ordenes/#{orden.id}/adelantos", params: { adelanto: { importe: "1500.50" } }, headers: auth_headers(administrador)
+      }.not_to change(Adelanto, :count)
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body["errors"]["importe"]).to include("Importe no puede ser mayor al monto final de la orden")
+    end
+
     it "rechaza un adelanto para una orden cerrada" do
+      create(:tarea, orden: orden, precio: 2_000)
       orden.update!(estado: :cerrada)
 
       post "/ordenes/#{orden.id}/adelantos", params: { adelanto: { importe: "1500.50" } }, headers: auth_headers(administrador)
 
       expect(response).to have_http_status(:unprocessable_content)
-      expect(response.parsed_body["errors"]["orden"]).to include("debe estar abierta")
+      expect(response.parsed_body["errors"]["orden"]).to include("Orden debe estar abierta")
     end
 
     it "prohíbe registrar adelantos a un mecánico" do

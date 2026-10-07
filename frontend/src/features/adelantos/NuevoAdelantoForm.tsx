@@ -46,7 +46,7 @@ export function NuevoAdelantoForm({ ordenId, onGuardado, onCancelar }: Props) {
           autoFocus
           disabled={mutation.isPending}
         />
-        <small>Tiene que ser mayor que cero. La orden sigue abierta.</small>
+        <small>Tiene que ser mayor que cero y no puede superar el monto final de la orden. La orden sigue abierta.</small>
         <ErroresCampo errores={errores.importe} />
       </label>
       <ErroresCampo errores={errores.orden} />

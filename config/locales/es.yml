@@ -75,6 +75,8 @@ es:
           attributes:
             orden:
               must_be_open: debe estar abierta
+            importe:
+              mayor_que_monto_final: no puede ser mayor al monto final de la orden
         orden:
           attributes:
             vehiculo:

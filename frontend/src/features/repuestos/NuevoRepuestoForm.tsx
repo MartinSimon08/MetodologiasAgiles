@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useState, type FormEvent } from 'react'
+import { useMemo, useState, type FormEvent } from 'react'
 import { ErroresCampo } from '../../components/ErroresCampo'
 import { errorMessage, fieldErrors } from '../../lib/api'
 import { importe } from '../../lib/formato'
@@ -24,7 +24,7 @@ export function NuevoRepuestoForm({ ordenId, onGuardado, onCancelar }: Props) {
   const mutation = useMutation({
     mutationFn: () => agregarRepuesto(ordenId, {
       repuesto_catalogo_id: seleccionado?.id,
-      descripcion, cantidad, costo_unitario: costo, margen: margen || undefined, proveedor,
+      descripcion, cantidad, costo_unitario: costo, margen: margen.trim() || undefined, proveedor,
     }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['repuestos', ordenId] })
@@ -32,9 +32,10 @@ export function NuevoRepuestoForm({ ordenId, onGuardado, onCancelar }: Props) {
     },
   })
   const errores = fieldErrors(mutation.error)
-  const borrador = useDebounce({
+  const datos = useMemo(() => ({
     descripcion, cantidad, costo, margen, catalogoId: seleccionado?.id,
-  })
+  }), [descripcion, cantidad, costo, margen, seleccionado?.id])
+  const borrador = useDebounce(datos)
   const puedeConsultar = borrador.descripcion.trim() !== ''
     && borrador.cantidad.trim() !== ''
     && borrador.costo.trim() !== ''
@@ -45,7 +46,7 @@ export function NuevoRepuestoForm({ ordenId, onGuardado, onCancelar }: Props) {
       descripcion: borrador.descripcion,
       cantidad: borrador.cantidad,
       costo_unitario: borrador.costo,
-      margen: borrador.margen.trim() === '' ? undefined : borrador.margen,
+      margen: borrador.margen.trim() || undefined,
     }, signal),
     enabled: puedeConsultar,
     retry: false,

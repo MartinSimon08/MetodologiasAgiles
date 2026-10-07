@@ -64,12 +64,21 @@ RSpec.describe "TareasFrecuentes", type: :request do
       expect(response.parsed_body["tareas_frecuentes"].pluck("descripcion")).to eq(%w[Aceite Alineación])
     end
 
-    it "permite a un mecánico consultar el catálogo para elegir una tarea al crearla" do
+    it "le muestra el precio sugerido al administrador" do
+      create(:tarea_frecuente, precio_sugerido: 15_000)
+
+      get "/tareas_frecuentes", headers: auth_headers(admin)
+
+      expect(response.parsed_body["tareas_frecuentes"].first["precio_sugerido"]).to eq(15_000.0)
+    end
+
+    it "prohíbe a un mecánico consultar el catálogo y sus precios" do
       create(:tarea_frecuente)
 
       get "/tareas_frecuentes", headers: auth_headers(mecanico)
 
-      expect(response).to have_http_status(:ok)
+      expect(response).to have_http_status(:forbidden)
+      expect(response.body).to be_empty
     end
 
     it "exige autenticación" do

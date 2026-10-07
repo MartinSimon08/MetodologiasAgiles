@@ -1,4 +1,4 @@
-export type EstadoOrden = 'abierta' | 'cerrada'
+export type EstadoOrden = 'abierta' | 'cerrada' | 'cancelada'
 
 export interface VehiculoOrden {
   id: number
@@ -15,11 +15,17 @@ export interface Orden {
   motivo: string
   estado: EstadoOrden
   created_at: string
+  cancelada_en: string | null
+}
+
+export interface OrdenCancelada extends Orden {
+  tareas_liberadas: { id: number; descripcion: string }[]
 }
 
 export const ESTADO_ORDEN_LABELS: Record<EstadoOrden, string> = {
   abierta: 'Abierta',
   cerrada: 'Cerrada',
+  cancelada: 'Cancelada',
 }
 
 export const MOTIVO_LARGO_MAXIMO = 500

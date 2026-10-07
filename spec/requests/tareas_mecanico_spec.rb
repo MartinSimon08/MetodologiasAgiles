@@ -27,6 +27,29 @@ RSpec.describe "Tareas del mecánico", type: :request do
       )
     end
 
+    it "no ofrece tareas de órdenes canceladas" do
+      create(:tarea, orden: orden)
+      orden.update!(estado: :cancelada, cancelada_en: Time.current)
+
+      get "/tareas_mecanico", headers: auth_headers(mecanico)
+
+      expect(response.parsed_body).to eq("mias" => [], "disponibles" => [])
+    end
+
+    it "devuelve las tareas sin importes" do
+      create(:tarea, :en_curso, orden: orden, mecanico: mecanico, precio: 15_000)
+      create(:tarea, orden: orden, precio: 20_000)
+
+      get "/tareas_mecanico", headers: auth_headers(mecanico)
+
+      tareas = response.parsed_body.values_at("mias", "disponibles").flatten
+      expect(tareas.size).to eq(2)
+      expect(tareas.map(&:keys)).to all(
+        contain_exactly("id", "orden_id", "descripcion", "estado", "mecanico_id", "tomada_en", "created_at", "orden")
+      )
+      expect(tareas.map { |tarea| tarea["orden"].keys }).to all(contain_exactly("id", "vehiculo", "cliente"))
+    end
+
     it "prohíbe el acceso a un administrador" do
       get "/tareas_mecanico", headers: auth_headers(create(:usuario, :administrador))
 

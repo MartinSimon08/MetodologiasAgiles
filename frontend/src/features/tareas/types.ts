@@ -7,7 +7,7 @@ export interface Tarea {
   orden_id: number
   descripcion: string
   estado: EstadoTarea
-  precio: number | null
+  precio?: number | null
   mecanico_id: number | null
   mecanico: { id: number; nombre: string } | null
   tomada_en: string | null

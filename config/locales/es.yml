@@ -25,6 +25,7 @@ es:
         vehiculo: Vehículo
         motivo: Motivo de ingreso
         estado: Estado
+        cancelada_en: Fecha de cancelación
       tarea:
         orden: Orden
         mecanico: Mecánico
@@ -68,6 +69,9 @@ es:
           attributes:
             vehiculo:
               con_orden_abierta: ya tiene una orden abierta
+            base:
+              ya_cancelada: La orden ya está cancelada
+              cerrada_no_cancelable: No se puede cancelar una orden cerrada
         tarea:
           attributes:
             estado:
@@ -75,6 +79,7 @@ es:
               no_en_curso: no está en curso
             orden:
               cerrada: está cerrada
+              cancelada: está cancelada
         vehiculo:
           attributes:
             cliente:
@@ -83,6 +88,7 @@ es:
     format: "%{attribute} %{message}"
     messages:
       blank: no puede estar en blanco
+      present: debe estar en blanco
       taken: ya está en uso
       invalid: no es válido
       inclusion: no está incluido en la lista

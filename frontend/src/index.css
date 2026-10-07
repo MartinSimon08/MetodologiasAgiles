@@ -178,6 +178,23 @@ button.accion-catalogo.eliminar:focus-visible {
   color: var(--texto-suave);
 }
 
+.resumen-repuesto {
+  margin: 0;
+  padding: 0.75rem 0.9rem;
+  border-radius: var(--radio);
+  background: var(--ok-fondo);
+  color: var(--ok-texto);
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  font-weight: 600;
+}
+
+.resumen-repuesto small {
+  font-weight: 400;
+  color: var(--ok-texto);
+}
+
 .acciones {
   display: flex;
   gap: 0.5rem;

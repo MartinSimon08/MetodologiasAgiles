@@ -87,6 +87,33 @@ RSpec.describe RepuestoAgregar do
     end
   end
 
+  it "previsualiza el mismo precio que se guarda, sin persistir la compra" do
+    ConfiguracionTaller.actual.update!(margen_repuestos: "30.25")
+    atributos = { descripcion: "Filtro de aceite", cantidad: 2, costo_unitario: "100.505", margen: "10" }
+
+    previa = described_class.vista_previa(orden: orden, registrado_por: admin, **atributos)
+
+    expect(previa).not_to be_persisted
+    expect(Repuesto.count).to eq(0)
+
+    guardado = described_class.call(orden: orden, registrado_por: admin, **atributos)
+
+    expect(previa.precio_cliente).to eq(guardado.precio_cliente)
+    expect(previa.margen).to eq(guardado.margen)
+    expect(Repuesto.count).to eq(1)
+  end
+
+  it "previsualiza con el margen del taller cuando no se indica uno" do
+    ConfiguracionTaller.actual.update!(margen_repuestos: "30.25")
+
+    previa = described_class.vista_previa(orden: orden, registrado_por: admin, descripcion: "Filtro de aceite",
+                                          cantidad: 2, costo_unitario: "100.50")
+
+    expect(previa.precio_cliente).to eq(BigDecimal("261.80"))
+    expect(previa.margen).to eq(BigDecimal("30.25"))
+    expect(Repuesto.count).to eq(0)
+  end
+
   it "permite reutilizar un artículo sin consumir existencias ni modificarlo" do
     catalogo = create(:repuesto_catalogo)
 

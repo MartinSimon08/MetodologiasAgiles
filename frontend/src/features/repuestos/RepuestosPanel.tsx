@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Paginacion } from '../../components/Paginacion'
 import { errorMessage } from '../../lib/api'
-import { importe } from '../../lib/formato'
+import { fechaHora, importe } from '../../lib/formato'
 import { listarRepuestos } from './api'
 import { NuevoRepuestoForm } from './NuevoRepuestoForm'
 
@@ -25,7 +25,8 @@ export function RepuestosPanel({ ordenId, ordenAbierta }: { ordenId: number; ord
         }}>Agregar repuesto</button>}
       </header>
       {aviso && <p className="aviso" role="status">Repuesto agregado a la orden.</p>}
-      {creando && ordenAbierta && <NuevoRepuestoForm ordenId={ordenId} onCancelar={() => setCreando(false)}
+      {creando && ordenAbierta && <NuevoRepuestoForm ordenId={ordenId}
+        onCancelar={() => setCreando(false)}
         onGuardado={() => {
           setCreando(false)
           setPagina(1)
@@ -41,7 +42,9 @@ export function RepuestosPanel({ ordenId, ordenAbierta }: { ordenId: number; ord
           {repuestos.data.repuestos.map((repuesto) => <li key={repuesto.id} className="tarjeta item-datos">
             <strong>{repuesto.descripcion}</strong>
             <span>{repuesto.cantidad} × $ {importe(repuesto.costo_unitario)} · Margen: {importe(repuesto.margen)}%</span>
+            {repuesto.proveedor && <span>Proveedor: {repuesto.proveedor}</span>}
             <span>Precio al cliente: $ {importe(repuesto.precio_cliente)} · Ganancia: $ {importe(repuesto.ganancia)}</span>
+            <span>Cargado por {repuesto.registrado_por.nombre} · {fechaHora(repuesto.created_at)}</span>
           </li>)}
         </ul>
         <Paginacion meta={repuestos.data.meta} cargando={repuestos.isFetching} onCambiar={setPagina} />

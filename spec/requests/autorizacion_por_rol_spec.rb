@@ -31,6 +31,7 @@ RSpec.describe "Autorización por rol", type: :request do
     "PATCH /ordenes/:id/cancelar" => :administrador,
     "GET /ordenes/:orden_id/repuestos" => :administrador,
     "POST /ordenes/:orden_id/repuestos" => :administrador,
+    "POST /ordenes/:orden_id/repuestos/vista_previa" => :administrador,
     "GET /ordenes/:orden_id/tareas" => :ambos,
     "POST /ordenes/:orden_id/tareas" => :administrador,
     "PATCH /tareas/:id/tomar" => :mecanico,

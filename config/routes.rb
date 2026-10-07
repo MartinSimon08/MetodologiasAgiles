@@ -30,6 +30,7 @@ Rails.application.routes.draw do
   resources :tareas_mecanico, only: :index
 
   resources :ordenes, only: %i[index show create] do
+    resources :adelantos, only: %i[index create]
     resources :repuestos, only: %i[index create] do
       member do
         patch :valorizar

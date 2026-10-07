@@ -178,6 +178,19 @@ button.accion-catalogo.eliminar:focus-visible {
   color: var(--texto-suave);
 }
 
+.formulario label:has(input.invalido) {
+  color: var(--error);
+}
+
+.formulario input.invalido {
+  border-color: var(--error);
+  color: var(--error);
+}
+
+.formulario input.invalido:focus-visible {
+  outline-color: var(--error);
+}
+
 .resumen-repuesto {
   margin: 0;
   padding: 0.75rem 0.9rem;

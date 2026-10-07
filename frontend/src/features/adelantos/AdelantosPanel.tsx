@@ -47,6 +47,7 @@ export function AdelantosPanel({ ordenId, ordenAbierta }: { ordenId: number; ord
       {creando && ordenAbierta && (
         <NuevoAdelantoForm
           ordenId={ordenId}
+          saldo={consulta.data?.saldo}
           onCancelar={() => setCreando(false)}
           onGuardado={() => {
             setCreando(false)

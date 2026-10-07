@@ -39,3 +39,11 @@ export function totalAdelantado(adelantos: { importe: string }[]) {
   const signo = centavos < 0 ? '-' : ''
   return `${signo}${Math.trunc(abs / 100)}.${String(abs % 100).padStart(2, '0')}`
 }
+
+export function superaSaldo(importeIngresado: string, saldo: string) {
+  const texto = importeIngresado.trim()
+  if (!texto || texto === '.' || texto === '-') return false
+  const centavos = aCentavos(texto)
+  if (!Number.isFinite(centavos)) return false
+  return centavos > aCentavos(saldo)
+}

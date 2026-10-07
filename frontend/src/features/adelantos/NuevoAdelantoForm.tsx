@@ -2,19 +2,22 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
 import { ErroresCampo } from '../../components/ErroresCampo'
 import { errorMessage, fieldErrors } from '../../lib/api'
-import { registrarAdelanto } from './api'
+import { importe as formatearImporte } from '../../lib/formato'
+import { registrarAdelanto, superaSaldo } from './api'
 
 interface Props {
   ordenId: number
+  saldo?: string
   onGuardado: () => void
   onCancelar: () => void
 }
 
 const IMPORTE_MAXIMO = '9999999999.99'
 
-export function NuevoAdelantoForm({ ordenId, onGuardado, onCancelar }: Props) {
+export function NuevoAdelantoForm({ ordenId, saldo, onGuardado, onCancelar }: Props) {
   const queryClient = useQueryClient()
   const [importe, setImporte] = useState('')
+  const excedeSaldo = saldo !== undefined && superaSaldo(importe, saldo)
   const mutation = useMutation({
     mutationFn: () => registrarAdelanto(ordenId, importe),
     onSuccess: () => {
@@ -26,6 +29,7 @@ export function NuevoAdelantoForm({ ordenId, onGuardado, onCancelar }: Props) {
 
   function guardar(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    if (excedeSaldo) return
     mutation.mutate()
   }
 
@@ -35,6 +39,7 @@ export function NuevoAdelantoForm({ ordenId, onGuardado, onCancelar }: Props) {
       <label>
         Importe ($)
         <input
+          className={excedeSaldo ? 'invalido' : undefined}
           type="number"
           inputMode="decimal"
           min="0.01"
@@ -45,8 +50,15 @@ export function NuevoAdelantoForm({ ordenId, onGuardado, onCancelar }: Props) {
           required
           autoFocus
           disabled={mutation.isPending}
+          aria-invalid={excedeSaldo}
+          aria-describedby={excedeSaldo ? 'adelanto-excede-saldo' : undefined}
         />
         <small>Tiene que ser mayor que cero y no puede superar el monto final de la orden. La orden sigue abierta.</small>
+        {excedeSaldo && (
+          <span id="adelanto-excede-saldo" className="error" role="alert">
+            Este monto supera el saldo pendiente ($ {formatearImporte(saldo)}).
+          </span>
+        )}
         <ErroresCampo errores={errores.importe} />
       </label>
       <ErroresCampo errores={errores.orden} />
@@ -59,7 +71,7 @@ export function NuevoAdelantoForm({ ordenId, onGuardado, onCancelar }: Props) {
         <button type="button" className="secundario" disabled={mutation.isPending} onClick={onCancelar}>
           Cancelar
         </button>
-        <button type="submit" disabled={mutation.isPending}>
+        <button type="submit" disabled={mutation.isPending || excedeSaldo}>
           {mutation.isPending ? 'Registrando…' : 'Registrar adelanto'}
         </button>
       </div>

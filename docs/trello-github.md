@@ -54,10 +54,14 @@ El botón de ejecución manual aparece cuando el workflow existe en la rama pred
 Cada ejecución consulta las tarjetas actuales. La vista previa no congela una selección para la ejecución siguiente.
 
 El job copia el título y la descripción. Agrega el enlace de Trello al issue y adjunta el issue a la tarjeta.
-No copia comentarios, adjuntos, checklists, responsables ni etiquetas.
+Asigna el issue a los miembros de la tarjeta. Emilio no se asigna porque es el profesor. El resto de los miembros del grupo son participantes y se mapean a su usuario de GitHub en `participants` dentro de `script/trello-sync.mjs`.
+Copia las etiquetas que tienen nombre. Si la etiqueta no existe en el repositorio, la crea con el color de Trello.
+No copia comentarios, adjuntos, checklists ni etiquetas sin nombre.
 
 El job conserva el título, la descripción y el estado de los issues existentes.
-Los cambios posteriores de Trello no sobrescriben esos issues.
+Los cambios posteriores de título o descripción en Trello no sobrescriben esos issues.
+Si la tarjeta tiene responsables o etiquetas, cada importación los actualiza en el issue.
+Una tarjeta sin miembros o sin etiquetas con nombre no borra los que el issue ya tenga.
 Las tarjetas archivadas, las plantillas y las tarjetas de otras listas quedan excluidas.
 
 El marcador `<!-- trello-card:ID -->` mantiene la relación. No lo elimines del issue.

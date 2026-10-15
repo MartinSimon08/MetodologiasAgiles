@@ -1,6 +1,8 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { BotonNuevo } from '../../components/BotonNuevo'
+import { EncabezadoPagina } from '../../components/EncabezadoPagina'
 import { Paginacion } from '../../components/Paginacion'
 import { errorMessage } from '../../lib/api'
 import { useAuth } from '../auth/AuthContext'
@@ -49,19 +51,18 @@ export function UsuariosPage() {
 
   return (
     <section className="usuarios">
-      <header className="encabezado">
-        <h1>Usuarios</h1>
+      <EncabezadoPagina titulo="Usuarios" bajada="Personas con acceso al sistema y su rol.">
         {!creando && (
-          <button
+          <BotonNuevo
             onClick={() => {
               setAviso(null)
               setCreando(true)
             }}
           >
             Nuevo usuario
-          </button>
+          </BotonNuevo>
         )}
-      </header>
+      </EncabezadoPagina>
 
       {aviso && (
         <p className="aviso" role="status">
@@ -89,7 +90,7 @@ export function UsuariosPage() {
       {usuarios.data && (
         <ul className="lista" aria-busy={usuarios.isPlaceholderData}>
           {usuarios.data.usuarios.map((usuario) => (
-            <li key={usuario.id} className={`tarjeta item${usuario.activo ? '' : ' inactivo'}`}>
+            <li key={usuario.id} className={`tarjeta fila-item${usuario.activo ? '' : ' inactivo'}`}>
               <div className="item-datos">
                 <strong>
                   {usuario.nombre}

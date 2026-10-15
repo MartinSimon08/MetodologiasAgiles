@@ -38,7 +38,7 @@ export function LoginPage() {
       <form className="tarjeta formulario" onSubmit={handleSubmit}>
         <h1>Gestión de Taller</h1>
         {motivoCierre && !error && (
-          <p className="aviso" role="status">
+          <p className="info" role="status">
             {AVISOS_CIERRE[motivoCierre]}
           </p>
         )}

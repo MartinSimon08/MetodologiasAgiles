@@ -1,7 +1,9 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { BotonNuevo } from '../../components/BotonNuevo'
 import { Buscador } from '../../components/Buscador'
+import { EncabezadoPagina } from '../../components/EncabezadoPagina'
 import { Paginacion } from '../../components/Paginacion'
 import { errorMessage } from '../../lib/api'
 import { useDebounce } from '../../lib/useDebounce'
@@ -44,19 +46,18 @@ export function VehiculosPage() {
 
   return (
     <section className="vehiculos">
-      <header className="encabezado">
-        <h1>Vehículos</h1>
+      <EncabezadoPagina titulo="Vehículos" bajada="Vehículos registrados y su dueño actual.">
         {!registrando && (
-          <button
+          <BotonNuevo
             onClick={() => {
               setAviso(null)
               setRegistrando(true)
             }}
           >
             Nuevo vehículo
-          </button>
+          </BotonNuevo>
         )}
-      </header>
+      </EncabezadoPagina>
 
       {aviso && (
         <p className="aviso" role="status">
@@ -93,7 +94,7 @@ export function VehiculosPage() {
       )}
 
       {vehiculos.data?.vehiculos.length === 0 && (
-        <p className="estado">
+        <p className="vacio">
           {q ? `No hay vehículos que coincidan con “${q}”.` : 'Todavía no hay vehículos registrados.'}
         </p>
       )}
@@ -101,17 +102,19 @@ export function VehiculosPage() {
       {vehiculos.data && vehiculos.data.vehiculos.length > 0 && (
         <ul className="lista" aria-busy={vehiculos.isPlaceholderData}>
           {vehiculos.data.vehiculos.map((vehiculo) => (
-            <li key={vehiculo.id} className="tarjeta item item-vehiculo">
+            <li key={vehiculo.id} className="tarjeta fila-item">
               <div className="item-datos">
-                <strong className="patente">{vehiculo.patente}</strong>
-                {descripcion(vehiculo) && <span>{descripcion(vehiculo)}</span>}
-                {vehiculo.kilometraje !== null && (
-                  <span>{vehiculo.kilometraje.toLocaleString('es-AR')} km</span>
-                )}
+                <strong className="vehiculo">
+                  <span className="patente">{vehiculo.patente}</span>
+                  {descripcion(vehiculo)}
+                </strong>
                 <span>
                   Dueño: {vehiculo.cliente.nombre} ·{' '}
                   <a href={`tel:${vehiculo.cliente.telefono}`}>{vehiculo.cliente.telefono}</a>
                 </span>
+                {vehiculo.kilometraje !== null && (
+                  <span>{vehiculo.kilometraje.toLocaleString('es-AR')} km</span>
+                )}
               </div>
               {cambiandoId === vehiculo.id ? (
                 <CambiarDuenioForm

@@ -1,5 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
+import { BotonNuevo } from '../../components/BotonNuevo'
+import { EncabezadoPagina } from '../../components/EncabezadoPagina'
 import { errorMessage } from '../../lib/api'
 import { importe } from '../../lib/formato'
 import { listarTareasFrecuentes } from './api'
@@ -16,19 +18,18 @@ export function TareasFrecuentesPage() {
 
   return (
     <section className="tareas-frecuentes">
-      <header className="encabezado">
-        <h1>Catálogo de tareas frecuentes</h1>
+      <EncabezadoPagina titulo="Catálogo de tareas frecuentes" bajada="Trabajos habituales con su precio sugerido para cargarlos más rápido.">
         {!creando && (
-          <button
+          <BotonNuevo
             onClick={() => {
               setAviso(null)
               setCreando(true)
             }}
           >
             Nueva tarea frecuente
-          </button>
+          </BotonNuevo>
         )}
-      </header>
+      </EncabezadoPagina>
 
       {aviso && (
         <p className="aviso" role="status">
@@ -54,7 +55,7 @@ export function TareasFrecuentesPage() {
       )}
 
       {tareasFrecuentes.data?.tareas_frecuentes.length === 0 && (
-        <p className="estado">Todavía no hay tareas frecuentes cargadas.</p>
+        <p className="vacio">Todavía no hay tareas frecuentes cargadas.</p>
       )}
 
       {tareasFrecuentes.data && tareasFrecuentes.data.tareas_frecuentes.length > 0 && (
@@ -64,7 +65,7 @@ export function TareasFrecuentesPage() {
               <div className="item-datos">
                 <strong>{tareaFrecuente.descripcion}</strong>
               </div>
-              <span>$ {importe(tareaFrecuente.precio_sugerido)}</span>
+              <span className="importe">$ {importe(tareaFrecuente.precio_sugerido)}</span>
             </li>
           ))}
         </ul>

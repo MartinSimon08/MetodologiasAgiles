@@ -1,7 +1,9 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { BotonNuevo } from '../../components/BotonNuevo'
 import { Buscador } from '../../components/Buscador'
+import { EncabezadoPagina } from '../../components/EncabezadoPagina'
 import { Paginacion } from '../../components/Paginacion'
 import { errorMessage } from '../../lib/api'
 import { useDebounce } from '../../lib/useDebounce'
@@ -37,19 +39,18 @@ export function ClientesPage() {
 
   return (
     <section className="clientes">
-      <header className="encabezado">
-        <h1>Clientes</h1>
+      <EncabezadoPagina titulo="Clientes" bajada="Personas que traen vehículos al taller.">
         {!registrando && (
-          <button
+          <BotonNuevo
             onClick={() => {
               setAviso(null)
               setRegistrando(true)
             }}
           >
             Nuevo cliente
-          </button>
+          </BotonNuevo>
         )}
-      </header>
+      </EncabezadoPagina>
 
       {aviso && (
         <p className="aviso" role="status">
@@ -82,7 +83,7 @@ export function ClientesPage() {
       )}
 
       {clientes.data?.clientes.length === 0 && (
-        <p className="estado">
+        <p className="vacio">
           {q ? `No hay clientes que coincidan con “${q}”.` : 'Todavía no hay clientes registrados.'}
         </p>
       )}
@@ -90,7 +91,7 @@ export function ClientesPage() {
       {clientes.data && clientes.data.clientes.length > 0 && (
         <ul className="lista" aria-busy={clientes.isPlaceholderData}>
           {clientes.data.clientes.map((cliente) => (
-            <li key={cliente.id} className="tarjeta item item-cliente">
+            <li key={cliente.id} className="tarjeta fila-item">
               <div className="item-datos">
                 <strong>{cliente.nombre}</strong>
                 <span>

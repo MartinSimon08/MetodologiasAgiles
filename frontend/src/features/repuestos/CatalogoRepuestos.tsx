@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
+import { Buscador } from '../../components/Buscador'
 import { Paginacion } from '../../components/Paginacion'
 import { errorMessage } from '../../lib/api'
 import { importe } from '../../lib/formato'
@@ -23,19 +24,17 @@ export function CatalogoRepuestos({ onSeleccionar, onEditar, onEliminar, filtro 
 
   return (
     <section className="repuestos">
-      <h2>{onSeleccionar ? 'Sugerencias del catálogo' : 'Repuestos del catálogo'}</h2>
-      {filtro === undefined && <label>
-        Buscar en el catálogo
-        <input type="search" value={buscar} onChange={(event) => {
-          setBuscar(event.target.value)
+      {onSeleccionar && <h2>Sugerencias del catálogo</h2>}
+      {filtro === undefined && <Buscador etiqueta="Buscar en el catálogo" placeholder="Nombre del repuesto"
+        valor={buscar} onCambiar={(valor) => {
+          setBuscar(valor)
           setPagina(1)
-        }} />
-      </label>}
+        }} />}
       {catalogo.isPending && <p className="estado">Cargando catálogo…</p>}
       {catalogo.isError && <p className="error" role="alert">
         {errorMessage(catalogo.error, 'No se pudo cargar el catálogo.')}
       </p>}
-      {catalogo.data?.repuestos.length === 0 && <p className="estado">
+      {catalogo.data?.repuestos.length === 0 && <p className="vacio">
         {buscar ? 'No hay repuestos que coincidan.' : 'Todavía no hay repuestos cargados en el catálogo.'}
       </p>}
       {catalogo.data && <>
@@ -46,18 +45,20 @@ export function CatalogoRepuestos({ onSeleccionar, onEditar, onEliminar, filtro 
                 <strong>{repuesto.nombre}</strong>
                 <span>Precio de referencia: $ {importe(repuesto.precio)}</span>
               </div>
-              {onSeleccionar && <button type="button" className="secundario"
-                onClick={() => onSeleccionar(repuesto)} aria-label={`Usar ${repuesto.nombre}`}>
-                Usar
-              </button>}
-              {onEditar && <button type="button" className="secundario accion-catalogo"
-                onClick={() => onEditar(repuesto)} aria-label={`Editar ${repuesto.nombre}`}>
-                Editar
-              </button>}
-              {onEliminar && <button type="button" className="accion-catalogo eliminar"
-                onClick={() => onEliminar(repuesto)} aria-label={`Eliminar ${repuesto.nombre}`}>
-                Eliminar
-              </button>}
+              {(onSeleccionar || onEditar || onEliminar) && <div className="item-acciones">
+                {onSeleccionar && <button type="button" className="secundario"
+                  onClick={() => onSeleccionar(repuesto)} aria-label={`Usar ${repuesto.nombre}`}>
+                  Usar
+                </button>}
+                {onEditar && <button type="button" className="secundario"
+                  onClick={() => onEditar(repuesto)} aria-label={`Editar ${repuesto.nombre}`}>
+                  Editar
+                </button>}
+                {onEliminar && <button type="button" className="secundario peligro"
+                  onClick={() => onEliminar(repuesto)} aria-label={`Eliminar ${repuesto.nombre}`}>
+                  Eliminar
+                </button>}
+              </div>}
             </li>
           ))}
         </ul>

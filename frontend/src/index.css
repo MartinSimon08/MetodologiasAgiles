@@ -925,21 +925,83 @@ strong.vehiculo {
   gap: var(--esp-2);
 }
 
-.nueva-orden .selector-vehiculo {
-  gap: var(--esp-4);
-}
-
 @media (max-width: 600px) {
   .sesion span {
     display: none;
   }
 }
 
-.selector-cliente,
-.selector-vehiculo {
+.selector {
   display: flex;
   flex-direction: column;
   gap: var(--esp-2);
+}
+
+.etiqueta-campo {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.opciones {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--superficie);
+  overflow: hidden;
+}
+
+.opciones[aria-busy='true'] {
+  opacity: 0.6;
+}
+
+.opciones li + li {
+  border-top: 1px solid var(--borde);
+}
+
+button.opcion {
+  width: 100%;
+  justify-content: space-between;
+  gap: var(--esp-3);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--texto);
+  font-weight: 400;
+  text-align: left;
+  padding: 10px var(--esp-3);
+}
+
+.opcion-accion {
+  flex: none;
+  color: var(--acento);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+@media (hover: hover) {
+  button.opcion:not(:disabled):hover {
+    background: var(--acento-suave);
+    border-color: transparent;
+  }
+}
+
+button.opcion:focus-visible {
+  outline-offset: -2px;
+}
+
+.seleccionado {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--esp-3);
+  padding: var(--esp-2) var(--esp-2) var(--esp-2) 14px;
+  border: 1px solid var(--acento);
+  border-radius: var(--radio);
+  background: var(--acento-suave);
 }
 
 .campos-vehiculo {

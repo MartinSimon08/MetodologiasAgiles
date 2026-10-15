@@ -1,10 +1,4 @@
-import { keepPreviousData, useQuery } from '@tanstack/react-query'
-import { useState } from 'react'
-import { Buscador } from '../../components/Buscador'
-import { ErroresCampo } from '../../components/ErroresCampo'
-import { Paginacion } from '../../components/Paginacion'
-import { errorMessage } from '../../lib/api'
-import { useDebounce } from '../../lib/useDebounce'
+import { SelectorBuscable } from '../../components/SelectorBuscable'
 import { listarVehiculos, type Vehiculo } from './api'
 
 interface Props {
@@ -15,76 +9,32 @@ interface Props {
   autoFocus?: boolean
 }
 
-function opcion(vehiculo: Vehiculo) {
-  return [vehiculo.patente, [vehiculo.marca, vehiculo.modelo].filter(Boolean).join(' '), vehiculo.cliente.nombre]
-    .filter(Boolean)
-    .join(' · ')
+async function cargar(pagina: number, q: string) {
+  const { vehiculos, meta } = await listarVehiculos(pagina, q)
+  return { items: vehiculos, meta }
 }
 
-export function VehiculoSelector({ etiqueta, valor, onCambiar, errores, autoFocus }: Props) {
-  const [pagina, setPagina] = useState(1)
-  const [busqueda, setBusqueda] = useState('')
-  const q = useDebounce(busqueda.trim())
-
-  const vehiculos = useQuery({
-    queryKey: ['vehiculos', pagina, q],
-    queryFn: () => listarVehiculos(pagina, q),
-    placeholderData: keepPreviousData,
-  })
-
-  const opciones = vehiculos.data?.vehiculos ?? []
-
+export function VehiculoSelector(props: Props) {
   return (
-    <div className="selector-vehiculo">
-      <Buscador
-        etiqueta="Buscar vehículo"
-        autoFocus={autoFocus}
-        placeholder="Patente, nombre o teléfono del dueño"
-        valor={busqueda}
-        onCambiar={(valor) => {
-          onCambiar(null)
-          setPagina(1)
-          setBusqueda(valor)
-        }}
-      />
-      <label>
-        {etiqueta}
-        <select
-          value={valor ?? ''}
-          onChange={(e) => onCambiar(e.target.value ? Number(e.target.value) : null)}
-          disabled={vehiculos.isPending}
-          required
-        >
-          <option value="">
-            {vehiculos.isPending
-              ? 'Cargando vehículos…'
-              : opciones.length === 0
-                ? q
-                  ? 'Ningún vehículo coincide con la búsqueda'
-                  : 'No hay vehículos para elegir'
-                : 'Elegí un vehículo'}
-          </option>
-          {opciones.map((vehiculo) => (
-            <option key={vehiculo.id} value={vehiculo.id}>
-              {opcion(vehiculo)}
-            </option>
-          ))}
-        </select>
-        <ErroresCampo errores={errores} />
-      </label>
-      {vehiculos.isError && (
-        <span className="error">{errorMessage(vehiculos.error, 'No se pudieron cargar los vehículos.')}</span>
+    <SelectorBuscable<Vehiculo>
+      {...props}
+      placeholder="Patente, nombre o teléfono del dueño"
+      queryKey="vehiculos"
+      cargar={cargar}
+      describir={(vehiculo) => (
+        <>
+          <span className="vehiculo">
+            <span className="patente">{vehiculo.patente}</span>
+            {[vehiculo.marca, vehiculo.modelo].filter(Boolean).join(' ')}
+          </span>
+          <span>{vehiculo.cliente.nombre}</span>
+        </>
       )}
-      {vehiculos.data && (
-        <Paginacion
-          meta={vehiculos.data.meta}
-          cargando={vehiculos.isPlaceholderData}
-          onCambiar={(nueva) => {
-            onCambiar(null)
-            setPagina(nueva)
-          }}
-        />
-      )}
-    </div>
+      textos={{
+        cargando: 'Cargando vehículos…',
+        sinResultados: 'Ningún vehículo coincide con la búsqueda.',
+        error: 'No se pudieron cargar los vehículos.',
+      }}
+    />
   )
 }

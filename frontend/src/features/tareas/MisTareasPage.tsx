@@ -1,8 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { EncabezadoPagina } from '../../components/EncabezadoPagina'
 import { errorMessage } from '../../lib/api'
-import { describirVehiculo } from '../ordenes/types'
+import { detalleVehiculo } from '../ordenes/types'
 import { completarTarea, liberarTarea, listarTareasMecanico, tomarTarea } from './api'
 import type { TareaMecanico } from './types'
 
@@ -49,9 +50,10 @@ export function MisTareasPage() {
     return (
       <div className="item-datos">
         <strong>{tarea.descripcion}</strong>
-        <span>
-          <Link to={`/ordenes/${tarea.orden.id}`}>Orden #{tarea.orden.id}</Link> ·{' '}
-          {describirVehiculo(tarea.orden.vehiculo)}
+        <span className="vehiculo">
+          <Link to={`/ordenes/${tarea.orden.id}`}>Orden #{tarea.orden.id}</Link>
+          <span className="patente">{tarea.orden.vehiculo.patente}</span>
+          {detalleVehiculo(tarea.orden.vehiculo)}
         </span>
         <span>{tarea.orden.cliente}</span>
       </div>
@@ -60,7 +62,7 @@ export function MisTareasPage() {
 
   return (
     <section className="mis-tareas">
-      <h1>Mis tareas</h1>
+      <EncabezadoPagina titulo="Mis tareas" bajada="Tus trabajos en curso y los disponibles para tomar." />
 
       {error && (
         <p className="error" role="alert">
@@ -79,7 +81,7 @@ export function MisTareasPage() {
         <>
           <h2>En curso</h2>
           {tareas.data.mias.length === 0 ? (
-            <p className="estado">No tenés tareas en curso. Tomá una de las disponibles.</p>
+            <p className="vacio">No tenés tareas en curso. Tomá una de las disponibles.</p>
           ) : (
             <ul className="lista">
               {tareas.data.mias.map((tarea) => (
@@ -104,7 +106,7 @@ export function MisTareasPage() {
 
           <h2>Disponibles</h2>
           {tareas.data.disponibles.length === 0 ? (
-            <p className="estado">No hay tareas disponibles por ahora.</p>
+            <p className="vacio">No hay tareas disponibles por ahora.</p>
           ) : (
             <ul className="lista">
               {tareas.data.disponibles.map((tarea) => (

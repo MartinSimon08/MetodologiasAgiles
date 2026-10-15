@@ -30,7 +30,10 @@ export const ESTADO_ORDEN_LABELS: Record<EstadoOrden, string> = {
 
 export const MOTIVO_LARGO_MAXIMO = 500
 
+export function detalleVehiculo(vehiculo: Omit<VehiculoOrden, 'id' | 'patente'>) {
+  return [vehiculo.marca, vehiculo.modelo, vehiculo.anio].filter(Boolean).join(' ')
+}
+
 export function describirVehiculo(vehiculo: Omit<VehiculoOrden, 'id'>) {
-  const detalle = [vehiculo.marca, vehiculo.modelo, vehiculo.anio].filter(Boolean).join(' ')
-  return [vehiculo.patente, detalle].filter(Boolean).join(' · ')
+  return [vehiculo.patente, detalleVehiculo(vehiculo)].filter(Boolean).join(' · ')
 }

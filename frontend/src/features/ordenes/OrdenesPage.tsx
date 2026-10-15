@@ -1,13 +1,15 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { BotonNuevo } from '../../components/BotonNuevo'
+import { EncabezadoPagina } from '../../components/EncabezadoPagina'
 import { Paginacion } from '../../components/Paginacion'
 import { errorMessage } from '../../lib/api'
 import { fechaHora } from '../../lib/formato'
 import { useAuth } from '../auth/AuthContext'
 import { listarOrdenes } from './api'
 import { NuevaOrdenForm } from './NuevaOrdenForm'
-import { describirVehiculo, ESTADO_ORDEN_LABELS, type EstadoOrden } from './types'
+import { detalleVehiculo, ESTADO_ORDEN_LABELS, type EstadoOrden } from './types'
 
 const ESTADOS = Object.keys(ESTADO_ORDEN_LABELS) as EstadoOrden[]
 
@@ -39,12 +41,11 @@ export function OrdenesPage() {
 
   return (
     <section className="ordenes">
-      <header className="encabezado">
-        <h1>Órdenes</h1>
+      <EncabezadoPagina titulo="Órdenes" bajada="Vehículos ingresados al taller y su estado.">
         {usuario?.rol === 'administrador' && !abriendo && (
-          <button onClick={() => setAbriendo(true)}>Nueva orden</button>
+          <BotonNuevo onClick={() => setAbriendo(true)}>Nueva orden</BotonNuevo>
         )}
-      </header>
+      </EncabezadoPagina>
 
       {abriendo && (
         <NuevaOrdenForm
@@ -76,21 +77,35 @@ export function OrdenesPage() {
       )}
 
       {ordenes.data && ordenes.data.ordenes.length === 0 && (
-        <p className="estado">{estado ? 'No hay órdenes en ese estado.' : 'Todavía no hay órdenes cargadas.'}</p>
+        <p className="vacio">
+          {estado ? (
+            <strong>No hay órdenes en ese estado.</strong>
+          ) : (
+            <>
+              <strong>Todavía no hay órdenes cargadas</strong>
+              <small>Las órdenes nuevas aparecen acá.</small>
+            </>
+          )}
+        </p>
       )}
 
       {ordenes.data && (
         <ul className="lista" aria-busy={ordenes.isPlaceholderData}>
           {ordenes.data.ordenes.map((orden) => (
-            <li key={orden.id} className="tarjeta fila-item">
-              <Link to={`/ordenes/${orden.id}`} className="item-datos">
-                <strong>{orden.cliente.nombre}</strong>
-                <span>{describirVehiculo(orden.vehiculo)}</span>
-                <span>Ingreso: {fechaHora(orden.created_at)}</span>
+            <li key={orden.id}>
+              <Link to={`/ordenes/${orden.id}`} className="tarjeta fila-item">
+                <span className="item-datos">
+                  <strong>{orden.cliente.nombre}</strong>
+                  <span className="vehiculo">
+                    <span className="patente">{orden.vehiculo.patente}</span>
+                    {detalleVehiculo(orden.vehiculo)}
+                  </span>
+                  <span>Ingreso: {fechaHora(orden.created_at)}</span>
+                </span>
+                <span className={`insignia insignia-${orden.estado}`}>
+                  {ESTADO_ORDEN_LABELS[orden.estado]}
+                </span>
               </Link>
-              <span className={`insignia insignia-${orden.estado}`}>
-                {ESTADO_ORDEN_LABELS[orden.estado]}
-              </span>
             </li>
           ))}
         </ul>

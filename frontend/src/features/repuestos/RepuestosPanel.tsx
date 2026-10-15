@@ -66,26 +66,35 @@ export function RepuestosPanel({ ordenId, ordenAbierta }: { ordenId: number; ord
       {repuestos.isError && <p className="error" role="alert">
         {errorMessage(repuestos.error, 'No se pudieron cargar los repuestos.')}
       </p>}
-      {repuestos.data?.repuestos.length === 0 && <p className="estado">Todavía no hay compras registradas en esta orden.</p>}
+      {repuestos.data?.repuestos.length === 0 && <p className="vacio">Todavía no hay compras registradas en esta orden.</p>}
       {repuestos.data && <>
         <ul className="lista">
-          {repuestos.data.repuestos.map((repuesto) => <li key={repuesto.id} className="tarjeta item-datos">
-            <strong>{repuesto.descripcion}</strong>
+          {repuestos.data.repuestos.map((repuesto) => <li key={repuesto.id} className="tarjeta fila-item">
             {repuesto.estado === 'pendiente_de_valorizar' ? (
               <>
+                <div className="item-datos">
+                  <strong>{repuesto.descripcion}</strong>
+                  <span>Cantidad: {repuesto.cantidad}</span>
+                  <span>Avisado por {repuesto.registrado_por.nombre} · {fechaHora(repuesto.created_at)}</span>
+                </div>
                 <span className="insignia insignia-pendiente_de_valorizar">
                   {ESTADO_REPUESTO_LABELS[repuesto.estado]}
                 </span>
-                <span>Cantidad: {repuesto.cantidad}</span>
-                <span>Avisado por {repuesto.registrado_por.nombre} · {fechaHora(repuesto.created_at)}</span>
                 {ordenAbierta && <button className="secundario" onClick={() => setValorizando(repuesto)}>Cargar costo</button>}
               </>
             ) : (
               <>
-                <span>{repuesto.cantidad} × $ {importe(repuesto.costo_unitario!)} · Margen: {importe(repuesto.margen!)}%</span>
-                {repuesto.proveedor && <span>Proveedor: {repuesto.proveedor}</span>}
-                <span>Precio al cliente: $ {importe(repuesto.precio_cliente!)} · Ganancia: $ {importe(repuesto.ganancia!)}</span>
-                <span>Cargado por {repuesto.registrado_por.nombre} · {fechaHora(repuesto.created_at)}</span>
+                <div className="item-datos">
+                  <strong>{repuesto.descripcion}</strong>
+                  <span>{repuesto.cantidad} × $ {importe(repuesto.costo_unitario!)} · Margen: {importe(repuesto.margen!)}%</span>
+                  {repuesto.proveedor && <span>Proveedor: {repuesto.proveedor}</span>}
+                  <span>Ganancia: $ {importe(repuesto.ganancia!)}</span>
+                  <span>Cargado por {repuesto.registrado_por.nombre} · {fechaHora(repuesto.created_at)}</span>
+                </div>
+                <span className="monto">
+                  <small>Precio al cliente</small>
+                  <strong className="importe">$ {importe(repuesto.precio_cliente!)}</strong>
+                </span>
               </>
             )}
           </li>)}

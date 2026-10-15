@@ -67,20 +67,26 @@ export function AdelantosPanel({ ordenId, ordenAbierta }: { ordenId: number; ord
       {consulta.data && (
         <>
           <p className="resumen-saldo">
-            <strong>Saldo pendiente: $ {importe(consulta.data.saldo)}</strong>
+            <span>Saldo pendiente</span>
+            <strong>$ {importe(consulta.data.saldo)}</strong>
             {consulta.data.adelantos.length > 0 && (
               <span>Adelantado: $ {importe(totalAdelantado(consulta.data.adelantos))}</span>
             )}
           </p>
           {consulta.data.adelantos.length === 0 && (
-            <p className="estado">Todavía no hay adelantos en esta orden.</p>
+            <p className="vacio">Todavía no hay adelantos en esta orden.</p>
           )}
           {consulta.data.adelantos.length > 0 && (
             <ul className="lista">
               {consulta.data.adelantos.map((adelanto) => (
-                <li key={adelanto.id} className="tarjeta item-datos">
-                  <strong>$ {importe(adelanto.importe)}</strong>
-                  <span>{fechaHora(adelanto.registrado_en)}</span>
+                <li key={adelanto.id} className="tarjeta fila-item">
+                  <div className="item-datos">
+                    <strong>Adelanto</strong>
+                    <span>{fechaHora(adelanto.registrado_en)}</span>
+                  </div>
+                  <span className="monto">
+                    <strong className="importe">$ {importe(adelanto.importe)}</strong>
+                  </span>
                 </li>
               ))}
             </ul>

@@ -97,7 +97,7 @@ export function TareasPanel({ ordenId, ordenAbierta }: Props) {
       )}
 
       {tareas.data && tareas.data.tareas.length === 0 && (
-        <p className="estado">Todavía no hay tareas cargadas en esta orden.</p>
+        <p className="vacio">Todavía no hay tareas cargadas en esta orden.</p>
       )}
 
       {tareas.data && (
@@ -107,8 +107,12 @@ export function TareasPanel({ ordenId, ordenAbierta }: Props) {
               <div className="item-datos">
                 <strong>{tarea.descripcion}</strong>
                 <span>{responsable(tarea.mecanico)}</span>
-                {tarea.precio != null && <span>$ {importe(tarea.precio)}</span>}
               </div>
+              {tarea.precio != null && (
+                <span className="monto">
+                  <strong className="importe">$ {importe(tarea.precio)}</strong>
+                </span>
+              )}
               <span className={`insignia insignia-${tarea.estado}`}>
                 {ESTADO_TAREA_LABELS[tarea.estado]}
               </span>

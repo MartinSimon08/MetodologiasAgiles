@@ -6,6 +6,7 @@ class Orden < ApplicationRecord
   has_many :tareas, dependent: :restrict_with_error
   has_many :repuestos, dependent: :restrict_with_error
   has_many :adelantos, dependent: :restrict_with_error
+  has_many :ajustes_repuesto, through: :repuestos, source: :ajustes
 
   enum :estado, { abierta: "abierta", cerrada: "cerrada", cancelada: "cancelada" }, validate: true
 
@@ -18,7 +19,7 @@ class Orden < ApplicationRecord
   validate :sin_repuestos_pendientes_de_valorizar, if: :cerrada?
 
   def total
-    tareas.sum(:precio).to_d + repuestos.sum(:precio_cliente).to_d
+    tareas.sum(:precio).to_d + repuestos.sum(:precio_cliente).to_d + ajustes_repuesto.sum(:ajuste_precio_cliente).to_d
   end
 
   def saldo

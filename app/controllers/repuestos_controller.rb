@@ -1,12 +1,13 @@
 class RepuestosController < ApplicationController
   include Paginable
+  include SerializaAjusteRepuesto
 
   before_action :require_administrador!, only: %i[index valorizar vista_previa]
   before_action :set_orden, only: %i[index create valorizar vista_previa]
   before_action :set_repuesto, only: :valorizar
 
   def index
-    repuestos, meta = paginar(@orden.repuestos.includes(:registrado_por).order(created_at: :desc, id: :desc))
+    repuestos, meta = paginar(@orden.repuestos.preload(:registrado_por, ajustes: :registrado_por).order(created_at: :desc, id: :desc))
     render json: { repuestos: repuestos.map { |repuesto| serialize(repuesto) }, meta: meta }
   end
 
@@ -58,11 +59,24 @@ class RepuestosController < ApplicationController
   def serialize(repuesto)
     datos = repuesto.as_json(only: %i[id orden_id repuesto_catalogo_id descripcion cantidad costo_unitario margen precio_cliente proveedor registrado_por_id estado created_at])
     datos[:ganancia] = repuesto.valorizado? ? ganancia(repuesto) : nil
+    datos[:precio_vigente] = repuesto.precio_vigente && dinero(repuesto.precio_vigente)
+    datos[:costo_vigente] = repuesto.costo_vigente && dinero(repuesto.costo_vigente)
+    datos[:ganancia_vigente] = repuesto.precio_vigente && dinero(repuesto.precio_vigente - repuesto.costo_vigente)
+    datos[:cantidad_disponible] = repuesto.cantidad_disponible
+    datos[:ajustes] = ajustes_de(repuesto).map { |ajuste| serialize_ajuste(ajuste) }
     datos[:registrado_por] = repuesto.registrado_por.as_json(only: %i[id nombre])
     datos
   end
 
+  def ajustes_de(repuesto)
+    if repuesto.ajustes.loaded?
+      repuesto.ajustes.sort_by { |ajuste| [ ajuste.created_at, ajuste.id ] }.reverse
+    else
+      repuesto.ajustes.includes(:registrado_por).order(created_at: :desc, id: :desc)
+    end
+  end
+
   def ganancia(repuesto)
-    (repuesto.precio_cliente - repuesto.costo_unitario * repuesto.cantidad).to_s("F")
+    dinero(repuesto.precio_cliente - repuesto.costo_unitario * repuesto.cantidad)
   end
 end

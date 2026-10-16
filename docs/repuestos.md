@@ -78,6 +78,7 @@ como cadenas decimales.
 | `GET /ordenes/:orden_id/repuestos?pagina=1` | Compras registradas en esa orden, con precio y ganancia |
 | `POST /ordenes/:orden_id/repuestos` | Administrador: registra una compra valorizada. Mecánico: avisa un repuesto pendiente de valorizar (solo `descripcion` y `cantidad`) |
 | `PATCH /ordenes/:orden_id/repuestos/:id/valorizar` | Administrador: carga el costo (y opcionalmente el margen) de un aviso pendiente |
+| `POST /ordenes/:orden_id/repuestos/:repuesto_id/ajustes` | Administrador: registra una devolución o un cambio sobre el repuesto original |
 
 Los listados aceptan `por_pagina` (20 por defecto, máximo 100).
 
@@ -134,6 +135,49 @@ Ejemplo de valorización de ese aviso por administración:
 }
 ```
 
+## Devolución o cambio (HU35)
+
+Un administrador puede registrar, sobre un repuesto ya valorizado de una orden
+abierta, que unas unidades se devolvieron al proveedor o se cambiaron por una
+falla. El registro original no se modifica: descripción, cantidad, costo,
+margen, precio al cliente y quién lo cargó quedan como estaban. Cada devolución
+o cambio se agrega al historial de ese repuesto.
+
+La cantidad del ajuste no puede superar las unidades que todavía no se
+devolvieron ni cambiaron. Una misma unidad no se ajusta dos veces.
+
+En una devolución, el precio al cliente de esas unidades sale del total de la
+orden. El costo unitario acreditado es el que informa recepción y puede ser
+menor que el original si el proveedor no reintegra el total. En un cambio, esas
+unidades siguen en la orden y su precio al cliente se recalcula con el costo
+del reemplazo y el margen original. Si el costo no cambia, el total queda igual
+y el historial se conserva igual.
+
+El total de una orden abierta es la mano de obra más el precio original de los
+repuestos más estos ajustes. Si el resultado quedaría por debajo de los
+adelantos ya registrados, el ajuste se rechaza.
+
+Una orden cerrada conserva el total congelado y no acepta devoluciones ni
+cambios. Para corregirla hay que reabrirla. Una orden cancelada tampoco acepta
+el ajuste. Un repuesto pendiente de valorizar tiene que tener el costo cargado
+antes.
+
+```json
+{
+  "ajuste": {
+    "tipo": "devolucion",
+    "cantidad": 1,
+    "costo_unitario": "12500.50",
+    "motivo": "Falla de fábrica, el proveedor lo recibió"
+  }
+}
+```
+
+`tipo` también puede ser `cambio`. En ese caso `costo_unitario` es el costo del
+reemplazo. La respuesta trae el ajuste de costo, el ajuste de precio al cliente
+y la porción del precio original afectada. El listado de la orden incluye ese
+historial, el precio vigente y las unidades que todavía se pueden ajustar.
+
 ## Migración y verificación
 
 Aplicar `bin/rails db:migrate`. La nueva migración conserva los artículos existentes
@@ -160,6 +204,14 @@ API deben usar el nuevo campo `precio` del catálogo.
     de valorizar. Todavía no hay endpoint ni pantalla para cerrar una orden, así
     que este paso se verifica con los tests de `spec/models/orden_spec.rb`, no
     a mano.
+13. Como administrador, en un repuesto valorizado de una orden abierta, registrar
+    una devolución de parte de las unidades. El renglón original conserva costo
+    y precio, el historial muestra la devolución y el precio vigente baja.
+14. Registrar un cambio con otro costo unitario. El historial muestra el costo
+    del reemplazo y el precio vigente usa el margen original.
+15. Confirmar que no se puede devolver o cambiar más unidades que las que siguen
+    disponibles, ni hacerlo en una orden cerrada o cancelada. El total congelado
+    no se modifica.
 
 Pruebas automatizadas:
 
@@ -170,7 +222,8 @@ La demo local usa `metodologias_hu18_demo`; las pruebas, `metodologias_hu18_test
 
 ```sh
 bundle exec rspec spec/services/repuesto_agregar_spec.rb spec/services/repuesto_avisar_spec.rb \
-  spec/services/repuesto_valorizar_spec.rb spec/requests/repuestos_spec.rb \
+  spec/services/repuesto_valorizar_spec.rb spec/services/repuesto_registrar_ajuste_spec.rb \
+  spec/requests/repuestos_spec.rb spec/requests/ajustes_repuesto_spec.rb \
   spec/requests/repuestos_catalogo_spec.rb spec/models/orden_spec.rb
 bin/rubocop
 cd frontend

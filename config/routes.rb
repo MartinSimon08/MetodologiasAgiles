@@ -32,6 +32,7 @@ Rails.application.routes.draw do
   resources :ordenes, only: %i[index show create] do
     resources :adelantos, only: %i[index create]
     resources :repuestos, only: %i[index create] do
+      resources :ajustes, only: :create, controller: "ajustes_repuesto"
       member do
         patch :valorizar
       end

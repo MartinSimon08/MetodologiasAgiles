@@ -208,6 +208,49 @@ button.accion-catalogo.eliminar:focus-visible {
   color: var(--ok-texto);
 }
 
+.formulario .opciones {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 1rem;
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.formulario .opciones legend {
+  width: 100%;
+  font-weight: 600;
+  margin-bottom: 0.2rem;
+}
+
+.formulario .opciones label {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.formulario .opciones input[type='radio'] {
+  width: auto;
+  min-height: 0;
+}
+
+.historial-ajustes {
+  list-style: none;
+  margin: 0.35rem 0 0;
+  padding: 0.65rem 0 0;
+  border-top: 1px solid var(--borde);
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.historial-ajustes li {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
 .resumen-saldo {
   margin: 0;
   padding: 0.75rem 0.9rem;

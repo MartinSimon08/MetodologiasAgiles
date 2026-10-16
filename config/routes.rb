@@ -31,6 +31,7 @@ Rails.application.routes.draw do
     end
   end
   resources :repuestos_catalogo, only: %i[index create update destroy]
+  resources :repuestos_por_proveedor, only: :index
 
   resources :tareas_frecuentes, only: %i[index create]
   resources :tareas_mecanico, only: :index

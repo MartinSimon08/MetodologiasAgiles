@@ -81,6 +81,18 @@ como baja. No se borra la fila. Una orden cerrada o cancelada no admite
 correcciones ni bajas. Si el total resultante quedaría por debajo de los
 adelantos ya registrados, la operación se rechaza.
 
+## Compras por proveedor (HU42)
+
+El administrador consulta las compras valorizadas desde **Repuestos → Por
+proveedor**. Puede filtrar por nombre de proveedor (coincidencias parciales, sin
+distinguir mayúsculas) y por el período de carga (`desde` y `hasta`, inclusive).
+
+El listado muestra cuánto se le compró a cada proveedor: la suma de
+`costo_unitario × cantidad`. Los avisos pendientes de valorizar no entran porque
+todavía no tienen costo. Las compras sin proveedor aparecen como un grupo
+aparte. El detalle de cada compra incluye el total de esa línea y un enlace a la
+orden.
+
 ## API
 
 Todos estos endpoints requieren JWT. Salvo donde se indica, son de administrador;
@@ -94,6 +106,7 @@ como cadenas decimales.
 | `PATCH /repuestos_catalogo/:id` | Editar nombre y/o precio del catálogo |
 | `DELETE /repuestos_catalogo/:id` | Eliminar del catálogo conservando las líneas de las órdenes; devuelve 204 |
 | `GET /ordenes/:orden_id/repuestos?pagina=1` | Administrador y mecánico. Vigentes de la orden. El administrador recibe precio, ganancia y `quitados`. El mecánico no recibe costo, margen, precio, ganancia ni proveedor |
+| `GET /repuestos_por_proveedor?proveedor=filtro&desde=2026-04-01&hasta=2026-04-30&pagina=1` | Compras valorizadas agrupadas por proveedor, con total comprado (costo real) y detalle paginado |
 | `POST /ordenes/:orden_id/repuestos` | Administrador: registra una compra valorizada. Mecánico: avisa un repuesto pendiente de valorizar (solo `descripcion` y `cantidad`) |
 | `PATCH /ordenes/:orden_id/repuestos/:id` | Administrador: corrige cantidad, costo, margen o proveedor de una compra en una orden abierta y recalcula el precio |
 | `DELETE /ordenes/:orden_id/repuestos/:id` | Administrador: quita la compra del total y registra la baja. Responde el repuesto con `quitado_en` y `quitado_por` |
@@ -201,6 +214,9 @@ API deben usar el nuevo campo `precio` del catálogo.
 15. En una orden cerrada no aparecen **Corregir** ni **Quitar**.
 16. Si la corrección o la baja dejarían el total por debajo de un adelanto ya
     registrado, el sistema la rechaza y la compra no cambia.
+17. Desde **Repuestos → Por proveedor**, filtrar por el proveedor de una compra
+    y un período que la incluya: el total del grupo debe ser costo × cantidad.
+    Un aviso pendiente no debe aparecer. Un mecánico no accede a esta pantalla.
 
 Pruebas automatizadas:
 
@@ -212,8 +228,9 @@ La demo local usa `metodologias_hu18_demo`; las pruebas, `metodologias_hu18_test
 ```sh
 bundle exec rspec spec/services/repuesto_agregar_spec.rb spec/services/repuesto_avisar_spec.rb \
   spec/services/repuesto_valorizar_spec.rb spec/services/repuesto_editar_spec.rb \
-  spec/services/repuesto_quitar_spec.rb spec/requests/repuestos_spec.rb \
-  spec/requests/repuestos_catalogo_spec.rb spec/requests/autorizacion_por_rol_spec.rb \
+  spec/services/repuesto_quitar_spec.rb spec/services/repuestos_por_proveedor_spec.rb \
+  spec/requests/repuestos_spec.rb spec/requests/repuestos_catalogo_spec.rb \
+  spec/requests/repuestos_por_proveedor_spec.rb spec/requests/autorizacion_por_rol_spec.rb \
   spec/models/orden_spec.rb
 bin/rubocop
 cd frontend

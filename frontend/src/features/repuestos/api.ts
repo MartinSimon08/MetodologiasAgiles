@@ -117,3 +117,53 @@ export async function quitarRepuesto(ordenId: number, id: number) {
   const { data } = await api.delete<Repuesto>(`/ordenes/${ordenId}/repuestos/${id}`)
   return data
 }
+
+export interface CompraPorProveedor {
+  proveedor: string | null
+  total_comprado: string
+  cantidad_compras: number
+}
+
+export interface RepuestoPorProveedor {
+  id: number
+  descripcion: string
+  cantidad: number
+  costo_unitario: string
+  total_costo: string
+  proveedor: string | null
+  created_at: string
+  orden_id: number
+  orden: {
+    id: number
+    cliente: string
+    vehiculo: { id: number; patente: string; marca: string | null; modelo: string | null; anio: number | null }
+  }
+}
+
+export interface PaginaRepuestosPorProveedor {
+  proveedores: CompraPorProveedor[]
+  total_comprado: string
+  repuestos: RepuestoPorProveedor[]
+  meta: MetaPaginacion
+}
+
+export function nombreProveedor(proveedor: string | null) {
+  return proveedor?.trim() ? proveedor : 'Sin proveedor'
+}
+
+export async function listarRepuestosPorProveedor(filtros: {
+  proveedor?: string
+  desde?: string
+  hasta?: string
+  pagina: number
+}) {
+  const { data } = await api.get<PaginaRepuestosPorProveedor>('/repuestos_por_proveedor', {
+    params: {
+      pagina: filtros.pagina,
+      ...(filtros.proveedor ? { proveedor: filtros.proveedor } : {}),
+      ...(filtros.desde ? { desde: filtros.desde } : {}),
+      ...(filtros.hasta ? { hasta: filtros.hasta } : {}),
+    },
+  })
+  return data
+}

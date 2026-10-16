@@ -5,6 +5,7 @@ import { EncabezadoPagina } from '../../components/EncabezadoPagina'
 import { errorMessage } from '../../lib/api'
 import { CatalogoRepuestos } from './CatalogoRepuestos'
 import { RepuestoCatalogoForm } from './RepuestoCatalogoForm'
+import { RepuestosNav } from './RepuestosNav'
 import { eliminarCatalogo, type RepuestoCatalogo } from './api'
 
 export function CatalogoRepuestosPage() {
@@ -28,6 +29,7 @@ export function CatalogoRepuestosPage() {
 
   return (
     <section className="repuestos">
+      <RepuestosNav />
       <EncabezadoPagina
         titulo="Catálogo de repuestos"
         bajada="Cargá repuestos y sus precios para autocompletar las órdenes."

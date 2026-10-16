@@ -745,3 +745,39 @@ button.secundario.peligro {
   flex-wrap: wrap;
   gap: 0.5rem 0.75rem;
 }
+
+.subnav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.subnav a {
+  color: var(--texto-suave);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.subnav a.active {
+  color: var(--acento);
+  font-weight: 600;
+}
+
+.filtros-compras {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.9rem;
+}
+
+.filtros-compras label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-weight: 500;
+}
+
+.repuestos .item-datos a {
+  color: var(--acento);
+  font-weight: 500;
+  text-decoration: none;
+}

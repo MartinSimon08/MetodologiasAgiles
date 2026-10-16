@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { errorMessage } from '../../lib/api'
 import { CatalogoRepuestos } from './CatalogoRepuestos'
 import { RepuestoCatalogoForm } from './RepuestoCatalogoForm'
+import { RepuestosNav } from './RepuestosNav'
 import { eliminarCatalogo, type RepuestoCatalogo } from './api'
 
 export function CatalogoRepuestosPage() {
@@ -26,6 +27,7 @@ export function CatalogoRepuestosPage() {
 
   return (
     <section className="repuestos">
+      <RepuestosNav />
       <header>
         <h1>Catálogo de repuestos</h1>
         <p className="bajada">Cargá repuestos y sus precios para autocompletar las órdenes.</p>

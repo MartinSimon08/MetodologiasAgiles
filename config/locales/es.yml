@@ -46,6 +46,7 @@ es:
         cantidad: Cantidad
         costo_unitario: Costo unitario real
         margen: Margen
+        proveedor: Proveedor
         estado: Estado
         repuesto_catalogo: Repuesto del catálogo
         registrado_por: Administrador

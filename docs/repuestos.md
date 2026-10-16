@@ -98,6 +98,7 @@ como cadenas decimales.
 | `PATCH /ordenes/:orden_id/repuestos/:id` | Administrador: corrige cantidad, costo, margen o proveedor de una compra en una orden abierta y recalcula el precio |
 | `DELETE /ordenes/:orden_id/repuestos/:id` | Administrador: quita la compra del total y registra la baja. Responde el repuesto con `quitado_en` y `quitado_por` |
 | `PATCH /ordenes/:orden_id/repuestos/:id/valorizar` | Administrador: carga el costo (y opcionalmente el margen) de un aviso pendiente |
+| `POST /ordenes/:orden_id/repuestos/:repuesto_id/ajustes` | Administrador: registra una devolución o un cambio sobre el repuesto original |
 
 Los listados aceptan `por_pagina` (20 por defecto, máximo 100).
 
@@ -168,6 +169,53 @@ en el servidor. Para quitarla, `DELETE` sobre la misma ruta, sin cuerpo.
 }
 ```
 
+## Devolución o cambio (HU35)
+
+Un administrador puede registrar, sobre un repuesto ya valorizado de una orden
+abierta, que unas unidades se devolvieron al proveedor o se cambiaron por una
+falla. El registro original no se modifica: descripción, cantidad, costo,
+margen, precio al cliente y quién lo cargó quedan como estaban. Cada devolución
+o cambio se agrega al historial de ese repuesto.
+
+La cantidad del ajuste no puede superar las unidades que todavía no se
+devolvieron ni cambiaron. Una misma unidad no se ajusta dos veces. Un repuesto
+ya quitado de la orden tampoco acepta un ajuste.
+
+En una devolución, el precio al cliente de esas unidades sale del total de la
+orden. El costo unitario acreditado es el que informa recepción y puede ser
+menor que el original si el proveedor no reintegra el total. En un cambio, esas
+unidades siguen en la orden y su precio al cliente se recalcula con el costo
+del reemplazo y el margen original. Si el costo no cambia, el total queda igual
+y el historial se conserva igual.
+
+El total de una orden abierta suma la mano de obra de las tareas que siguen en
+la orden, el precio original de los repuestos vigentes valorizados y estos
+ajustes. Los repuestos quitados no entran. Si el resultado quedaría por debajo
+de los adelantos ya registrados, el ajuste se rechaza. Quitar el repuesto lo
+saca del total junto con sus ajustes.
+
+Una orden cerrada conserva el total congelado y no acepta devoluciones ni
+cambios. Para corregirla hay que reabrirla. Una orden cancelada tampoco acepta
+el ajuste. Un repuesto pendiente de valorizar tiene que tener el costo cargado
+antes.
+
+```json
+{
+  "ajuste": {
+    "tipo": "devolucion",
+    "cantidad": 1,
+    "costo_unitario": "12500.50",
+    "motivo": "Falla de fábrica, el proveedor lo recibió"
+  }
+}
+```
+
+`tipo` también puede ser `cambio`. En ese caso `costo_unitario` es el costo del
+reemplazo. La respuesta trae el ajuste de costo, el ajuste de precio al cliente
+y la porción del precio original afectada. El listado de la orden incluye ese
+historial, el precio vigente y las unidades que todavía se pueden ajustar.
+El mecánico no ve costos, márgenes, precios ni el historial.
+
 ## Migración y verificación
 
 Aplicar `bin/rails db:migrate`. La nueva migración conserva los artículos existentes
@@ -201,6 +249,14 @@ API deben usar el nuevo campo `precio` del catálogo.
 15. En una orden cerrada no aparecen **Corregir** ni **Quitar**.
 16. Si la corrección o la baja dejarían el total por debajo de un adelanto ya
     registrado, el sistema la rechaza y la compra no cambia.
+17. Como administrador, en un repuesto valorizado de una orden abierta, registrar
+    una devolución de parte de las unidades. El renglón original conserva costo
+    y precio, el historial muestra la devolución y el precio vigente baja.
+18. Registrar un cambio con otro costo unitario. El historial muestra el costo
+    del reemplazo y el precio vigente usa el margen original.
+19. Confirmar que no se puede devolver o cambiar más unidades que las que siguen
+    disponibles, ni hacerlo en una orden cerrada, cancelada o sobre un repuesto
+    ya quitado. El total congelado no se modifica.
 
 Pruebas automatizadas:
 
@@ -212,7 +268,8 @@ La demo local usa `metodologias_hu18_demo`; las pruebas, `metodologias_hu18_test
 ```sh
 bundle exec rspec spec/services/repuesto_agregar_spec.rb spec/services/repuesto_avisar_spec.rb \
   spec/services/repuesto_valorizar_spec.rb spec/services/repuesto_editar_spec.rb \
-  spec/services/repuesto_quitar_spec.rb spec/requests/repuestos_spec.rb \
+  spec/services/repuesto_quitar_spec.rb spec/services/repuesto_registrar_ajuste_spec.rb \
+  spec/requests/repuestos_spec.rb spec/requests/ajustes_repuesto_spec.rb \
   spec/requests/repuestos_catalogo_spec.rb spec/requests/autorizacion_por_rol_spec.rb \
   spec/models/orden_spec.rb
 bin/rubocop

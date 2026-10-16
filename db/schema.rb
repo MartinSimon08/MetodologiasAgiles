@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_23_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_25_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "unaccent"
@@ -25,6 +25,27 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_23_120000) do
     t.index ["orden_id"], name: "index_adelantos_on_orden_id"
     t.index ["registrado_por_id"], name: "index_adelantos_on_registrado_por_id"
     t.check_constraint "importe > 0::numeric", name: "adelantos_importe_positivo"
+  end
+
+  create_table "ajustes_repuesto", force: :cascade do |t|
+    t.bigint "repuesto_id", null: false
+    t.string "tipo", null: false
+    t.integer "cantidad", null: false
+    t.decimal "costo_unitario", precision: 12, scale: 2, null: false
+    t.decimal "ajuste_costo", precision: 24, scale: 2, null: false
+    t.decimal "ajuste_precio_cliente", precision: 24, scale: 2, null: false
+    t.decimal "precio_original", precision: 24, scale: 2, null: false
+    t.text "motivo", null: false
+    t.bigint "registrado_por_id", null: false
+    t.datetime "registrado_en", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["registrado_por_id"], name: "index_ajustes_repuesto_on_registrado_por_id"
+    t.index ["repuesto_id"], name: "index_ajustes_repuesto_on_repuesto_id"
+    t.check_constraint "cantidad > 0", name: "ajustes_repuesto_cantidad_positiva"
+    t.check_constraint "costo_unitario >= 0::numeric", name: "ajustes_repuesto_costo_no_negativo"
+    t.check_constraint "precio_original >= 0::numeric", name: "ajustes_repuesto_precio_original_no_negativo"
+    t.check_constraint "tipo::text = ANY (ARRAY['devolucion'::character varying, 'cambio'::character varying]::text[])", name: "ajustes_repuesto_tipo_valido"
   end
 
   create_table "clientes", force: :cascade do |t|
@@ -160,6 +181,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_23_120000) do
 
   add_foreign_key "adelantos", "ordenes"
   add_foreign_key "adelantos", "usuarios", column: "registrado_por_id"
+  add_foreign_key "ajustes_repuesto", "repuestos"
+  add_foreign_key "ajustes_repuesto", "usuarios", column: "registrado_por_id"
   add_foreign_key "ordenes", "clientes"
   add_foreign_key "ordenes", "usuarios", column: "cerrada_por_id"
   add_foreign_key "ordenes", "vehiculos"

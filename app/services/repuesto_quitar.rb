@@ -7,7 +7,7 @@ class RepuestoQuitar
       raise ActiveRecord::RecordInvalid, repuesto if repuesto.errors.any?
 
       repuesto.assign_attributes(quitado_por: quitado_por, quitado_en: Time.current)
-      unless repuesto.orden.alcanza_para_adelantos?(repuesto, precio: 0)
+      unless repuesto.orden.alcanza_para_adelantos?(repuesto, precio: 0, incluir_ajustes_del_repuesto: false)
         repuesto.errors.add(:base, :supera_adelantos)
         raise ActiveRecord::RecordInvalid, repuesto
       end

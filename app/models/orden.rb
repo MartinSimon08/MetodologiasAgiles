@@ -18,16 +18,26 @@ class Orden < ApplicationRecord
   validate :sin_repuestos_pendientes_de_valorizar, if: :cerrada?
 
   def total
-    tareas.sum(:precio).to_d + repuestos.sum(:precio_cliente).to_d
+    tareas.sum(:precio).to_d + repuestos.vigentes.sum(:precio_cliente).to_d
   end
 
   def saldo
     total - adelantos.sum(:importe).to_d
   end
 
+  def total_reemplazando(repuesto, precio:)
+    tareas.sum(:precio).to_d +
+      repuestos.vigentes.where.not(id: repuesto.id).sum(:precio_cliente).to_d +
+      precio.to_d
+  end
+
+  def alcanza_para_adelantos?(repuesto, precio:)
+    total_reemplazando(repuesto, precio: precio) >= adelantos.sum(:importe).to_d
+  end
+
   private
 
   def sin_repuestos_pendientes_de_valorizar
-    errors.add(:base, :repuestos_pendientes) if repuestos.pendiente_de_valorizar.exists?
+    errors.add(:base, :repuestos_pendientes) if repuestos.vigentes.pendiente_de_valorizar.exists?
   end
 end

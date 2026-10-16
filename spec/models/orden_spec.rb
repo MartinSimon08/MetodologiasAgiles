@@ -116,4 +116,27 @@ RSpec.describe Orden, type: :model do
     expect(orden.destroy).to be false
     expect(orden.errors[:base]).to be_present
   end
+
+  it "no suma al total un repuesto quitado" do
+    orden = create(:orden)
+    admin = create(:usuario, :administrador)
+    vigente = RepuestoAgregar.call(orden: orden, registrado_por: admin, descripcion: "Bujía",
+                                   cantidad: 1, costo_unitario: "50", margen: "20")
+    quitado = RepuestoAgregar.call(orden: orden, registrado_por: admin, descripcion: "Filtro",
+                                   cantidad: 2, costo_unitario: "100.50", margen: "20")
+
+    RepuestoQuitar.call(repuesto: quitado, quitado_por: admin)
+
+    expect(orden.reload.total).to eq(vigente.precio_cliente)
+  end
+
+  it "permite cerrar la orden si el repuesto pendiente ya fue quitado" do
+    orden = create(:orden)
+    admin = create(:usuario, :administrador)
+    pendiente = RepuestoAvisar.call(orden: orden, registrado_por: admin, descripcion: "Filtro", cantidad: 1)
+
+    RepuestoQuitar.call(repuesto: pendiente, quitado_por: admin)
+
+    expect(orden.update(estado: :cerrada)).to be true
+  end
 end

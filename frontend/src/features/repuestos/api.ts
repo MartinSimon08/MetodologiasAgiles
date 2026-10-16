@@ -24,7 +24,16 @@ export interface Repuesto {
   ganancia: string | null
   proveedor: string | null
   created_at: string
+  quitado_en: string | null
   registrado_por: { id: number; nombre: string }
+  quitado_por: { id: number; nombre: string } | null
+}
+
+export interface CambiosRepuesto {
+  cantidad: string
+  costo_unitario?: string
+  margen?: string
+  proveedor?: string
 }
 
 export interface NuevoRepuesto {
@@ -71,7 +80,7 @@ export interface VistaPreviaRepuesto {
 }
 
 export async function listarRepuestos(ordenId: number, pagina: number) {
-  const { data } = await api.get<{ repuestos: Repuesto[]; meta: MetaPaginacion }>(
+  const { data } = await api.get<{ repuestos: Repuesto[]; quitados: Repuesto[]; meta: MetaPaginacion }>(
     `/ordenes/${ordenId}/repuestos`, { params: { pagina } },
   )
   return data
@@ -96,5 +105,15 @@ export async function avisarRepuesto(ordenId: number, repuesto: AvisoRepuesto) {
 
 export async function valorizarRepuesto(ordenId: number, id: number, repuesto: ValorizarRepuesto) {
   const { data } = await api.patch<Repuesto>(`/ordenes/${ordenId}/repuestos/${id}/valorizar`, { repuesto })
+  return data
+}
+
+export async function editarRepuesto(ordenId: number, id: number, repuesto: CambiosRepuesto) {
+  const { data } = await api.patch<Repuesto>(`/ordenes/${ordenId}/repuestos/${id}`, { repuesto })
+  return data
+}
+
+export async function quitarRepuesto(ordenId: number, id: number) {
+  const { data } = await api.delete<Repuesto>(`/ordenes/${ordenId}/repuestos/${id}`)
   return data
 }

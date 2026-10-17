@@ -18,11 +18,11 @@ export interface Repuesto {
   descripcion: string
   cantidad: number
   estado: EstadoRepuesto
-  costo_unitario: string | null
-  margen: string | null
-  precio_cliente: string | null
-  ganancia: string | null
-  proveedor: string | null
+  costo_unitario?: string | null
+  margen?: string | null
+  precio_cliente?: string | null
+  ganancia?: string | null
+  proveedor?: string | null
   created_at: string
   registrado_por: { id: number; nombre: string }
 }

@@ -18,7 +18,7 @@ RSpec.describe RepuestoAvisar do
   end
 
   it "rechaza avisos en órdenes cerradas" do
-    orden.update!(estado: :cerrada)
+    marcar_cerrada(orden)
 
     expect { avisar }.to raise_error(ActiveRecord::RecordInvalid) { |error|
       expect(error.record.errors[:orden]).to include("está cerrada")

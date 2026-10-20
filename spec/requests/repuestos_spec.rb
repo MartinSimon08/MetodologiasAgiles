@@ -58,8 +58,8 @@ RSpec.describe "Repuestos", type: :request do
 
       expect(response).to have_http_status(:created)
       expect(response.parsed_body).to include("descripcion" => "Filtro", "cantidad" => 2, "estado" => "pendiente_de_valorizar",
-                                              "costo_unitario" => nil, "margen" => nil, "precio_cliente" => nil, "ganancia" => nil,
                                               "registrado_por_id" => mecanico.id)
+      expect(response.parsed_body.keys).not_to include("costo_unitario", "margen", "precio_cliente", "ganancia", "proveedor")
     end
 
     it "ignora el costo y el margen enviados por un mecánico al avisar" do
@@ -148,6 +148,26 @@ RSpec.describe "Repuestos", type: :request do
       expect(response.parsed_body["repuestos"].first["created_at"]).to be_present
       expect(response.parsed_body["quitados"]).to eq([])
       expect(response.parsed_body["meta"]).to include("total" => 1)
+    end
+
+    it "le muestra al mecánico los repuestos cargados sin costos, márgenes ni precios" do
+      RepuestoAgregar.call(orden: orden, registrado_por: admin, **atributos, proveedor: "Casa Central")
+      RepuestoAvisar.call(orden: orden, registrado_por: mecanico, descripcion: "Bujía", cantidad: 4)
+
+      get "/ordenes/#{orden.id}/repuestos", headers: auth_headers(mecanico)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body["repuestos"]).to contain_exactly(
+        include("descripcion" => "Filtro", "cantidad" => 2, "estado" => "valorizado",
+                "registrado_por" => { "id" => admin.id, "nombre" => admin.nombre }),
+        include("descripcion" => "Bujía", "cantidad" => 4, "estado" => "pendiente_de_valorizar")
+      )
+      response.parsed_body["repuestos"].each do |repuesto|
+        expect(repuesto.keys).to contain_exactly(
+          "id", "orden_id", "repuesto_catalogo_id", "descripcion", "cantidad", "estado",
+          "registrado_por_id", "registrado_por", "created_at"
+        )
+      end
     end
   end
 
@@ -458,11 +478,6 @@ RSpec.describe "Repuestos", type: :request do
 
     post "/ordenes/#{orden.id}/repuestos", params: { repuesto: atributos }, as: :json
     expect(response).to have_http_status(:unauthorized)
-  end
-
-  it "prohíbe a mecánicos consultar las compras de la orden" do
-    get "/ordenes/#{orden.id}/repuestos", headers: auth_headers(mecanico)
-    expect(response).to have_http_status(:forbidden)
   end
 
   it "exige autenticación para consultar costos del catálogo" do

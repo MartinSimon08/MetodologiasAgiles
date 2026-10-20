@@ -93,7 +93,7 @@ como cadenas decimales.
 | `POST /repuestos_catalogo` | Cargar nombre y precio en el catálogo |
 | `PATCH /repuestos_catalogo/:id` | Editar nombre y/o precio del catálogo |
 | `DELETE /repuestos_catalogo/:id` | Eliminar del catálogo conservando las líneas de las órdenes; devuelve 204 |
-| `GET /ordenes/:orden_id/repuestos?pagina=1` | Compras vigentes de esa orden, con precio y ganancia. Incluye `quitados` con las bajas registradas |
+| `GET /ordenes/:orden_id/repuestos?pagina=1` | Administrador y mecánico. Vigentes de la orden. El administrador recibe precio, ganancia y `quitados`. El mecánico no recibe costo, margen, precio, ganancia ni proveedor |
 | `POST /ordenes/:orden_id/repuestos` | Administrador: registra una compra valorizada. Mecánico: avisa un repuesto pendiente de valorizar (solo `descripcion` y `cantidad`) |
 | `PATCH /ordenes/:orden_id/repuestos/:id` | Administrador: corrige cantidad, costo, margen o proveedor de una compra en una orden abierta y recalcula el precio |
 | `DELETE /ordenes/:orden_id/repuestos/:id` | Administrador: quita la compra del total y registra la baja. Responde el repuesto con `quitado_en` y `quitado_por` |

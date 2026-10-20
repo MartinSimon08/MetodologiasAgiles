@@ -24,7 +24,6 @@ export function RepuestosPanel({ ordenId, ordenAbierta }: { ordenId: number; ord
   const repuestos = useQuery({
     queryKey: ['repuestos', ordenId, pagina],
     queryFn: () => listarRepuestos(ordenId, pagina),
-    enabled: esAdministrador,
   })
   const quitar = useMutation({
     mutationFn: (id: number) => quitarRepuesto(ordenId, id),
@@ -72,63 +71,61 @@ export function RepuestosPanel({ ordenId, ordenAbierta }: { ordenId: number; ord
     setQuitandoId(repuesto.id)
   }
 
-  if (!esAdministrador) {
-    return (
-      <section className="repuestos">
-        <header className="encabezado">
-          <h2>Repuestos</h2>
-          {ordenAbierta && !creando && <button onClick={empezarCarga}>Avisar repuesto usado</button>}
-        </header>
-        {!ordenAbierta && <p className="estado">Esta orden ya no admite cambios en los repuestos.</p>}
-        {aviso && <p className="aviso" role="status">{aviso}</p>}
-        {creando && ordenAbierta && <AvisoRepuestoForm ordenId={ordenId} onCancelar={() => setCreando(false)}
-          onGuardado={() => {
-            setCreando(false)
-            setAviso('Avisaste a administración que usaste este repuesto.')
-          }} />}
-      </section>
-    )
+  function guardado() {
+    setCreando(false)
+    setPagina(1)
+    setAviso(esAdministrador
+      ? 'Repuesto agregado a la orden.'
+      : 'Avisaste a administración que usaste este repuesto.')
   }
 
-  const quitados = repuestos.data?.quitados ?? []
+  const quitados = esAdministrador ? (repuestos.data?.quitados ?? []) : []
 
   return (
     <section className="repuestos">
       <header className="encabezado">
-        <h2>Repuestos comprados</h2>
-        {ordenAbierta && !creando && <button onClick={empezarCarga}>Agregar repuesto</button>}
+        <h2>{esAdministrador ? 'Repuestos comprados' : 'Repuestos'}</h2>
+        {ordenAbierta && !creando && <button onClick={empezarCarga}>
+          {esAdministrador ? 'Agregar repuesto' : 'Avisar repuesto usado'}
+        </button>}
       </header>
       {!ordenAbierta && <p className="estado">Esta orden ya no admite cambios en los repuestos.</p>}
       {aviso && <p className="aviso" role="status">{aviso}</p>}
-      {creando && ordenAbierta && <NuevoRepuestoForm ordenId={ordenId}
-        onCancelar={() => setCreando(false)}
-        onGuardado={() => {
-          setCreando(false)
-          setPagina(1)
-          setAviso('Repuesto agregado a la orden.')
-        }} />}
-      {editando && ordenAbierta && <EditarRepuestoForm key={editando.id} ordenId={ordenId} repuesto={editando}
+      {creando && ordenAbierta && (esAdministrador
+        ? <NuevoRepuestoForm ordenId={ordenId} onCancelar={() => setCreando(false)} onGuardado={guardado} />
+        : <AvisoRepuestoForm ordenId={ordenId} onCancelar={() => setCreando(false)} onGuardado={guardado} />)}
+      {esAdministrador && editando && ordenAbierta && <EditarRepuestoForm key={editando.id} ordenId={ordenId} repuesto={editando}
         onCancelar={() => setEditando(null)} onGuardado={() => {
           const pendiente = editando?.estado === 'pendiente_de_valorizar'
           setEditando(null)
           setAviso(pendiente ? 'Repuesto corregido.' : 'Repuesto corregido. El precio al cliente se recalculó.')
         }} />}
-      {valorizando && <ValorizarRepuestoForm key={valorizando.id} ordenId={ordenId} repuesto={valorizando}
+      {esAdministrador && valorizando && <ValorizarRepuestoForm key={valorizando.id} ordenId={ordenId} repuesto={valorizando}
         onCancelar={() => setValorizando(null)} onGuardado={() => setValorizando(null)} />}
       {repuestos.isPending && <p className="estado">Cargando repuestos…</p>}
       {repuestos.isError && <p className="error" role="alert">
         {errorMessage(repuestos.error, 'No se pudieron cargar los repuestos.')}
       </p>}
       {repuestos.data?.repuestos.length === 0 && <p className="estado">
-        {quitados.length > 0
+        {esAdministrador && quitados.length > 0
           ? 'No hay repuestos vigentes en esta orden.'
-          : 'Todavía no hay compras registradas en esta orden.'}
+          : esAdministrador
+            ? 'Todavía no hay compras registradas en esta orden.'
+            : 'Todavía no hay repuestos cargados en esta orden.'}
       </p>}
       {repuestos.data && <>
         <ul className="lista">
           {repuestos.data.repuestos.map((repuesto) => <li key={repuesto.id} className="tarjeta item-datos">
             <strong>{repuesto.descripcion}</strong>
-            {repuesto.estado === 'pendiente_de_valorizar' ? (
+            {!esAdministrador ? (
+              <>
+                <span className={`insignia insignia-${repuesto.estado}`}>
+                  {ESTADO_REPUESTO_LABELS[repuesto.estado]}
+                </span>
+                <span>Cantidad: {repuesto.cantidad}</span>
+                <span>Cargado por {repuesto.registrado_por.nombre} · {fechaHora(repuesto.created_at)}</span>
+              </>
+            ) : repuesto.estado === 'pendiente_de_valorizar' ? (
               <>
                 <span className="insignia insignia-pendiente_de_valorizar">
                   {ESTADO_REPUESTO_LABELS[repuesto.estado]}
@@ -144,7 +141,7 @@ export function RepuestosPanel({ ordenId, ordenAbierta }: { ordenId: number; ord
                 <span>Cargado por {repuesto.registrado_por.nombre} · {fechaHora(repuesto.created_at)}</span>
               </>
             )}
-            {ordenAbierta && quitandoId === repuesto.id ? (
+            {esAdministrador && ordenAbierta && quitandoId === repuesto.id ? (
               <ConfirmacionQuitar repuesto={repuesto} pendiente={quitar.isPending}
                 error={quitar.isError ? quitar.error : null}
                 onCancelar={() => {
@@ -152,7 +149,7 @@ export function RepuestosPanel({ ordenId, ordenAbierta }: { ordenId: number; ord
                   setQuitandoId(null)
                 }}
                 onConfirmar={() => quitar.mutate(repuesto.id)} />
-            ) : ordenAbierta && (
+            ) : esAdministrador && ordenAbierta && (
               <div className="acciones item-acciones">
                 <button type="button" className="secundario" onClick={() => empezarEdicion(repuesto)}>Corregir</button>
                 {repuesto.estado === 'pendiente_de_valorizar' && (
@@ -165,7 +162,7 @@ export function RepuestosPanel({ ordenId, ordenAbierta }: { ordenId: number; ord
         </ul>
         <Paginacion meta={repuestos.data.meta} cargando={repuestos.isFetching} onCambiar={setPagina} />
       </>}
-      {quitados.length > 0 && <section className="repuestos-quitados">
+      {esAdministrador && quitados.length > 0 && <section className="repuestos-quitados">
         <h2>Bajas registradas</h2>
         <ul className="lista">
           {quitados.map((repuesto) => <li key={repuesto.id} className="tarjeta item-datos repuesto-quitado">

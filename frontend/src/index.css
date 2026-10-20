@@ -439,9 +439,14 @@ button.accion-catalogo.eliminar:focus-visible {
   min-width: 0;
 }
 
-.item-datos span {
+.item-datos span:not(.insignia) {
   color: var(--texto-suave);
   overflow-wrap: anywhere;
+}
+
+.item-datos .insignia {
+  align-self: flex-start;
+  margin: 0.2rem 0;
 }
 
 .rol {
@@ -554,7 +559,8 @@ button.secundario.peligro {
 }
 
 .insignia-cerrada,
-.insignia-terminada {
+.insignia-terminada,
+.insignia-valorizado {
   color: var(--texto-suave);
 }
 

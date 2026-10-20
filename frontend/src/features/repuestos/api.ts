@@ -18,15 +18,15 @@ export interface Repuesto {
   descripcion: string
   cantidad: number
   estado: EstadoRepuesto
-  costo_unitario: string | null
-  margen: string | null
-  precio_cliente: string | null
-  ganancia: string | null
-  proveedor: string | null
+  costo_unitario?: string | null
+  margen?: string | null
+  precio_cliente?: string | null
+  ganancia?: string | null
+  proveedor?: string | null
   created_at: string
-  quitado_en: string | null
+  quitado_en?: string | null
   registrado_por: { id: number; nombre: string }
-  quitado_por: { id: number; nombre: string } | null
+  quitado_por?: { id: number; nombre: string } | null
 }
 
 export interface CambiosRepuesto {
@@ -80,7 +80,7 @@ export interface VistaPreviaRepuesto {
 }
 
 export async function listarRepuestos(ordenId: number, pagina: number) {
-  const { data } = await api.get<{ repuestos: Repuesto[]; quitados: Repuesto[]; meta: MetaPaginacion }>(
+  const { data } = await api.get<{ repuestos: Repuesto[]; quitados?: Repuesto[]; meta: MetaPaginacion }>(
     `/ordenes/${ordenId}/repuestos`, { params: { pagina } },
   )
   return data

@@ -1,18 +1,19 @@
 class RepuestosController < ApplicationController
   include Paginable
 
-  before_action :require_administrador!, only: %i[index valorizar vista_previa update destroy]
+  before_action :require_administrador!, only: %i[valorizar vista_previa update destroy]
   before_action :set_orden, only: %i[index create valorizar vista_previa update destroy]
   before_action :set_repuesto, only: %i[valorizar update destroy]
 
   def index
-    repuestos, meta = paginar(@orden.repuestos.vigentes.includes(:registrado_por).order(created_at: :desc, id: :desc))
-    quitados = @orden.repuestos.quitados.includes(:registrado_por, :quitado_por).order(quitado_en: :desc, id: :desc)
-    render json: {
-      repuestos: repuestos.map { |repuesto| serialize(repuesto) },
-      meta: meta,
-      quitados: quitados.map { |repuesto| serialize(repuesto) }
-    }
+    vigentes = @orden.repuestos.vigentes.includes(:registrado_por, :quitado_por).order(created_at: :desc, id: :desc)
+    repuestos, meta = paginar(vigentes)
+    cuerpo = { repuestos: repuestos.map { |repuesto| serialize(repuesto) }, meta: meta }
+    if current_usuario.administrador?
+      cuerpo[:quitados] = @orden.repuestos.quitados.includes(:registrado_por, :quitado_por)
+        .order(quitado_en: :desc, id: :desc).map { |repuesto| serialize(repuesto) }
+    end
+    render json: cuerpo
   end
 
   def create
@@ -75,13 +76,13 @@ class RepuestosController < ApplicationController
   end
 
   def serialize(repuesto)
-    datos = repuesto.as_json(only: %i[
-      id orden_id repuesto_catalogo_id descripcion cantidad costo_unitario margen precio_cliente
-      proveedor registrado_por_id estado created_at quitado_en
-    ])
-    datos[:ganancia] = repuesto.valorizado? ? ganancia(repuesto) : nil
+    datos = repuesto.as_json(only: %i[id orden_id repuesto_catalogo_id descripcion cantidad registrado_por_id estado created_at])
+    if current_usuario.administrador?
+      datos.merge!(repuesto.as_json(only: %i[costo_unitario margen precio_cliente proveedor quitado_en]))
+      datos["ganancia"] = repuesto.valorizado? ? ganancia(repuesto) : nil
+      datos[:quitado_por] = repuesto.quitado_por&.as_json(only: %i[id nombre])
+    end
     datos[:registrado_por] = repuesto.registrado_por.as_json(only: %i[id nombre])
-    datos[:quitado_por] = repuesto.quitado_por&.as_json(only: %i[id nombre])
     datos
   end
 

@@ -13,7 +13,7 @@ RSpec.describe Tarea, type: :model do
   end
 
   it "rechaza un estado desconocido" do
-    expect(build(:tarea, estado: "cancelada")).not_to be_valid
+    expect(build(:tarea, estado: "pausada")).not_to be_valid
   end
 
   it "nace pendiente" do

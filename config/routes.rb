@@ -49,6 +49,8 @@ Rails.application.routes.draw do
 
     member do
       patch :cancelar
+      patch :cerrar
+      get :resumen_cierre
     end
   end
 end

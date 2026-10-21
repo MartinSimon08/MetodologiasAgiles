@@ -70,7 +70,7 @@ RSpec.describe OrdenAbrir do
   end
 
   it "permite abrir una orden nueva cuando la anterior del vehículo ya se cerró" do
-    described_class.call(vehiculo_id: vehiculo.id, motivo: "Ruido al frenar").update!(estado: :cerrada)
+    marcar_cerrada(described_class.call(vehiculo_id: vehiculo.id, motivo: "Ruido al frenar"))
 
     orden = described_class.call(vehiculo_id: vehiculo.id, motivo: "Pierde aceite")
 

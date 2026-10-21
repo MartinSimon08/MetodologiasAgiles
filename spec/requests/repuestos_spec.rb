@@ -70,7 +70,7 @@ RSpec.describe "Repuestos", type: :request do
     end
 
     it "rechaza el aviso de un mecánico en una orden cerrada" do
-      orden.update!(estado: :cerrada)
+      marcar_cerrada(orden)
       post "/ordenes/#{orden.id}/repuestos", params: { repuesto: { descripcion: "Filtro", cantidad: 2 } },
         headers: auth_headers(mecanico), as: :json
 
@@ -111,7 +111,7 @@ RSpec.describe "Repuestos", type: :request do
     end
 
     it "rechaza compras en órdenes cerradas" do
-      orden.update!(estado: :cerrada)
+      marcar_cerrada(orden)
       post "/ordenes/#{orden.id}/repuestos", params: { repuesto: atributos }, headers: auth_headers(admin), as: :json
 
       expect(response).to have_http_status(:unprocessable_content)
@@ -285,7 +285,7 @@ RSpec.describe "Repuestos", type: :request do
     end
 
     it "rechaza una orden cerrada" do
-      orden.update!(estado: :cerrada)
+      marcar_cerrada(orden)
 
       post "/ordenes/#{orden.id}/repuestos/vista_previa", params: { repuesto: atributos },
         headers: auth_headers(admin), as: :json

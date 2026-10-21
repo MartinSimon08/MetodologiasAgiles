@@ -42,7 +42,7 @@ RSpec.describe "Tareas", type: :request do
     end
 
     it "rechaza crear tareas en una orden cerrada" do
-      orden.update!(estado: :cerrada)
+      marcar_cerrada(orden)
 
       post "/ordenes/#{orden.id}/tareas", params: params, headers: auth_headers(admin), as: :json
 

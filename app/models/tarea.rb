@@ -2,7 +2,7 @@ class Tarea < ApplicationRecord
   belongs_to :orden
   belongs_to :mecanico, class_name: "Usuario", optional: true
 
-  enum :estado, { pendiente: "pendiente", en_curso: "en_curso", terminada: "terminada" }, validate: true
+  enum :estado, { pendiente: "pendiente", en_curso: "en_curso", terminada: "terminada", cancelada: "cancelada" }, validate: true
 
   validates :descripcion, presence: true
   validates :precio, numericality: { greater_than_or_equal_to: 0 }, allow_nil: true

@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       dry_run:
-        description: Solo vista previa (no crea issues ni adjuntos)
+        description: Solo vista previa (no crea issues, etiquetas ni adjuntos)
         type: boolean
         default: true
         required: true

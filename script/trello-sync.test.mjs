@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { importCards, syncPullRequest, issueNumbers, findList, lists } from './trello-sync.mjs';
+import { importCards, syncPullRequest, issueNumbers, findList, lists, resolveMember } from './trello-sync.mjs';
 
 const id = '0123456789abcdef01234567';
 const marker = `<!-- trello-card:${id} -->`;
@@ -8,7 +8,7 @@ const marker = `<!-- trello-card:${id} -->`;
 function fixture() {
   const state = {
     card: { id, idBoard: 'board', idList: 'backlog', name: 'HU18', desc: 'Descripción', shortUrl: 'https://trello.com/c/abcd1234' },
-    issues: [], attachments: [], writes: [], reports: [],
+    issues: [], attachments: [], writes: [], reports: [], members: [], repoLabels: [],
     pr: { number: 7, state: 'open', draft: false, merged: false, body: 'Closes #1', base: { ref: 'main' }, head: { repo: { full_name: 'owner/repo' } }, author_association: 'COLLABORATOR' },
   };
   const trello = async (path, method = 'GET', body) => {
@@ -21,16 +21,31 @@ function fixture() {
     if (path.endsWith('/lists')) return Object.entries(lists).map(([id, name]) => ({ id, name }));
     if (path === '/lists/backlog/cards') return [state.card];
     if (path.endsWith('/attachments')) return state.attachments;
+    if (path.startsWith('/boards/board/members')) return state.members;
     if (path === `/cards/${id}`) return state.card;
     throw new Error(`Unexpected Trello call: ${path}`);
   };
   const github = async (path, method = 'GET', body) => {
+    if (method === 'POST' && path === '/labels') {
+      state.writes.push({ service: 'github', path, method, body });
+      const label = { name: body.name, color: body.color };
+      state.repoLabels.push(label);
+      return label;
+    }
+    if (method === 'PATCH') {
+      state.writes.push({ service: 'github', path, method, body });
+      const issue = state.issues[0];
+      if (body.assignees) issue.assignees = body.assignees.map(login => ({ login }));
+      if (body.labels) issue.labels = body.labels.map(name => ({ name }));
+      return issue;
+    }
     if (method === 'POST') {
       state.writes.push({ service: 'github', path, method, body });
       const issue = { ...body, number: 1, html_url: 'https://github.com/owner/repo/issues/1' };
       state.issues.push(issue);
       return issue;
     }
+    if (path.startsWith('/labels?')) return state.repoLabels;
     if (path.startsWith('/issues?')) return state.issues;
     if (path === '/issues/1') return state.issues[0];
     if (path === '/pulls/7') return state.pr;
@@ -120,6 +135,77 @@ test('importación pagina issues antes de crear para evitar duplicados', async (
   await importCards({ ...context, dryRun: false });
   assert.equal(state.writes.length, 1);
   assert.equal(state.writes[0].service, 'trello');
+});
+
+test('el profesor no es participante y el resto mapea a su usuario de GitHub', () => {
+  assert.deepEqual(resolveMember({ fullName: 'Emilio López', username: 'emilio' }), { role: 'profesor' });
+  assert.equal(resolveMember({ fullName: 'Martin Simon', username: 'martin' }).login, 'MartinSimon08');
+  assert.equal(resolveMember({ fullName: 'Mateo Lafalce', username: 'mateolafalce' }).login, 'mateolafalce');
+  assert.equal(resolveMember({ fullName: 'Matias Delozano', username: 'mdelozano' }).login, 'MatiDelozano');
+  assert.equal(resolveMember({ fullName: 'Valentín Torres', username: 'valentin' }).login, 'ValentnTorres');
+  assert.equal(resolveMember({ fullName: 'Fer', username: 'fer' }).login, 'fetcpao');
+  assert.equal(resolveMember({ fullName: 'Juan Pérez', username: 'juan' }).unmapped, true);
+  assert.deepEqual(resolveMember({ fullName: 'Ana', username: 'ana' }, [
+    { login: 'a', aliases: ['ana'] },
+    { login: 'b', aliases: ['ana'] },
+  ]).ambiguous, ['a', 'b']);
+});
+
+test('importación asigna participantes, omite al profesor y copia etiquetas', async () => {
+  const { state, context } = fixture();
+  state.members = [
+    { id: 'mateo', fullName: 'Mateo Lafalce', username: 'mateolafalce' },
+    { id: 'emilio', fullName: 'Emilio López', username: 'emilio' },
+    { id: 'fer', fullName: 'Fermín Etchanchú', username: 'fetcpao' },
+    { id: 'juan', fullName: 'Juan Pérez', username: 'juan' },
+  ];
+  state.card.idMembers = ['mateo', 'emilio', 'fer', 'juan', 'ausente'];
+  state.card.labels = [
+    { name: 'Backend', color: 'blue' },
+    { name: 'Backend', color: 'blue' },
+    { name: '', color: 'red' },
+    { name: 'Sprint II', color: 'yellow' },
+  ];
+  await importCards({ ...context, dryRun: false });
+  const created = state.writes.find(write => write.path === '/issues');
+  assert.deepEqual(created.body.assignees, ['mateolafalce', 'fetcpao']);
+  assert.deepEqual(created.body.labels, ['Backend', 'Sprint II']);
+  assert.deepEqual(state.repoLabels.map(label => label.name), ['Backend', 'Sprint II']);
+  assert.equal(state.repoLabels[0].color, '0079bf');
+  assert.match(state.reports.join('\n'), /SIN MAPEO: Juan Pérez/);
+  assert.match(state.reports.join('\n'), /SIN MAPEO: miembro ausente/);
+  assert.match(state.reports.join('\n'), /ETIQUETA SIN NOMBRE: red/);
+  assert.equal(state.reports.some(line => /emilio/i.test(line)), false);
+});
+
+test('vista previa informa responsables y etiquetas sin escribir', async () => {
+  const { state, context } = fixture();
+  state.members = [{ id: 'martin', fullName: 'Martin Simon', username: 'martin' }];
+  state.card.idMembers = ['martin'];
+  state.card.labels = [{ name: 'Frontend', color: 'green' }];
+  await importCards({ ...context, dryRun: true });
+  assert.equal(state.writes.length, 0);
+  assert.match(state.reports.join('\n'), /CREAR: HU18.*responsables: MartinSimon08/);
+  assert.match(state.reports.join('\n'), /etiquetas: Frontend/);
+  assert.match(state.reports.join('\n'), /CREAR ETIQUETA: Frontend/);
+});
+
+test('reimportar actualiza responsables y no repite la actualización', async () => {
+  const { state, context } = fixture();
+  state.members = [{ id: 'vali', fullName: 'Valentín Torres', username: 'valentin' }];
+  state.card.idMembers = ['vali'];
+  state.card.labels = [{ name: 'Backend', color: 'blue' }];
+  state.repoLabels = [{ name: 'Backend', color: '0079bf' }];
+  state.issues.push({ number: 1, body: marker, html_url: 'https://github.com/owner/repo/issues/1', assignees: [], labels: [] });
+  await importCards({ ...context, dryRun: false });
+  assert.equal(state.writes.filter(write => write.method === 'PATCH').length, 1);
+  assert.deepEqual(state.writes.find(write => write.method === 'PATCH').body, {
+    assignees: ['ValentnTorres'],
+    labels: ['Backend'],
+  });
+  const writes = state.writes.length;
+  await importCards({ ...context, dryRun: false });
+  assert.equal(state.writes.length, writes);
 });
 
 test('listas ausentes o ambiguas y relaciones duplicadas fallan sin escrituras', async () => {

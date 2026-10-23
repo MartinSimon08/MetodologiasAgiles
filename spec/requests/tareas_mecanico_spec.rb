@@ -12,7 +12,7 @@ RSpec.describe "Tareas del mecánico", type: :request do
       disponible = create(:tarea, orden: orden)
       create(:tarea, :en_curso, orden: orden, mecanico: otro_mecanico)
       create(:tarea, :terminada, orden: orden, mecanico: mecanico)
-      create(:tarea, orden: create(:orden)).orden.update!(estado: :cerrada)
+      marcar_cerrada(create(:tarea, orden: create(:orden)).orden)
 
       get "/tareas_mecanico", headers: auth_headers(mecanico)
 

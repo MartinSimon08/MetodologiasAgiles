@@ -27,7 +27,7 @@ RSpec.describe TareaActualizarPrecio do
 
   it "rechaza actualizar el precio de una tarea en una orden cerrada" do
     tarea = create(:tarea, :terminada)
-    tarea.orden.update!(estado: :cerrada)
+    marcar_cerrada(tarea.orden)
 
     expect { described_class.call(tarea: tarea, precio: 15_000) }
       .to raise_error(ActiveRecord::RecordInvalid)

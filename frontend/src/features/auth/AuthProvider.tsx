@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { cable } from '../../lib/cable'
 import { onUnauthorized, TOKEN_KEY, tokenStorage } from '../../lib/api'
 import { iniciarSesion, obtenerSesion } from './api'
 import { AuthContext, type AuthState, type MotivoCierre } from './AuthContext'
@@ -21,6 +22,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const cerrarSesion = useCallback(
     (motivo: MotivoCierre | null) => {
       tokenStorage.clear()
+      cable.disconnect()
       setToken(null)
       setMotivoCierre(motivo)
       queryClient.clear()

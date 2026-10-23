@@ -28,4 +28,18 @@ RSpec.describe TareaCrear do
     expect { described_class.call(orden: orden, descripcion: "Cambiar aceite") }
       .to raise_error(ActiveRecord::RecordInvalid)
   end
+
+  it "transmite la tarea nueva a los mecánicos conectados" do
+    expect {
+      described_class.call(orden: orden, descripcion: "Cambiar aceite")
+    }.to have_broadcasted_to(TareasChannel::STREAM).with(
+      hash_including("descripcion" => "Cambiar aceite", "orden_id" => orden.id)
+    )
+  end
+
+  it "no transmite nada si la creación falla" do
+    expect {
+      expect { described_class.call(orden: orden, descripcion: "") }.to raise_error(ActiveRecord::RecordInvalid)
+    }.not_to have_broadcasted_to(TareasChannel::STREAM)
+  end
 end

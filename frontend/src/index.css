@@ -263,6 +263,53 @@ button.accion-catalogo.eliminar:focus-visible {
   color: var(--texto-suave);
 }
 
+.avisos-tareas {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 100;
+  max-width: min(360px, calc(100vw - 2rem));
+}
+
+.aviso-tarea {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  background: var(--superficie);
+  border: 1px solid var(--acento);
+  border-radius: var(--radio);
+  padding: 0.6rem 0.8rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.aviso-tarea a {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.aviso-tarea strong {
+  color: var(--acento);
+}
+
+.aviso-tarea span {
+  color: var(--texto-suave);
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
+}
+
+.aviso-tarea button {
+  flex-shrink: 0;
+  line-height: 1;
+  padding: 0.2rem 0.5rem;
+}
+
 .login {
   min-height: 100svh;
   display: grid;

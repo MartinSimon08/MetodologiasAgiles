@@ -59,6 +59,14 @@ RSpec.describe "Tareas", type: :request do
       expect(response.parsed_body["errors"]["orden"]).to include("Orden está cancelada")
     end
 
+    it "transmite la tarea nueva a los mecánicos conectados" do
+      expect {
+        post "/ordenes/#{orden.id}/tareas", params: params, headers: auth_headers(admin), as: :json
+      }.to have_broadcasted_to(TareasChannel::STREAM).with(
+        hash_including("descripcion" => "Cambiar aceite")
+      )
+    end
+
     it "prohíbe a un mecánico crear tareas" do
       post "/ordenes/#{orden.id}/tareas", params: params, headers: auth_headers(mecanico), as: :json
 

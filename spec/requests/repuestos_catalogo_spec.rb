@@ -109,7 +109,7 @@ RSpec.describe "Administración del catálogo de repuestos", type: :request do
         RepuestoAgregar.call(orden: orden, registrado_por: admin, repuesto_catalogo_id: catalogo.id,
                              cantidad: 2, costo_unitario: "100", margen: "25", proveedor: "Proveedor Demo")
       end
-      orden_cerrada.update!(estado: :cerrada)
+      marcar_cerrada(orden_cerrada)
       datos = repuestos.map { |repuesto| repuesto.attributes.except("repuesto_catalogo_id") }
 
       expect {

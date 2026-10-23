@@ -12,7 +12,7 @@ RSpec.describe "Tareas del mecánico", type: :request do
       disponible = create(:tarea, orden: orden)
       create(:tarea, :en_curso, orden: orden, mecanico: otro_mecanico)
       create(:tarea, :terminada, orden: orden, mecanico: mecanico)
-      create(:tarea, orden: create(:orden)).orden.update!(estado: :cerrada)
+      marcar_cerrada(create(:tarea, orden: create(:orden)).orden)
 
       get "/tareas_mecanico", headers: auth_headers(mecanico)
 
@@ -45,9 +45,20 @@ RSpec.describe "Tareas del mecánico", type: :request do
       tareas = response.parsed_body.values_at("mias", "disponibles").flatten
       expect(tareas.size).to eq(2)
       expect(tareas.map(&:keys)).to all(
-        contain_exactly("id", "orden_id", "descripcion", "estado", "mecanico_id", "tomada_en", "created_at", "orden")
+        contain_exactly("id", "orden_id", "descripcion", "estado", "mecanico_id", "tomada_en", "created_at", "orden",
+                         "notas")
       )
       expect(tareas.map { |tarea| tarea["orden"].keys }).to all(contain_exactly("id", "vehiculo", "cliente"))
+    end
+
+    it "incluye las notas de cada tarea" do
+      disponible = create(:tarea, orden: orden)
+      create(:tarea_nota, tarea: disponible, contenido: "Pidió que la revisen urgente", registrado_por: mecanico)
+
+      get "/tareas_mecanico", headers: auth_headers(mecanico)
+
+      expect(response.parsed_body["disponibles"].first["notas"].pluck("contenido"))
+        .to eq([ "Pidió que la revisen urgente" ])
     end
 
     it "prohíbe el acceso a un administrador" do

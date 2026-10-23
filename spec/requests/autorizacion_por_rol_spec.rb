@@ -29,6 +29,8 @@ RSpec.describe "Autorización por rol", type: :request do
     "POST /ordenes" => :administrador,
     "GET /ordenes/:id" => :ambos,
     "PATCH /ordenes/:id/cancelar" => :administrador,
+    "PATCH /ordenes/:id/cerrar" => :administrador,
+    "GET /ordenes/:id/resumen_cierre" => :administrador,
     "GET /ordenes/:orden_id/adelantos" => :administrador,
     "POST /ordenes/:orden_id/adelantos" => :administrador,
     "GET /ordenes/:orden_id/repuestos" => :ambos,
@@ -42,7 +44,9 @@ RSpec.describe "Autorización por rol", type: :request do
     "POST /ordenes/:orden_id/tareas" => :administrador,
     "PATCH /tareas/:id/tomar" => :mecanico,
     "PATCH /tareas/:id/completar" => :mecanico,
-    "PATCH /tareas/:id/liberar" => :mecanico
+    "PATCH /tareas/:id/liberar" => :mecanico,
+    "PATCH /tareas/:id/actualizar_precio" => :administrador,
+    "POST /tareas/:tarea_id/notas" => :mecanico
   }
   roles_permitidos = {
     administrador: %i[administrador],

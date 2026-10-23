@@ -53,7 +53,7 @@ RSpec.describe "Ordenes", type: :request do
       get "/ordenes", headers: auth_headers(mecanico)
 
       expect(response.parsed_body["ordenes"].first.keys).to contain_exactly(
-        "id", "motivo", "estado", "created_at", "cancelada_en", "cliente", "vehiculo"
+        "id", "motivo", "estado", "created_at", "cancelada_en", "cerrada_en", "cerrada_por", "cliente", "vehiculo"
       )
     end
 
@@ -109,7 +109,7 @@ RSpec.describe "Ordenes", type: :request do
 
     it "rechaza un adelanto para una orden cerrada" do
       create(:tarea, orden: orden, precio: 2_000)
-      orden.update!(estado: :cerrada)
+      marcar_cerrada(orden)
 
       post "/ordenes/#{orden.id}/adelantos", params: { adelanto: { importe: "1500.50" } }, headers: auth_headers(administrador)
 
@@ -148,7 +148,7 @@ RSpec.describe "Ordenes", type: :request do
 
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body.keys).to contain_exactly(
-        "id", "motivo", "estado", "created_at", "cancelada_en", "cliente", "vehiculo"
+        "id", "motivo", "estado", "created_at", "cancelada_en", "cerrada_en", "cerrada_por", "cliente", "vehiculo"
       )
     end
 
@@ -207,7 +207,7 @@ RSpec.describe "Ordenes", type: :request do
     end
 
     it "rechaza cancelar una orden cerrada" do
-      orden.update!(estado: :cerrada)
+      marcar_cerrada(orden)
 
       patch "/ordenes/#{orden.id}/cancelar", headers: auth_headers(administrador)
 
@@ -329,6 +329,118 @@ RSpec.describe "Ordenes", type: :request do
       post "/ordenes", params: params
 
       expect(response).to have_http_status(:unauthorized)
+    end
+  end
+
+  describe "GET /ordenes/:id/resumen_cierre" do
+    let(:orden) { create(:orden) }
+    let(:carlos) { create(:usuario, nombre: "Carlos") }
+
+    it "resume las tareas con quién las hizo, los repuestos y el total" do
+      create(:tarea, :terminada, orden: orden, descripcion: "Cambio de aceite", mecanico: carlos, precio: 15_000)
+      create(:tarea, orden: orden, descripcion: "Alineación", precio: 8_000)
+      RepuestoAgregar.call(orden: orden, registrado_por: administrador, descripcion: "Filtro de aceite", cantidad: 2,
+                           costo_unitario: "1000", margen: 50)
+      create(:adelanto, orden: orden, importe: "5000")
+
+      get "/ordenes/#{orden.id}/resumen_cierre", headers: auth_headers(administrador)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body["tareas"]).to match([
+        a_hash_including("descripcion" => "Cambio de aceite", "estado" => "terminada", "precio" => "15000.0",
+                         "mecanico" => { "id" => carlos.id, "nombre" => "Carlos" }),
+        a_hash_including("descripcion" => "Alineación", "estado" => "pendiente", "mecanico" => nil)
+      ])
+      expect(response.parsed_body["repuestos"]).to match([
+        a_hash_including("descripcion" => "Filtro de aceite", "cantidad" => 2, "precio_cliente" => "3000.0")
+      ])
+      expect(response.parsed_body).to include(
+        "mano_de_obra" => "15000.0", "total_repuestos" => "3000.0", "total" => "18000.0",
+        "adelantado" => "5000.0", "saldo" => "13000.0"
+      )
+    end
+
+    it "prohíbe ver el resumen a un mecánico" do
+      get "/ordenes/#{orden.id}/resumen_cierre", headers: auth_headers(mecanico)
+
+      expect(response).to have_http_status(:forbidden)
+    end
+  end
+
+  describe "PATCH /ordenes/:id/cerrar" do
+    let!(:orden) { create(:orden) }
+
+    it "cierra la orden con el total calculado y registra quién y cuándo" do
+      create(:tarea, :terminada, orden: orden, precio: 15_000)
+      RepuestoAgregar.call(orden: orden, registrado_por: administrador, descripcion: "Filtro", cantidad: 1,
+                           costo_unitario: "1000", margen: 20)
+
+      freeze_time do
+        patch "/ordenes/#{orden.id}/cerrar", headers: auth_headers(administrador)
+
+        expect(response).to have_http_status(:ok)
+        expect(response.parsed_body).to include(
+          "estado" => "cerrada", "total_cerrado" => "16200.0",
+          "cerrada_por" => { "id" => administrador.id, "nombre" => administrador.nombre }
+        )
+        expect(Time.zone.parse(response.parsed_body["cerrada_en"])).to eq(Time.current)
+      end
+    end
+
+    it "rechaza cerrar con tareas en curso" do
+      create(:tarea, :en_curso, orden: orden)
+
+      patch "/ordenes/#{orden.id}/cerrar", headers: auth_headers(administrador)
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body["errors"]["base"]).to include(
+        "No se puede cerrar la orden porque tiene tareas tomadas o en curso"
+      )
+      expect(orden.reload).to be_abierta
+    end
+
+    it "pide confirmar que se descartan las tareas pendientes" do
+      tarea = create(:tarea, orden: orden)
+
+      patch "/ordenes/#{orden.id}/cerrar", headers: auth_headers(administrador)
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body["errors"]["base"]).to include(
+        "Hay tareas pendientes sin tomar. Confirmá que se descartan para cerrar la orden"
+      )
+      expect(tarea.reload).to be_pendiente
+    end
+
+    it "cancela las tareas pendientes cuando se confirma que se descartan" do
+      tarea = create(:tarea, orden: orden, precio: 8_000)
+
+      patch "/ordenes/#{orden.id}/cerrar", params: { descartar_pendientes: true }, headers: auth_headers(administrador)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body["total_cerrado"]).to eq("0.0")
+      expect(tarea.reload).to be_cancelada
+    end
+
+    it "no devuelve el total al mecánico" do
+      OrdenCerrar.call(orden: orden, cerrada_por: administrador)
+
+      get "/ordenes/#{orden.id}", headers: auth_headers(mecanico)
+
+      expect(response.parsed_body).not_to have_key("total_cerrado")
+      expect(response.parsed_body["cerrada_por"]).to eq("id" => administrador.id, "nombre" => administrador.nombre)
+    end
+
+    it "prohíbe cerrar órdenes a un mecánico" do
+      patch "/ordenes/#{orden.id}/cerrar", headers: auth_headers(mecanico)
+
+      expect(response).to have_http_status(:forbidden)
+      expect(orden.reload).to be_abierta
+    end
+
+    it "devuelve 404 si la orden no existe" do
+      patch "/ordenes/0/cerrar", headers: auth_headers(administrador)
+
+      expect(response).to have_http_status(:not_found)
     end
   end
 end

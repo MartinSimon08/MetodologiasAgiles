@@ -67,7 +67,7 @@ RSpec.describe RepuestoAgregar do
 
   it "rechaza órdenes cerradas sin modificar el catálogo" do
     catalogo = create(:repuesto_catalogo)
-    orden.update!(estado: :cerrada)
+    marcar_cerrada(orden)
 
     expect { agregar(repuesto_catalogo_id: catalogo.id, costo_unitario: "200") }
       .to raise_error(ActiveRecord::RecordInvalid) { |error| expect(error.record.errors).to have_key(:orden) }

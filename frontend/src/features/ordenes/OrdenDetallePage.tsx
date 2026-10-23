@@ -7,6 +7,7 @@ import { RepuestosPanel } from '../repuestos/RepuestosPanel'
 import { TareasPanel } from '../tareas/TareasPanel'
 import { obtenerOrden } from './api'
 import { CancelarOrden } from './CancelarOrden'
+import { CerrarOrden } from './CerrarOrden'
 import { describirVehiculo, ESTADO_ORDEN_LABELS } from './types'
 
 export function OrdenDetallePage() {
@@ -44,6 +45,7 @@ export function OrdenDetallePage() {
             </span>
           </header>
 
+          <CerrarOrden orden={orden.data} />
           <CancelarOrden orden={orden.data} />
 
           <section className="tarjeta motivo-orden">

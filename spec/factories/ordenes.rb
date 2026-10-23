@@ -7,6 +7,9 @@ FactoryBot.define do
 
     trait :cerrada do
       estado { :cerrada }
+      cerrada_en { Time.current }
+      cerrada_por { association :usuario, :administrador }
+      total_cerrado { 0 }
     end
 
     trait :cancelada do

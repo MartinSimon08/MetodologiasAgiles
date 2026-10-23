@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_16_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_23_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "unaccent"
@@ -54,10 +54,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_16_120000) do
     t.datetime "updated_at", null: false
     t.bigint "vehiculo_id", null: false
     t.datetime "cancelada_en"
+    t.datetime "cerrada_en"
+    t.bigint "cerrada_por_id"
+    t.decimal "total_cerrado", precision: 24, scale: 2
+    t.index ["cerrada_por_id"], name: "index_ordenes_on_cerrada_por_id"
     t.index ["cliente_id"], name: "index_ordenes_on_cliente_id"
     t.index ["vehiculo_id"], name: "index_ordenes_on_vehiculo_id"
     t.index ["vehiculo_id"], name: "index_ordenes_on_vehiculo_id_abierta", unique: true, where: "((estado)::text = 'abierta'::text)"
     t.check_constraint "(estado::text = 'cancelada'::text) = (cancelada_en IS NOT NULL)", name: "ordenes_cancelada_en_consistente"
+    t.check_constraint "(estado::text = 'cerrada'::text) = (cerrada_en IS NOT NULL AND cerrada_por_id IS NOT NULL AND total_cerrado IS NOT NULL)", name: "ordenes_cierre_consistente"
   end
 
   create_table "repuestos", force: :cascade do |t|
@@ -93,6 +98,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_16_120000) do
     t.datetime "updated_at", null: false
     t.index ["nombre"], name: "index_repuestos_catalogo_on_nombre", unique: true
     t.check_constraint "precio >= 0::numeric", name: "catalogo_costo_no_negativo"
+  end
+
+  create_table "tarea_notas", force: :cascade do |t|
+    t.bigint "tarea_id", null: false
+    t.bigint "registrado_por_id", null: false
+    t.text "contenido", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["registrado_por_id"], name: "index_tarea_notas_on_registrado_por_id"
+    t.index ["tarea_id"], name: "index_tarea_notas_on_tarea_id"
   end
 
   create_table "tareas", force: :cascade do |t|
@@ -146,11 +161,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_16_120000) do
   add_foreign_key "adelantos", "ordenes"
   add_foreign_key "adelantos", "usuarios", column: "registrado_por_id"
   add_foreign_key "ordenes", "clientes"
+  add_foreign_key "ordenes", "usuarios", column: "cerrada_por_id"
   add_foreign_key "ordenes", "vehiculos"
   add_foreign_key "repuestos", "ordenes"
   add_foreign_key "repuestos", "repuestos_catalogo", column: "repuesto_catalogo_id"
   add_foreign_key "repuestos", "usuarios", column: "quitado_por_id"
   add_foreign_key "repuestos", "usuarios", column: "registrado_por_id"
+  add_foreign_key "tarea_notas", "tareas"
+  add_foreign_key "tarea_notas", "usuarios", column: "registrado_por_id"
   add_foreign_key "tareas", "ordenes"
   add_foreign_key "tareas", "usuarios", column: "mecanico_id"
   add_foreign_key "vehiculos", "clientes"

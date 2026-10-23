@@ -33,7 +33,8 @@ RSpec.describe RepuestoQuitar do
 
     expect(pendiente.reload).to be_pendiente_de_valorizar
     expect(pendiente.quitado_en).to be_present
-    expect(orden.update(estado: :cerrada)).to be true
+    expect(orden.update(estado: :cerrada, cerrada_en: Time.current, cerrada_por: admin,
+                        total_cerrado: orden.total_a_cobrar)).to be true
   end
 
   it "rechaza la baja cuando los adelantos superarían el total" do
@@ -64,7 +65,7 @@ RSpec.describe RepuestoQuitar do
 
   it "rechaza una orden cerrada" do
     repuesto = agregar
-    orden.update!(estado: :cerrada)
+    marcar_cerrada(orden)
 
     expect { described_class.call(repuesto: repuesto, quitado_por: admin) }
       .to raise_error(ActiveRecord::RecordInvalid) { |error| expect(error.record.errors[:orden]).to include("está cerrada") }

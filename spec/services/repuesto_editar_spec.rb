@@ -114,7 +114,7 @@ RSpec.describe RepuestoEditar do
 
   it "rechaza una orden cerrada sin modificar la compra" do
     repuesto = agregar
-    orden.update!(estado: :cerrada)
+    marcar_cerrada(orden)
 
     expect { editar(repuesto, cantidad: 4) }
       .to raise_error(ActiveRecord::RecordInvalid) { |error| expect(error.record.errors[:orden]).to include("está cerrada") }

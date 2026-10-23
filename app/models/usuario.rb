@@ -8,6 +8,8 @@ class Usuario < ApplicationRecord
                                    inverse_of: :registrado_por, dependent: :restrict_with_error
   has_many :repuestos_quitados, class_name: "Repuesto", foreign_key: :quitado_por_id,
                                 inverse_of: :quitado_por, dependent: :restrict_with_error
+  has_many :ordenes_cerradas, class_name: "Orden", foreign_key: :cerrada_por_id,
+                              inverse_of: :cerrada_por, dependent: :restrict_with_error
 
   enum :rol, { administrador: "administrador", mecanico: "mecanico" }, validate: true
 

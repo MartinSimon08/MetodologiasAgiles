@@ -5,7 +5,7 @@ import { Paginacion } from '../../components/Paginacion'
 import { errorMessage } from '../../lib/api'
 import { importe } from '../../lib/formato'
 import { useAuth } from '../auth/AuthContext'
-import { completarTarea, liberarTarea, listarTareas, tomarTarea } from './api'
+import { actualizarPrecioTarea, completarTarea, liberarTarea, listarTareas, tomarTarea } from './api'
 import { NuevaTareaForm } from './NuevaTareaForm'
 import { ESTADO_TAREA_LABELS } from './types'
 
@@ -22,6 +22,8 @@ export function TareasPanel({ ordenId, ordenAbierta }: Props) {
 
   const [creando, setCreando] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [editandoPrecioId, setEditandoPrecioId] = useState<number | null>(null)
+  const [precioEditado, setPrecioEditado] = useState('')
   const [searchParams, setSearchParams] = useSearchParams()
   const pagina = Math.max(1, Number(searchParams.get('pagina')) || 1)
 
@@ -48,9 +50,29 @@ export function TareasPanel({ ordenId, ordenAbierta }: Props) {
     onSettled: invalidar,
     onError: (err: unknown) => setError(errorMessage(err, 'No se pudo liberar la tarea.')),
   })
+  const actualizarPrecio = useMutation({
+    mutationFn: ({ id, precio }: { id: number; precio: string }) => actualizarPrecioTarea(id, precio),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['adelantos', ordenId] })
+      setEditandoPrecioId(null)
+    },
+    onSettled: invalidar,
+    onError: (err: unknown) => setError(errorMessage(err, 'No se pudo actualizar el precio.')),
+  })
 
   function irAPagina(nueva: number) {
     setSearchParams(nueva === 1 ? {} : { pagina: String(nueva) })
+  }
+
+  function empezarEdicionPrecio(tarea: { id: number; precio?: number | null }) {
+    setError(null)
+    setEditandoPrecioId(tarea.id)
+    setPrecioEditado(tarea.precio != null ? String(tarea.precio) : '')
+  }
+
+  function confirmarPrecio(id: number) {
+    setError(null)
+    actualizarPrecio.mutate({ id, precio: precioEditado })
   }
 
   function responsable(mecanico: { id: number; nombre: string } | null) {
@@ -107,7 +129,40 @@ export function TareasPanel({ ordenId, ordenAbierta }: Props) {
               <div className="item-datos">
                 <strong>{tarea.descripcion}</strong>
                 <span>{responsable(tarea.mecanico)}</span>
-                {tarea.precio != null && <span>$ {importe(tarea.precio)}</span>}
+                {esAdministrador && editandoPrecioId === tarea.id ? (
+                  <span className="acciones">
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      inputMode="decimal"
+                      autoFocus
+                      value={precioEditado}
+                      onChange={(e) => setPrecioEditado(e.target.value)}
+                    />
+                    <button
+                      className="secundario"
+                      disabled={actualizarPrecio.isPending}
+                      onClick={() => setEditandoPrecioId(null)}
+                    >
+                      Cancelar
+                    </button>
+                    <button disabled={actualizarPrecio.isPending} onClick={() => confirmarPrecio(tarea.id)}>
+                      Guardar
+                    </button>
+                  </span>
+                ) : (
+                  esAdministrador && (
+                    <span>
+                      {tarea.precio != null ? `$ ${importe(tarea.precio)}` : 'Sin precio'}
+                      {ordenAbierta && (
+                        <button className="secundario" onClick={() => empezarEdicionPrecio(tarea)}>
+                          Editar precio
+                        </button>
+                      )}
+                    </span>
+                  )
+                )}
               </div>
               <span className={`insignia insignia-${tarea.estado}`}>
                 {ESTADO_TAREA_LABELS[tarea.estado]}

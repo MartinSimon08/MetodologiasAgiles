@@ -1,10 +1,10 @@
 class TareasController < ApplicationController
   include Paginable
 
-  before_action :require_administrador!, only: :create
+  before_action :require_administrador!, only: %i[create actualizar_precio]
   before_action :require_mecanico!, only: %i[tomar completar liberar]
   before_action :set_orden, only: %i[index create]
-  before_action :set_tarea, only: %i[tomar completar liberar]
+  before_action :set_tarea, only: %i[tomar completar liberar actualizar_precio]
   before_action :require_responsable!, only: %i[completar liberar]
 
   def index
@@ -32,6 +32,11 @@ class TareasController < ApplicationController
     render json: serialize(tarea)
   end
 
+  def actualizar_precio
+    tarea = TareaActualizarPrecio.call(tarea: @tarea, **actualizar_precio_params.to_h.symbolize_keys)
+    render json: serialize(tarea)
+  end
+
   private
 
   def set_orden
@@ -48,6 +53,10 @@ class TareasController < ApplicationController
 
   def tarea_params
     params.require(:tarea).permit(:descripcion, :precio).with_defaults(descripcion: nil)
+  end
+
+  def actualizar_precio_params
+    params.require(:tarea).permit(:precio)
   end
 
   def serialize(tarea)

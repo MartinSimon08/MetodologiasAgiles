@@ -254,4 +254,65 @@ RSpec.describe "Tareas", type: :request do
       expect(response.parsed_body).not_to have_key("precio")
     end
   end
+
+  describe "PATCH /tareas/:id/actualizar_precio" do
+    let!(:tarea) { create(:tarea, orden: orden) }
+
+    it "permite al administrador fijar el precio de una tarea pendiente" do
+      patch "/tareas/#{tarea.id}/actualizar_precio", params: { tarea: { precio: "15000" } },
+                                                      headers: auth_headers(admin), as: :json
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body["precio"]).to eq(15_000.0)
+    end
+
+    it "permite al administrador corregir el precio de una tarea ya terminada" do
+      terminada = create(:tarea, :terminada, orden: orden, precio: 10_000)
+
+      patch "/tareas/#{terminada.id}/actualizar_precio", params: { tarea: { precio: "12000" } },
+                                                           headers: auth_headers(admin), as: :json
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body["precio"]).to eq(12_000.0)
+    end
+
+    it "permite dejar el precio en $0" do
+      patch "/tareas/#{tarea.id}/actualizar_precio", params: { tarea: { precio: "0" } },
+                                                      headers: auth_headers(admin), as: :json
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body["precio"]).to eq(0.0)
+    end
+
+    it "rechaza un precio negativo" do
+      patch "/tareas/#{tarea.id}/actualizar_precio", params: { tarea: { precio: "-1" } },
+                                                      headers: auth_headers(admin), as: :json
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body["errors"]).to have_key("precio")
+    end
+
+    it "rechaza actualizar el precio si la orden está cerrada" do
+      orden.update!(estado: :cerrada)
+
+      patch "/tareas/#{tarea.id}/actualizar_precio", params: { tarea: { precio: "15000" } },
+                                                      headers: auth_headers(admin), as: :json
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body["errors"]).to have_key("orden")
+    end
+
+    it "prohíbe a un mecánico actualizar el precio" do
+      patch "/tareas/#{tarea.id}/actualizar_precio", params: { tarea: { precio: "15000" } },
+                                                      headers: auth_headers(mecanico), as: :json
+
+      expect(response).to have_http_status(:forbidden)
+    end
+
+    it "exige autenticación" do
+      patch "/tareas/#{tarea.id}/actualizar_precio", params: { tarea: { precio: "15000" } }, as: :json
+
+      expect(response).to have_http_status(:unauthorized)
+    end
+  end
 end

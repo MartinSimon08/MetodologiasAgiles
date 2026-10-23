@@ -33,6 +33,13 @@ export async function liberarTarea(id: number) {
   return data
 }
 
+export async function actualizarPrecioTarea(id: number, precio: string) {
+  const { data } = await api.patch<Tarea>(`/tareas/${id}/actualizar_precio`, {
+    tarea: { precio: precio ? Number(precio) : null },
+  })
+  return data
+}
+
 export async function listarTareasMecanico() {
   const { data } = await api.get<TareasMecanico>('/tareas_mecanico')
   return data

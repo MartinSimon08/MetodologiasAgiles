@@ -23,7 +23,7 @@ RSpec.describe TareaCrear do
   end
 
   it "rechaza crear tareas en una orden cerrada" do
-    orden.update!(estado: :cerrada)
+    marcar_cerrada(orden)
 
     expect { described_class.call(orden: orden, descripcion: "Cambiar aceite") }
       .to raise_error(ActiveRecord::RecordInvalid)

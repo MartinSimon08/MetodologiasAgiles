@@ -7,6 +7,131 @@ export const lists = {
   done: 'Hecho',
 };
 
+const professorName = 'emilio';
+
+export const participants = [
+  { login: 'MartinSimon08', aliases: ['martin simon', 'martinsimon', 'martinforlini', 'martin'] },
+  { login: 'mateolafalce', aliases: ['mateo lafalce', 'mateolafalce', 'lafalce', 'mateo'] },
+  { login: 'MatiDelozano', aliases: ['matias delozano', 'matidelozano', 'delozano', 'matias'] },
+  { login: 'ValentnTorres', aliases: ['valentin torres', 'valentntorres', 'valentin', 'torres'] },
+  { login: 'fetcpao', aliases: ['fermin etchanchu', 'etchanchu', 'paoltroni', 'fetcpao', 'fermin', 'fer'] },
+];
+
+const trelloColors = {
+  green: '61bd4f',
+  yellow: 'f2d600',
+  orange: 'ff9f1a',
+  red: 'eb5a46',
+  purple: 'c377e0',
+  blue: '0079bf',
+  sky: '00c2e0',
+  lime: '51e898',
+  pink: 'ff78cb',
+  black: '344563',
+};
+
+function normalize(value) {
+  return value.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
+}
+
+function matchesAlias(text, alias) {
+  const needle = normalize(alias);
+  if (needle.length < 4) return new RegExp(`(?:^|[^a-z0-9])${needle}(?:[^a-z0-9]|$)`).test(text);
+  return text.includes(needle);
+}
+
+export function resolveMember(member, people = participants) {
+  const text = normalize(`${member.fullName ?? ''} ${member.username ?? ''}`);
+  if (text.includes(professorName)) return { role: 'profesor' };
+  const username = normalize(member.username ?? '');
+  const byLogin = people.find(person => normalize(person.login) === username);
+  if (byLogin) return { login: byLogin.login };
+  const matches = people.filter(person => person.aliases.some(alias => matchesAlias(text, alias)));
+  if (matches.length === 1) return { login: matches[0].login };
+  if (matches.length > 1) return { ambiguous: matches.map(person => person.login) };
+  return { unmapped: true };
+}
+
+function memberLabel(member) {
+  return member.fullName || member.username || member.id;
+}
+
+export function cardAssignment(card, membersById, people = participants) {
+  const logins = [];
+  const notes = [];
+  const seen = new Set();
+  for (const memberId of card.idMembers ?? []) {
+    const member = membersById.get(memberId);
+    if (!member) {
+      notes.push(`SIN MAPEO: miembro ${memberId} en ${card.name}`);
+      continue;
+    }
+    const resolved = resolveMember(member, people);
+    if (resolved.login && !seen.has(resolved.login)) {
+      seen.add(resolved.login);
+      logins.push(resolved.login);
+    } else if (resolved.ambiguous) {
+      notes.push(`MAPEO AMBIGUO: ${memberLabel(member)} coincide con ${resolved.ambiguous.join(', ')}`);
+    } else if (resolved.unmapped) {
+      notes.push(`SIN MAPEO: ${memberLabel(member)} en ${card.name}`);
+    }
+  }
+  const labelList = [];
+  const labelNames = new Set();
+  for (const label of card.labels ?? []) {
+    const name = (label.name ?? '').trim();
+    if (!name) {
+      if (label.color) notes.push(`ETIQUETA SIN NOMBRE: ${label.color} en ${card.name}`);
+      continue;
+    }
+    if (labelNames.has(name)) continue;
+    labelNames.add(name);
+    labelList.push({ name, color: trelloColors[label.color] ?? 'ededed' });
+  }
+  return { logins, labelList, notes };
+}
+
+function namesOf(values, key) {
+  return (values ?? []).map(value => value[key] ?? value);
+}
+
+function sameSet(left, right) {
+  const a = [...left].sort();
+  const b = [...right].sort();
+  return a.length === b.length && a.every((value, index) => value === b[index]);
+}
+
+function detail(logins, labelNames) {
+  const parts = [];
+  if (logins.length) parts.push(`responsables: ${logins.join(', ')}`);
+  if (labelNames.length) parts.push(`etiquetas: ${labelNames.join(', ')}`);
+  return parts.length ? ` | ${parts.join(' | ')}` : '';
+}
+
+async function githubLabels(github) {
+  const known = new Map();
+  for (let page = 1; ; page++) {
+    const batch = await github(`/labels?per_page=100&page=${page}`);
+    for (const label of batch) known.set(label.name, label);
+    if (batch.length < 100) break;
+  }
+  return known;
+}
+
+async function ensureLabels(github, labelList, { dryRun, report }) {
+  if (!labelList.length) return;
+  const known = await githubLabels(github);
+  for (const label of labelList) {
+    if (known.has(label.name)) continue;
+    if (dryRun) {
+      report(`CREAR ETIQUETA: ${label.name}`);
+      continue;
+    }
+    await github('/labels', 'POST', { name: label.name, color: label.color });
+    known.set(label.name, label);
+  }
+}
+
 export function issueNumbers(body = '') {
   const text = body.replace(/<!--[\s\S]*?-->/g, '').replace(/```[\s\S]*?```/g, '');
   return [...new Set([...text.matchAll(/^\s*(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s+#([1-9]\d*)\s*[.!]?\s*$/gim)]
@@ -37,23 +162,46 @@ export async function importCards({ trello, github, board, dryRun, report }) {
     }
     if (issues.length < 100) break;
   }
+  const memberList = await trello(`/boards/${board.id}/members?fields=id,fullName,username`);
+  const membersById = new Map(memberList.map(member => [member.id, member]));
   for (const snapshot of cards) {
     const card = await trello(`/cards/${snapshot.id}`);
     if (card.closed || card.isTemplate || card.idBoard !== board.id || card.idList !== backlog.id) continue;
+    const { logins, labelList, notes } = cardAssignment(card, membersById);
+    for (const note of notes) report(note);
+    const labelNames = labelList.map(label => label.name);
     let issue = existing.get(card.id);
     if (!issue) {
       if (dryRun) {
-        report(`CREAR: ${card.name} (${card.shortUrl})`);
+        await ensureLabels(github, labelList, { dryRun, report });
+        report(`CREAR: ${card.name} (${card.shortUrl})${detail(logins, labelNames)}`);
         continue;
       }
-      issue = await github('/issues', 'POST', {
+      await ensureLabels(github, labelList, { dryRun, report });
+      const payload = {
         title: card.name,
         body: `${card.desc ?? ''}\n\nTrello: ${card.shortUrl}\n\n<!-- trello-card:${card.id} -->`,
-      });
+      };
+      if (logins.length) payload.assignees = logins;
+      if (labelNames.length) payload.labels = labelNames;
+      issue = await github('/issues', 'POST', payload);
       existing.set(card.id, issue);
       report(`CREADO: #${issue.number} — ${card.name}`);
     } else {
       report(`EXISTENTE: #${issue.number} — ${card.name}`);
+      const patch = {};
+      if (logins.length && !sameSet(namesOf(issue.assignees, 'login'), logins)) patch.assignees = logins;
+      if (labelNames.length && !sameSet(namesOf(issue.labels, 'name'), labelNames)) patch.labels = labelNames;
+      if (Object.keys(patch).length) {
+        await ensureLabels(github, labelList, { dryRun, report });
+        if (dryRun) {
+          report(`ACTUALIZAR: #${issue.number}${detail(logins, labelNames)}`);
+        } else {
+          issue = await github(`/issues/${issue.number}`, 'PATCH', patch);
+          existing.set(card.id, issue);
+          report(`ACTUALIZADO: #${issue.number} ${card.name}`);
+        }
+      }
     }
     const attachments = await trello(`/cards/${card.id}/attachments`);
     if (!attachments.some(attachment => attachment.url === issue.html_url)) {

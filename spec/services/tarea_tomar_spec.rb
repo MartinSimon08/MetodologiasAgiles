@@ -41,7 +41,7 @@ RSpec.describe TareaTomar do
   end
 
   it "rechaza tomar una tarea de una orden cerrada" do
-    tarea.orden.update!(estado: :cerrada)
+    marcar_cerrada(tarea.orden)
 
     expect { described_class.call(tarea: tarea, mecanico: mecanico) }
       .to raise_error(ActiveRecord::RecordInvalid) { |error|

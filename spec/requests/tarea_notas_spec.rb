@@ -45,7 +45,7 @@ RSpec.describe "Notas de tareas", type: :request do
     end
 
     it "rechaza agregar una nota si la orden está cerrada" do
-      orden.update!(estado: :cerrada)
+      marcar_cerrada(orden)
 
       post "/tareas/#{tarea.id}/notas", params: params, headers: auth_headers(mecanico), as: :json
 

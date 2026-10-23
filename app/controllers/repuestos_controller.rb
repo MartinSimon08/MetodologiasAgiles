@@ -1,7 +1,7 @@
 class RepuestosController < ApplicationController
   include Paginable
 
-  before_action :require_administrador!, only: %i[index valorizar vista_previa]
+  before_action :require_administrador!, only: %i[valorizar vista_previa]
   before_action :set_orden, only: %i[index create valorizar vista_previa]
   before_action :set_repuesto, only: :valorizar
 
@@ -56,8 +56,11 @@ class RepuestosController < ApplicationController
   end
 
   def serialize(repuesto)
-    datos = repuesto.as_json(only: %i[id orden_id repuesto_catalogo_id descripcion cantidad costo_unitario margen precio_cliente proveedor registrado_por_id estado created_at])
-    datos[:ganancia] = repuesto.valorizado? ? ganancia(repuesto) : nil
+    datos = repuesto.as_json(only: %i[id orden_id repuesto_catalogo_id descripcion cantidad registrado_por_id estado created_at])
+    if current_usuario.administrador?
+      datos.merge!(repuesto.as_json(only: %i[costo_unitario margen precio_cliente proveedor]))
+      datos["ganancia"] = repuesto.valorizado? ? ganancia(repuesto) : nil
+    end
     datos[:registrado_por] = repuesto.registrado_por.as_json(only: %i[id nombre])
     datos
   end

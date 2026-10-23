@@ -1,6 +1,6 @@
 import type { VehiculoOrden } from '../ordenes/types'
 
-export type EstadoTarea = 'pendiente' | 'en_curso' | 'terminada'
+export type EstadoTarea = 'pendiente' | 'en_curso' | 'terminada' | 'cancelada'
 
 export interface Nota {
   id: number
@@ -27,6 +27,7 @@ export const ESTADO_TAREA_LABELS: Record<EstadoTarea, string> = {
   pendiente: 'Pendiente',
   en_curso: 'En curso',
   terminada: 'Terminada',
+  cancelada: 'Descartada',
 }
 
 export interface TareaMecanico {

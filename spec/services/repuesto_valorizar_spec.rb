@@ -44,7 +44,7 @@ RSpec.describe RepuestoValorizar do
 
   it "rechaza valorizar en una orden cerrada" do
     pendiente = repuesto
-    orden.update_column(:estado, "cerrada")
+    marcar_cerrada(orden)
 
     expect { described_class.call(repuesto: pendiente, costo_unitario: "100") }
       .to raise_error(ActiveRecord::RecordInvalid) { |error|

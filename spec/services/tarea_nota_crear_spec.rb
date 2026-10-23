@@ -26,7 +26,7 @@ RSpec.describe TareaNotaCrear do
   end
 
   it "rechaza agregar una nota a una tarea de una orden cerrada" do
-    tarea.orden.update!(estado: :cerrada)
+    marcar_cerrada(tarea.orden)
 
     expect { described_class.call(tarea: tarea, registrado_por: mecanico, contenido: "Nota") }
       .to raise_error(ActiveRecord::RecordInvalid)

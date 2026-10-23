@@ -1,3 +1,5 @@
+import type { EstadoTarea } from '../tareas/types'
+
 export type EstadoOrden = 'abierta' | 'cerrada' | 'cancelada'
 
 export interface VehiculoOrden {
@@ -16,10 +18,38 @@ export interface Orden {
   estado: EstadoOrden
   created_at: string
   cancelada_en: string | null
+  cerrada_en: string | null
+  cerrada_por: { id: number; nombre: string } | null
+  total_cerrado?: string | null
 }
 
 export interface OrdenCancelada extends Orden {
   tareas_liberadas: { id: number; descripcion: string }[]
+}
+
+export interface ResumenCierre {
+  orden_id: number
+  estado: EstadoOrden
+  tareas: {
+    id: number
+    descripcion: string
+    estado: EstadoTarea
+    precio: string | null
+    terminada_en: string | null
+    mecanico: { id: number; nombre: string } | null
+  }[]
+  repuestos: {
+    id: number
+    descripcion: string
+    cantidad: number
+    estado: 'valorizado' | 'pendiente_de_valorizar'
+    precio_cliente: string | null
+  }[]
+  mano_de_obra: string
+  total_repuestos: string
+  total: string
+  adelantado: string
+  saldo: string
 }
 
 export const ESTADO_ORDEN_LABELS: Record<EstadoOrden, string> = {

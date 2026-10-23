@@ -42,7 +42,7 @@ RSpec.describe "Tareas", type: :request do
     end
 
     it "rechaza crear tareas en una orden cerrada" do
-      orden.update!(estado: :cerrada)
+      marcar_cerrada(orden)
 
       post "/ordenes/#{orden.id}/tareas", params: params, headers: auth_headers(admin), as: :json
 
@@ -316,7 +316,7 @@ RSpec.describe "Tareas", type: :request do
     end
 
     it "rechaza actualizar el precio si la orden está cerrada" do
-      orden.update!(estado: :cerrada)
+      marcar_cerrada(orden)
 
       patch "/tareas/#{tarea.id}/actualizar_precio", params: { tarea: { precio: "15000" } },
                                                       headers: auth_headers(admin), as: :json

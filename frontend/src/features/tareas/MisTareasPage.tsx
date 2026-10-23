@@ -3,7 +3,8 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { errorMessage } from '../../lib/api'
 import { describirVehiculo } from '../ordenes/types'
-import { completarTarea, liberarTarea, listarTareasMecanico, tomarTarea } from './api'
+import { agregarNotaTarea, completarTarea, liberarTarea, listarTareasMecanico, tomarTarea } from './api'
+import { NotasTarea } from './NotasTarea'
 import type { TareaMecanico } from './types'
 
 const ACTUALIZACION_MS = 30 * 1000
@@ -11,6 +12,8 @@ const ACTUALIZACION_MS = 30 * 1000
 export function MisTareasPage() {
   const queryClient = useQueryClient()
   const [error, setError] = useState<string | null>(null)
+  const [agregandoNotaId, setAgregandoNotaId] = useState<number | null>(null)
+  const [notaTexto, setNotaTexto] = useState('')
 
   const tareas = useQuery({
     queryKey: ['tareas-mecanico'],
@@ -37,12 +40,33 @@ export function MisTareasPage() {
     onSettled: invalidar,
     onError: (err: unknown) => setError(errorMessage(err, 'No se pudo liberar la tarea.')),
   })
+  const agregarNota = useMutation({
+    mutationFn: ({ id, contenido }: { id: number; contenido: string }) => agregarNotaTarea(id, contenido),
+    onSuccess: () => {
+      setAgregandoNotaId(null)
+      setNotaTexto('')
+    },
+    onSettled: invalidar,
+    onError: (err: unknown) => setError(errorMessage(err, 'No se pudo agregar la nota.')),
+  })
 
   const ocupado = tomar.isPending || completar.isPending || liberar.isPending
 
   function ejecutar(accion: (id: number) => void, id: number) {
     setError(null)
     accion(id)
+  }
+
+  function empezarNota(id: number) {
+    setError(null)
+    setAgregandoNotaId(id)
+    setNotaTexto('')
+  }
+
+  function confirmarNota(id: number) {
+    if (!notaTexto.trim()) return
+    setError(null)
+    agregarNota.mutate({ id, contenido: notaTexto })
   }
 
   function datosTarea(tarea: TareaMecanico) {
@@ -54,6 +78,35 @@ export function MisTareasPage() {
           {describirVehiculo(tarea.orden.vehiculo)}
         </span>
         <span>{tarea.orden.cliente}</span>
+        <NotasTarea notas={tarea.notas} />
+        {agregandoNotaId === tarea.id ? (
+          <div className="formulario">
+            <textarea
+              rows={2}
+              autoFocus
+              placeholder="Lo que encontraste o lo que queda pendiente…"
+              value={notaTexto}
+              onChange={(e) => setNotaTexto(e.target.value)}
+            />
+            <div className="acciones">
+              <button
+                type="button"
+                className="secundario"
+                disabled={agregarNota.isPending}
+                onClick={() => setAgregandoNotaId(null)}
+              >
+                Cancelar
+              </button>
+              <button type="button" disabled={agregarNota.isPending} onClick={() => confirmarNota(tarea.id)}>
+                Guardar nota
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button className="secundario" onClick={() => empezarNota(tarea.id)}>
+            Agregar nota
+          </button>
+        )}
       </div>
     )
   }

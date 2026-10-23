@@ -8,7 +8,7 @@ class TareasController < ApplicationController
   before_action :require_responsable!, only: %i[completar liberar]
 
   def index
-    tareas, meta = paginar(@orden.tareas.order(:created_at, :id))
+    tareas, meta = paginar(@orden.tareas.includes(notas: :registrado_por).order(:created_at, :id))
     render json: { tareas: tareas.map { |tarea| serialize(tarea) }, meta: meta }
   end
 
@@ -63,6 +63,13 @@ class TareasController < ApplicationController
     datos = tarea.as_json(only: %i[id orden_id descripcion estado mecanico_id tomada_en terminada_en created_at])
     datos["precio"] = tarea.precio&.to_f if current_usuario.administrador?
     datos[:mecanico] = tarea.mecanico&.as_json(only: %i[id nombre])
+    datos[:notas] = tarea.notas.sort_by(&:created_at).map { |nota| serialize_nota(nota) }
+    datos
+  end
+
+  def serialize_nota(nota)
+    datos = nota.as_json(only: %i[id contenido created_at])
+    datos[:registrado_por] = nota.registrado_por.as_json(only: %i[id nombre])
     datos
   end
 end

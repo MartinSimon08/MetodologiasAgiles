@@ -46,6 +46,7 @@ Rails.application.routes.draw do
         patch :liberar
         patch :actualizar_precio
       end
+      resources :notas, only: :create, controller: "tarea_notas"
     end
 
     member do

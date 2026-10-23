@@ -1,6 +1,7 @@
 class Tarea < ApplicationRecord
   belongs_to :orden
   belongs_to :mecanico, class_name: "Usuario", optional: true
+  has_many :notas, class_name: "TareaNota", dependent: :destroy
 
   enum :estado, { pendiente: "pendiente", en_curso: "en_curso", terminada: "terminada", cancelada: "cancelada" }, validate: true
 

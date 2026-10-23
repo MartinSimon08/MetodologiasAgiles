@@ -42,7 +42,8 @@ RSpec.describe "Autorización por rol", type: :request do
     "PATCH /tareas/:id/tomar" => :mecanico,
     "PATCH /tareas/:id/completar" => :mecanico,
     "PATCH /tareas/:id/liberar" => :mecanico,
-    "PATCH /tareas/:id/actualizar_precio" => :administrador
+    "PATCH /tareas/:id/actualizar_precio" => :administrador,
+    "POST /tareas/:tarea_id/notas" => :mecanico
   }
   roles_permitidos = {
     administrador: %i[administrador],

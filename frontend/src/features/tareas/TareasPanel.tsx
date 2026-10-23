@@ -6,6 +6,7 @@ import { errorMessage } from '../../lib/api'
 import { importe } from '../../lib/formato'
 import { useAuth } from '../auth/AuthContext'
 import { actualizarPrecioTarea, completarTarea, liberarTarea, listarTareas, tomarTarea } from './api'
+import { NotasTarea } from './NotasTarea'
 import { NuevaTareaForm } from './NuevaTareaForm'
 import { ESTADO_TAREA_LABELS } from './types'
 
@@ -163,6 +164,7 @@ export function TareasPanel({ ordenId, ordenAbierta }: Props) {
                     </span>
                   )
                 )}
+                <NotasTarea notas={tarea.notas} />
               </div>
               <span className={`insignia insignia-${tarea.estado}`}>
                 {ESTADO_TAREA_LABELS[tarea.estado]}

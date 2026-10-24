@@ -36,5 +36,5 @@ pnpm preview   # sirve el build de producción localmente
 ## Convenciones
 
 - Toda llamada a la API pasa por `src/lib/api.ts` (no instanciar Axios suelto en otros lados), para que el token JWT se adjunte siempre igual.
-- Los datos remotos se manejan con TanStack Query (`useQuery`/`useMutation`), no con `useEffect` + `useState` a mano, para aprovechar el caché e invalidación cuando lleguen eventos en tiempo real (ActionCable) más adelante.
+- Los datos remotos se manejan con TanStack Query (`useQuery`/`useMutation`), no con `useEffect` + `useState` a mano. Una tarea nueva llega por Action Cable (`src/lib/cable.ts`) e invalida la lista del mecánico.
 - Cada feature es lo más autocontenida posible: sus propios componentes, hooks y llamadas a la API viven dentro de su carpeta en `features/`.

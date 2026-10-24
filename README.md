@@ -223,6 +223,10 @@ docker compose exec frontend pnpm exec tsc -b --pretty false
 - **Tiempo real**: al crear una tarea, la API avisa por Action Cable (Solid Cable). En development el adapter es `async`. El cliente del mecánico está en `frontend/src/lib/cable.ts`.
 - **Commits y pull requests**: el título y cada commit siguen [Conventional Commits](https://www.conventionalcommits.org/) en la forma `tipo(scope): descripción`, en español, imperativo y sin punto final. El CI lo valida con `script/check-conventional-commits`. La descripción del PR usa [`.github/PULL_REQUEST_TEMPLATE.md`](.github/PULL_REQUEST_TEMPLATE.md).
 
+## Contribuir
+
+Para proponer un cambio, leé [CONTRIBUTING.md](CONTRIBUTING.md). Una vulnerabilidad se reporta en privado, como dice [SECURITY.md](SECURITY.md). Los revisores del grupo están en [`.github/CODEOWNERS`](.github/CODEOWNERS).
+
 ## Licencia
 
 Código bajo la licencia [MIT](LICENSE).

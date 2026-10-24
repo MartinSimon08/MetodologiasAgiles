@@ -1,0 +1,7 @@
+# Dueños del código. GitHub les pide review cuando un pull request toca
+# un archivo que coincide. El último patrón que coincide gana.
+# Si main exige aprobación de un code owner, alcanza con uno de la lista.
+#
+# Colaboradores con permiso de escritura. El profesor no entra en esta lista.
+
+* @MartinSimon08 @fetcpao @mateolafalce @MatiDelozano @ValentnTorres

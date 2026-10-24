@@ -2,7 +2,10 @@
 
 # Gestión de Taller
 
-[![CI](https://github.com/MartinSimon08/MetodologiasAgiles/actions/workflows/ci.yml/badge.svg)](https://github.com/MartinSimon08/MetodologiasAgiles/actions/workflows/ci.yml)
+[![ci](https://img.shields.io/github/actions/workflow/status/MartinSimon08/MetodologiasAgiles/ci.yml?branch=main&label=ci)](https://github.com/MartinSimon08/MetodologiasAgiles/actions/workflows/ci.yml)
+[![licencia](https://img.shields.io/badge/licencia-MIT-blue)](LICENSE)
+[![estrellas](https://img.shields.io/github/stars/MartinSimon08/MetodologiasAgiles?label=estrellas)](https://github.com/MartinSimon08/MetodologiasAgiles/stargazers)
+[![coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/MartinSimon08/MetodologiasAgiles/badges/coverage.json)](https://github.com/MartinSimon08/MetodologiasAgiles/actions/workflows/coverage.yml)
 
 Software de gestión para un taller mecánico único, pensado para el dinamismo real de un taller: los mecánicos atienden vehículos según disponibilidad (no hay asignación fija), y los repuestos se compran al vuelo sin stock permanente, cargándose a la orden con su costo real.
 
@@ -222,4 +225,4 @@ docker compose exec frontend pnpm exec tsc -b --pretty false
 
 ## Licencia
 
-Este repositorio no incluye una licencia. Consultá a los autores antes de reutilizar el código.
+Código bajo la licencia [MIT](LICENSE).

@@ -57,6 +57,8 @@ group :development, :test do
   gem "rspec-rails"
 
   gem "factory_bot_rails"
+
+  gem "simplecov", require: false
 end
 
 gem "ruby-vips", "~> 2.0"

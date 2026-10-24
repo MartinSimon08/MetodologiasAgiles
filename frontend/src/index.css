@@ -742,6 +742,17 @@ button.peligro:focus-visible {
   border-bottom: 1px solid var(--regla);
 }
 
+.boton-nuevo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex: none;
+}
+
+.boton-nuevo svg {
+  flex: none;
+}
+
 .lista {
   list-style: none;
   margin: 0;
@@ -1210,10 +1221,6 @@ button.secundario.peligro:hover:not(:disabled) {
   gap: 0.6rem;
 }
 
-.nueva-orden .selector-vehiculo {
-  gap: 1rem;
-}
-
 .nueva-orden .acciones {
   margin-top: 0.25rem;
   padding-top: 1.1rem;
@@ -1236,11 +1243,105 @@ button.secundario.peligro:hover:not(:disabled) {
   }
 }
 
-.selector-cliente,
-.selector-vehiculo {
+.selector {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+}
+
+.selector .estado {
+  margin: 0;
+}
+
+.etiqueta-campo {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--tinta-suave);
+}
+
+.opciones {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--superficie);
+  border: 1px solid var(--regla);
+}
+
+.opciones[aria-busy='true'] {
+  opacity: 0.6;
+}
+
+.opciones li + li {
+  border-top: 1px solid var(--regla);
+}
+
+button.opcion {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border: 0;
+  background: transparent;
+  color: var(--tinta);
+  font-weight: 400;
+  text-align: left;
+  padding: 0.65rem 0.9rem;
+}
+
+button.opcion .item-datos {
+  flex: 1;
+  min-width: 0;
+}
+
+.opcion-accion {
+  flex: none;
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--tinta-suave);
+}
+
+button.opcion:hover:not(:disabled),
+button.opcion:focus-visible {
+  background: var(--control);
+  color: var(--tinta);
+}
+
+button.opcion:focus-visible {
+  outline-offset: -2px;
+}
+
+.seleccionado {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 0.65rem 0.75rem 0.65rem 0.9rem;
+  border: 1px solid var(--tinta);
+  background: var(--nota);
+}
+
+.seleccionado .item-datos {
+  flex: 1;
+  min-width: 0;
+}
+
+.seleccionado button {
+  flex: none;
+}
+
+.item-datos span.patente {
+  color: var(--tinta);
 }
 
 .campos-vehiculo {

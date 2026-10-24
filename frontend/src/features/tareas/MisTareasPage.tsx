@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { EncabezadoPagina } from '../../components/EncabezadoPagina'
 import { errorMessage } from '../../lib/api'
 import { describirVehiculo } from '../ordenes/types'
 import { agregarNotaTarea, completarTarea, liberarTarea, listarTareasMecanico, tomarTarea } from './api'
@@ -113,7 +114,7 @@ export function MisTareasPage() {
 
   return (
     <section className="mis-tareas">
-      <h1>Mis tareas</h1>
+      <EncabezadoPagina titulo="Mis tareas" bajada="Tus trabajos en curso y los disponibles para tomar." />
 
       {error && (
         <p className="error" role="alert">

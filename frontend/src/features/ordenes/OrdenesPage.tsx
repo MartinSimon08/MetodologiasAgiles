@@ -1,6 +1,8 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { BotonNuevo } from '../../components/BotonNuevo'
+import { EncabezadoPagina } from '../../components/EncabezadoPagina'
 import { Paginacion } from '../../components/Paginacion'
 import { errorMessage } from '../../lib/api'
 import { fechaHora } from '../../lib/formato'
@@ -39,12 +41,11 @@ export function OrdenesPage() {
 
   return (
     <section className="ordenes">
-      <header className="encabezado">
-        <h1>Órdenes</h1>
+      <EncabezadoPagina titulo="Órdenes" bajada="Vehículos ingresados al taller y su estado.">
         {usuario?.rol === 'administrador' && !abriendo && (
-          <button onClick={() => setAbriendo(true)}>Nueva orden</button>
+          <BotonNuevo onClick={() => setAbriendo(true)}>Nueva orden</BotonNuevo>
         )}
-      </header>
+      </EncabezadoPagina>
 
       {abriendo && (
         <NuevaOrdenForm

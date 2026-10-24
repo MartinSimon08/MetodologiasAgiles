@@ -1,0 +1,33 @@
+#!/bin/sh
+set -eu
+
+cd /app
+
+uid="$(stat -c '%u' /app)"
+gid="$(stat -c '%g' /app)"
+
+mkdir -p /app/node_modules /pnpm/store
+export PNPM_STORE_DIR=/pnpm/store
+
+if [ "$uid" = "0" ]; then
+  pnpm install --frozen-lockfile
+  exec "$@"
+fi
+
+if ! getent group "$gid" >/dev/null; then
+  groupadd --gid "$gid" dev
+fi
+
+if ! getent passwd "$uid" >/dev/null; then
+  useradd --uid "$uid" --gid "$gid" --create-home --home-dir /home/dev --shell /bin/sh dev
+fi
+
+export HOME="$(getent passwd "$uid" | cut -d: -f6)"
+as_user="setpriv --reuid=$uid --regid=$gid --init-groups"
+
+if [ "$(stat -c '%u' /app/node_modules)" != "$uid" ] || [ "$(stat -c '%u' /pnpm/store)" != "$uid" ]; then
+  chown "$uid:$gid" /app/node_modules /pnpm/store
+fi
+
+$as_user -- pnpm install --frozen-lockfile
+exec $as_user -- "$@"

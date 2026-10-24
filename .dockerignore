@@ -43,3 +43,7 @@
 # Ignore Docker-related files
 /.dockerignore
 /Dockerfile*
+
+# El contexto de build no necesita las dependencias del frontend.
+/frontend/node_modules
+/frontend/dist

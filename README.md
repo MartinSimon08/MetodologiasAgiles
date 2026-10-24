@@ -4,13 +4,13 @@
 
 Software de gestión para un taller mecánico único, pensado para el dinamismo real de un taller: los mecánicos atienden vehículos según disponibilidad (no hay asignación fija), y los repuestos se compran al vuelo sin stock permanente, cargándose a la orden con su costo real.
 
-El backend es una API Ruby on Rails (modo `--api`). El frontend React vive en `frontend/` y es la pantalla de recepción y la vista móvil de los mecánicos. En local hay que levantar los dos procesos. La guía del frontend está en [`frontend/README.md`](frontend/README.md).
+El backend es una API Ruby on Rails (modo `--api`). El frontend React vive en `frontend/` y es la pantalla de recepción y la vista móvil de los mecánicos. En local, `docker compose up` levanta la base, la API y el frontend. La guía del frontend está en [`frontend/README.md`](frontend/README.md).
 
 ## Stack
 
 - Ruby 4.0.7 (`.ruby-version`, pensado para rbenv)
 - Rails 8.1 (modo API)
-- PostgreSQL 16, solo la base, vía Docker Compose
+- PostgreSQL 16, la API y el frontend, vía Docker Compose
 - Frontend: Vite, React y TypeScript en `frontend/` (pnpm)
 - RSpec + FactoryBot
 - Autenticación por JWT (roles: mecánico / administrador)
@@ -22,14 +22,13 @@ El backend es una API Ruby on Rails (modo `--api`). El frontend React vive en `f
   ```
   gem install bundler -v 4.0.21
   ```
-- Docker y Docker Compose.
-- Librerías para compilar las gemas nativas y usar `ruby-vips` en runtime. En Debian/Ubuntu:
+- Docker y Docker Compose. Con eso alcanza para levantar la app y correr los tests.
+- Para correr RuboCop o el lint del frontend en el host: las librerías nativas y Node.js con pnpm. Node tiene que ser `^20.19.0` o `>=22.12.0`, que es lo que exige Vite 8. En Debian/Ubuntu:
   ```
   sudo apt-get install -y build-essential git libpq-dev libyaml-dev libvips pkg-config
   ```
-- Para el frontend: Node.js `^20.19.0` o `>=22.12.0` (lo exige Vite 8) y pnpm (`corepack enable` si no lo tenés).
 
-El contenedor publica Postgres en el puerto 5432 del host. Ese puerto tiene que estar libre.
+Compose publica la base en el puerto 5432, la API en el 3000 y el frontend en el 5173. Esos tres puertos tienen que estar libres.
 
 ## Variables de entorno
 
@@ -47,41 +46,30 @@ Completá `DB_USER`, `DB_PASSWORD` y `DB_NAME`. Con alguna vacía, el contenedor
 
 1. Cloná el repo y parate en la raíz.
 2. Copiá y completá `.env`, como está arriba.
-3. Levantá Postgres:
+3. Levantá todo:
    ```
-   docker compose up -d
-   ```
-4. Instalá las gemas:
-   ```
-   bundle install
-   ```
-5. Creá y migrá la base de development:
-   ```
-   bin/rails db:create
-   bin/rails db:migrate
-   ```
-6. Creá el administrador:
-   ```
-   bin/rails db:seed
-   ```
-   Hace falta `ADMIN_EMAIL` y `ADMIN_PASSWORD` en `.env`. El seed crea ese administrador. Otros usuarios, incluido un mecánico, se dan de alta después desde la pantalla Usuarios.
-7. Levantá la API:
-   ```
-   bin/rails server
-   ```
-8. En otra terminal, levantá el frontend:
-   ```
-   cd frontend
-   pnpm install
-   cp .env.example .env
-   pnpm dev
+   docker compose up --build
    ```
 
-`bin/setup` instala gemas, prepara la base de development y arranca la API. Para dejar el proyecto usable seguí también los pasos de `.env`, Docker y frontend. `bin/dev` solo arranca la API. Los comandos de Rails van con `bin/rails`.
+Un solo comando levanta la base, la API y el frontend, en ese orden: la API espera a que Postgres esté listo y el frontend espera a la API. La primera vez construye las imágenes, instala gemas y dependencias del frontend, migra la base y corre el seed. Después alcanza con `docker compose up`. Para dejarlo en segundo plano: `docker compose up -d --wait`, que vuelve cuando los tres servicios responden.
+
+Para bajar todo:
+
+```
+docker compose down
+```
+
+Baja y elimina los tres contenedores juntos. Los datos de la base quedan en el volumen `pgdata`. Para empezar de cero, con la base vacía: `docker compose down -v`.
+
+El stack se llama siempre `metodologiasagiles`, sin importar el nombre de la carpeta. Un `docker compose down` desde cualquier worktree baja el mismo stack.
+
+El contenedor de la API corre como el usuario `1000`. Si el tuyo es otro (`id -u`), agregá `HOST_UID` y `HOST_GID` en `.env`.
+
+Hace falta `ADMIN_EMAIL` y `ADMIN_PASSWORD` en `.env` para que el seed cree el administrador. Otros usuarios, incluido un mecánico, se dan de alta después desde la pantalla Usuarios.
+
+Los comandos de Rails corren dentro del contenedor de la API, por ejemplo `docker compose exec api bin/rails console`.
 
 ## Cómo acceder
-
-La API y el frontend tienen que estar corriendo a la vez.
 
 - Interfaz: <http://localhost:5173/login>
 - API: <http://localhost:3000>
@@ -89,15 +77,14 @@ La API y el frontend tienen que estar corriendo a la vez.
 
 Entrá con el email y la contraseña de `ADMIN_EMAIL` y `ADMIN_PASSWORD`.
 
-Abrí el frontend en `http://localhost:5173`. CORS solo permite ese origen: `http://127.0.0.1:5173` no pasa, y si el puerto 5173 está ocupado Vite elige otro y el navegador no puede llamar a la API.
+Abrí el frontend en `http://localhost:5173`. CORS solo permite ese origen: `http://127.0.0.1:5173` no pasa. Vite usa el puerto 5173 y no lo cambia: si está ocupado, el frontend no arranca.
 
 ## Tests
 
-Prepará la base de test y corré la suite desde la raíz:
+Con el stack levantado, prepará la base de test y corré la suite dentro del contenedor de la API:
 
 ```
-bin/rails db:test:prepare
-bundle exec rspec
+docker compose exec -e RAILS_ENV=test api sh -c "bin/rails db:test:prepare && bundle exec rspec"
 ```
 
 ## Convenciones del proyecto

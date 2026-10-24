@@ -146,6 +146,7 @@ RSpec.describe "Repuestos", type: :request do
         "registrado_por" => { "id" => admin.id, "nombre" => admin.nombre }
       ))
       expect(response.parsed_body["repuestos"].first["created_at"]).to be_present
+      expect(response.parsed_body["quitados"]).to eq([])
       expect(response.parsed_body["meta"]).to include("total" => 1)
     end
 
@@ -306,6 +307,168 @@ RSpec.describe "Repuestos", type: :request do
         headers: auth_headers(mecanico), as: :json
 
       expect(response).to have_http_status(:forbidden)
+    end
+  end
+
+  describe "PATCH /ordenes/:orden_id/repuestos/:id" do
+    let!(:repuesto) do
+      RepuestoAgregar.call(orden: orden, registrado_por: admin, descripcion: "Filtro", cantidad: 2,
+                           costo_unitario: "100.50", margen: "20", proveedor: "Casa Central")
+    end
+
+    it "recalcula el precio y conserva la descripción" do
+      patch "/ordenes/#{orden.id}/repuestos/#{repuesto.id}", params: { repuesto: {
+        cantidad: 3, costo_unitario: "100.50", margen: "20", proveedor: "Casa Norte",
+        precio_cliente: "1", descripcion: "Otra", estado: "pendiente_de_valorizar"
+      } }, headers: auth_headers(admin), as: :json
+
+      expect(response).to have_http_status(:ok)
+      cuerpo = response.parsed_body
+      expect(cuerpo).to include("cantidad" => 3, "proveedor" => "Casa Norte", "descripcion" => "Filtro",
+                                "estado" => "valorizado", "quitado_en" => nil, "quitado_por" => nil)
+      expect(cuerpo["precio_cliente"].to_d).to eq(BigDecimal("361.80"))
+      expect(cuerpo["ganancia"].to_d).to eq(BigDecimal("60.30"))
+    end
+
+    it "acepta el mismo cambio por PUT" do
+      put "/ordenes/#{orden.id}/repuestos/#{repuesto.id}", params: { repuesto: { cantidad: 1, margen: "20",
+        costo_unitario: "100.50" } }, headers: auth_headers(admin), as: :json
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body["precio_cliente"].to_d).to eq(BigDecimal("120.60"))
+    end
+
+    it "corrige la cantidad de un aviso pendiente" do
+      pendiente = RepuestoAvisar.call(orden: orden, registrado_por: mecanico, descripcion: "Filtro", cantidad: 1)
+
+      patch "/ordenes/#{orden.id}/repuestos/#{pendiente.id}", params: { repuesto: { cantidad: 4, proveedor: "Norte" } },
+        headers: auth_headers(admin), as: :json
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body).to include("cantidad" => 4, "estado" => "pendiente_de_valorizar",
+                                              "costo_unitario" => nil, "precio_cliente" => nil)
+    end
+
+    it "rechaza costo y margen en un aviso pendiente" do
+      pendiente = RepuestoAvisar.call(orden: orden, registrado_por: mecanico, descripcion: "Filtro", cantidad: 1)
+
+      patch "/ordenes/#{orden.id}/repuestos/#{pendiente.id}", params: { repuesto: { costo_unitario: "10", margen: "5" } },
+        headers: auth_headers(admin), as: :json
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body["errors"]["base"]).to include(
+        "El costo y el margen de un repuesto pendiente se cargan con valorizar"
+      )
+    end
+
+    it "rechaza una orden cerrada" do
+      marcar_cerrada(orden)
+
+      patch "/ordenes/#{orden.id}/repuestos/#{repuesto.id}", params: { repuesto: { cantidad: 3 } },
+        headers: auth_headers(admin), as: :json
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body["errors"]["orden"]).to include("Orden está cerrada")
+      expect(repuesto.reload.cantidad).to eq(2)
+    end
+
+    it "rechaza una orden cancelada" do
+      orden.update!(estado: :cancelada, cancelada_en: Time.current)
+
+      patch "/ordenes/#{orden.id}/repuestos/#{repuesto.id}", params: { repuesto: { cantidad: 3 } },
+        headers: auth_headers(admin), as: :json
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body["errors"]["orden"]).to include("Orden está cancelada")
+    end
+
+    it "rechaza un costo inválido" do
+      patch "/ordenes/#{orden.id}/repuestos/#{repuesto.id}", params: { repuesto: { costo_unitario: "-1" } },
+        headers: auth_headers(admin), as: :json
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body["errors"]).to have_key("costo_unitario")
+    end
+
+    it "prohíbe a mecánicos corregir compras" do
+      patch "/ordenes/#{orden.id}/repuestos/#{repuesto.id}", params: { repuesto: { cantidad: 3 } },
+        headers: auth_headers(mecanico), as: :json
+
+      expect(response).to have_http_status(:forbidden)
+      expect(response.body).to be_empty
+    end
+
+    it "exige autenticación" do
+      patch "/ordenes/#{orden.id}/repuestos/#{repuesto.id}", params: { repuesto: { cantidad: 3 } }, as: :json
+
+      expect(response).to have_http_status(:unauthorized)
+    end
+
+    it "devuelve 404 si el repuesto no pertenece a la orden" do
+      patch "/ordenes/#{create(:orden).id}/repuestos/#{repuesto.id}", params: { repuesto: { cantidad: 3 } },
+        headers: auth_headers(admin), as: :json
+
+      expect(response).to have_http_status(:not_found)
+    end
+  end
+
+  describe "DELETE /ordenes/:orden_id/repuestos/:id" do
+    let!(:repuesto) do
+      RepuestoAgregar.call(orden: orden, registrado_por: admin, descripcion: "Filtro", cantidad: 2,
+                           costo_unitario: "100.50", margen: "20")
+    end
+
+    it "registra la baja y la saca del listado vigente" do
+      delete "/ordenes/#{orden.id}/repuestos/#{repuesto.id}", headers: auth_headers(admin)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body).to include("id" => repuesto.id, "descripcion" => "Filtro")
+      expect(response.parsed_body["quitado_en"]).to be_present
+      expect(response.parsed_body["quitado_por"]).to eq("id" => admin.id, "nombre" => admin.nombre)
+      expect(orden.reload.total).to eq(0)
+
+      get "/ordenes/#{orden.id}/repuestos", headers: auth_headers(admin)
+      expect(response.parsed_body["repuestos"]).to eq([])
+      expect(response.parsed_body["quitados"]).to contain_exactly(include(
+        "id" => repuesto.id, "quitado_por" => { "id" => admin.id, "nombre" => admin.nombre }
+      ))
+    end
+
+    it "rechaza una segunda baja" do
+      delete "/ordenes/#{orden.id}/repuestos/#{repuesto.id}", headers: auth_headers(admin)
+      delete "/ordenes/#{orden.id}/repuestos/#{repuesto.id}", headers: auth_headers(admin)
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body["errors"]["estado"]).to include("Estado ya fue quitado de la orden")
+    end
+
+    it "rechaza una orden cerrada" do
+      marcar_cerrada(orden)
+
+      delete "/ordenes/#{orden.id}/repuestos/#{repuesto.id}", headers: auth_headers(admin)
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body["errors"]["orden"]).to include("Orden está cerrada")
+      expect(repuesto.reload.quitado_en).to be_nil
+    end
+
+    it "prohíbe a mecánicos quitar compras" do
+      delete "/ordenes/#{orden.id}/repuestos/#{repuesto.id}", headers: auth_headers(mecanico)
+
+      expect(response).to have_http_status(:forbidden)
+      expect(response.body).to be_empty
+    end
+
+    it "exige autenticación" do
+      delete "/ordenes/#{orden.id}/repuestos/#{repuesto.id}"
+
+      expect(response).to have_http_status(:unauthorized)
+    end
+
+    it "devuelve 404 si el repuesto no pertenece a la orden" do
+      delete "/ordenes/#{create(:orden).id}/repuestos/#{repuesto.id}", headers: auth_headers(admin)
+
+      expect(response).to have_http_status(:not_found)
     end
   end
 

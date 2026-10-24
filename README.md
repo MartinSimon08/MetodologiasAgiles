@@ -87,6 +87,10 @@ Con el stack levantado, prepará la base de test y corré la suite dentro del co
 docker compose exec -e RAILS_ENV=test api sh -c "bin/rails db:test:prepare && bundle exec rspec"
 ```
 
+## Deploy
+
+Cada merge a `main` que pasa el CI se despliega solo con Kamal a una VM gratuita de Oracle Cloud. La app queda en `https://204-216-155-6.sslip.io`. Detalles, secrets y comandos: [Deploy a producción](docs/deploy.md).
+
 ## Convenciones del proyecto
 
 - **Arquitectura**: MVC estándar de Rails + objetos de servicio para la lógica de negocio (`app/services/`). Los controllers reciben el request y delegan. Los modelos ActiveRecord manejan persistencia, relaciones y validaciones de datos.

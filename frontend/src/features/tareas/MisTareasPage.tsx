@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { errorMessage } from '../../lib/api'
+import { fechaHora } from '../../lib/formato'
 import { describirVehiculo } from '../ordenes/types'
 import { agregarNotaTarea, completarTarea, liberarTarea, listarTareasMecanico, tomarTarea } from './api'
 import { NotasTarea } from './NotasTarea'
@@ -78,6 +79,7 @@ export function MisTareasPage() {
           {describirVehiculo(tarea.orden.vehiculo)}
         </span>
         <span>{tarea.orden.cliente}</span>
+        {tarea.terminada_en && <span>Terminada a las {fechaHora(tarea.terminada_en)}</span>}
         <NotasTarea notas={tarea.notas} />
         {agregandoNotaId === tarea.id ? (
           <div className="formulario">
@@ -150,6 +152,19 @@ export function MisTareasPage() {
                       Completar
                     </button>
                   </div>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <h2>Terminadas hoy</h2>
+          {tareas.data.terminadas_hoy.length === 0 ? (
+            <p className="estado">Todavía no terminaste ninguna tarea hoy.</p>
+          ) : (
+            <ul className="lista">
+              {tareas.data.terminadas_hoy.map((tarea) => (
+                <li key={tarea.id} className="tarjeta tarea-movil">
+                  {datosTarea(tarea)}
                 </li>
               ))}
             </ul>

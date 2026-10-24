@@ -46,3 +46,11 @@ export interface TareasMecanico {
   mias: TareaMecanico[]
   disponibles: TareaMecanico[]
 }
+
+export interface TareaDisponibleAviso {
+  id: number
+  descripcion: string
+  orden_id: number
+  cliente: string
+  vehiculo: { id: number; patente: string; marca: string | null; modelo: string | null; anio: number | null }
+}

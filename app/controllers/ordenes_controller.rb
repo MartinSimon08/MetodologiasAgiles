@@ -1,7 +1,7 @@
 class OrdenesController < ApplicationController
   include Paginable
 
-  before_action :require_administrador!, only: %i[create cancelar cerrar resumen_cierre]
+  before_action :require_administrador!, only: %i[create cancelar cerrar resumen_cierre total_parcial]
 
   def index
     ordenes = Orden.includes(:cliente, :vehiculo, :cerrada_por).order(created_at: :desc, id: :desc)
@@ -38,6 +38,10 @@ class OrdenesController < ApplicationController
     render json: serialize_resumen(OrdenResumirCierre.call(orden: Orden.find(params[:id])))
   end
 
+  def total_parcial
+    render json: serialize_total_parcial(OrdenCalcularTotalParcial.call(orden: Orden.find(params[:id])))
+  end
+
   private
 
   def orden_params
@@ -57,11 +61,7 @@ class OrdenesController < ApplicationController
     {
       orden_id: resumen.orden.id,
       estado: resumen.orden.estado,
-      tareas: resumen.tareas.map do |tarea|
-        tarea.as_json(only: %i[id descripcion estado terminada_en]).merge(
-          "precio" => tarea.precio&.to_s("F"), "mecanico" => tarea.mecanico&.as_json(only: %i[id nombre])
-        )
-      end,
+      tareas: resumen.tareas.map { |tarea| serialize_linea_tarea(tarea) },
       repuestos: resumen.repuestos.map do |repuesto|
         repuesto.as_json(only: %i[id descripcion cantidad estado]).merge("precio_cliente" => repuesto.precio_cliente&.to_s("F"))
       end,
@@ -71,5 +71,28 @@ class OrdenesController < ApplicationController
       adelantado: resumen.adelantado.to_s("F"),
       saldo: resumen.saldo.to_s("F")
     }
+  end
+
+  def serialize_total_parcial(parcial)
+    {
+      orden_id: parcial.orden.id,
+      tareas: parcial.tareas.map { |tarea| serialize_linea_tarea(tarea) },
+      repuestos: parcial.repuestos.map do |repuesto|
+        repuesto.as_json(only: %i[id descripcion cantidad estado]).merge(
+          "costo_unitario" => repuesto.costo_unitario&.to_s("F"), "margen" => repuesto.margen&.to_s("F"),
+          "precio_cliente" => repuesto.precio_cliente&.to_s("F")
+        )
+      end,
+      mano_de_obra: parcial.mano_de_obra.to_s("F"),
+      total_repuestos: parcial.total_repuestos.to_s("F"),
+      total: parcial.total.to_s("F"),
+      a_cobrar_hoy: parcial.a_cobrar_hoy.to_s("F")
+    }
+  end
+
+  def serialize_linea_tarea(tarea)
+    tarea.as_json(only: %i[id descripcion estado terminada_en]).merge(
+      "precio" => tarea.precio&.to_s("F"), "mecanico" => tarea.mecanico&.as_json(only: %i[id nombre])
+    )
   end
 end

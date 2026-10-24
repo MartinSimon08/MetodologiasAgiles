@@ -750,6 +750,38 @@ button.secundario.peligro {
   }
 }
 
+.total-parcial {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.total-parcial p {
+  margin: 0;
+}
+
+.total-parcial .encabezado {
+  align-items: flex-start;
+  flex-wrap: wrap;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--borde);
+}
+
+.total-parcial-monto {
+  font-size: 1.35rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.total-parcial .sin-importe {
+  color: var(--texto-suave);
+}
+
+.total-parcial[aria-busy='true'] .totales-cierre,
+.total-parcial[aria-busy='true'] .total-parcial-monto {
+  opacity: 0.6;
+}
+
 .volver {
   color: var(--acento);
   text-decoration: none;

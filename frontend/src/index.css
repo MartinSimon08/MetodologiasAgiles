@@ -1,39 +1,35 @@
 :root {
-  --texto: #1f2328;
-  --texto-suave: #5b6470;
-  --fondo: #f5f6f8;
-  --superficie: #ffffff;
-  --borde: #d9dde3;
-  --acento: #1f6feb;
-  --acento-texto: #ffffff;
-  --error: #c62828;
-  --ok-fondo: #e6f4ea;
-  --ok-texto: #1e6b35;
-  --admin: #6f42c1;
-  --mecanico: #b35900;
-  --radio: 10px;
+  --tinta: #181818;
+  --tinta-suave: #909090;
+  --papel: #efefe4;
+  --superficie: #fcfcf9;
+  --nota: #f7f7f1;
+  --control: #eaeae7;
+  --blanco: #ffffff;
+  --regla: #d7d7d6;
+  --ambar: #ffcf3f;
+  --senal: #0071bb;
+  --peligro: #8f2d2d;
+  --peligro-fondo: #f8ecec;
 
-  font: 16px/1.5 system-ui, 'Segoe UI', Roboto, sans-serif;
-  color-scheme: light dark;
+  --texto: var(--tinta);
+  --texto-suave: var(--tinta-suave);
+  --fondo: var(--papel);
+  --borde: var(--regla);
+  --acento: var(--tinta);
+  --acento-texto: var(--superficie);
+  --error: var(--peligro);
+  --ok-fondo: var(--nota);
+  --ok-texto: var(--tinta);
+  --admin: var(--tinta);
+  --mecanico: var(--tinta);
+
+  font: 400 16px/24px 'IBM Plex Sans', 'Segoe UI', sans-serif;
+  color-scheme: light;
   color: var(--texto);
   background: var(--fondo);
+  font-variant-numeric: tabular-nums;
   -webkit-font-smoothing: antialiased;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --texto: #e6e8eb;
-    --texto-suave: #9aa3ad;
-    --fondo: #14161a;
-    --superficie: #1d2026;
-    --borde: #30353d;
-    --acento: #4c8dff;
-    --error: #ff6b6b;
-    --ok-fondo: #183524;
-    --ok-texto: #8fd6a4;
-    --admin: #b392f0;
-    --mecanico: #f0a35e;
-  }
 }
 
 * {
@@ -46,79 +42,129 @@ body {
   background: var(--fondo);
 }
 
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.3;
+  background-image:
+    linear-gradient(to right, var(--regla) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--regla) 1px, transparent 1px);
+  background-size: 120px 120px;
+  background-position: calc(50% + 60px) 0;
+}
+
+#root {
+  position: relative;
+  z-index: 1;
+  min-height: 100svh;
+}
+
 h1,
-h2 {
+h2,
+h3,
+p {
   margin: 0;
-  line-height: 1.2;
 }
 
 h1 {
-  font-size: 1.5rem;
+  font-size: 32px;
+  font-weight: 300;
+  line-height: 36px;
+  letter-spacing: -0.03em;
 }
 
 h2 {
-  font-size: 1.15rem;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 28px;
+}
+
+h3 {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+}
+
+a {
+  color: inherit;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
 }
 
 button {
-  font: inherit;
   cursor: pointer;
-  border: 1px solid var(--acento);
-  border-radius: var(--radio);
-  background: var(--acento);
-  color: var(--acento-texto);
-  padding: 0.55rem 1rem;
+  border: 0;
+  border-radius: 0;
+  background: var(--tinta);
+  color: var(--superficie);
+  padding: 6px 14px;
   min-height: 44px;
+  font-weight: 500;
+}
+
+button:hover:not(:disabled) {
+  background: #000000;
 }
 
 button.secundario {
   background: transparent;
-  color: var(--acento);
+  color: var(--tinta);
+  border: 1px solid var(--regla);
+}
+
+button.secundario:hover:not(:disabled) {
+  background: rgb(0 0 0 / 0.05);
 }
 
 button:disabled {
-  opacity: 0.6;
-  cursor: default;
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 button.accion-catalogo {
-  transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+  transition: background-color 160ms ease, border-color 160ms ease;
 }
 
 button.accion-catalogo.eliminar {
-  background: #b91c1c;
-  border-color: #b91c1c;
-  color: #ffffff;
+  background: var(--peligro);
+  border-color: var(--peligro);
+  color: var(--superficie);
 }
 
 @media (hover: hover) {
   button.accion-catalogo:not(:disabled):hover {
-    background: color-mix(in srgb, var(--acento) 12%, var(--superficie));
-    box-shadow: 0 3px 8px #00000020;
-    transform: translateY(-1px);
+    background: var(--control);
+    color: var(--tinta);
   }
 
   button.accion-catalogo.eliminar:not(:disabled):hover {
-    background: #991b1b;
-    border-color: #991b1b;
+    background: #731f1f;
+    border-color: #731f1f;
+    color: var(--superficie);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   button.accion-catalogo {
     transition: none;
-    transform: none !important;
   }
 }
 
 input,
 select,
 textarea {
-  font: inherit;
   color: inherit;
-  background: var(--superficie);
-  border: 1px solid var(--borde);
-  border-radius: var(--radio);
+  background: var(--blanco);
+  border: 1px solid var(--regla);
+  border-radius: 0;
   padding: 0.55rem 0.75rem;
   min-height: 44px;
   width: 100%;
@@ -127,9 +173,10 @@ textarea {
 select {
   appearance: none;
   padding-right: 2.5rem;
+  background-color: var(--blanco);
   background-image:
-    linear-gradient(45deg, transparent 50%, var(--texto-suave) 50%),
-    linear-gradient(135deg, var(--texto-suave) 50%, transparent 50%);
+    linear-gradient(45deg, transparent 50%, var(--tinta) 50%),
+    linear-gradient(135deg, var(--tinta) 50%, transparent 50%);
   background-position:
     calc(100% - 1.25rem) 50%,
     calc(100% - 0.9rem) 50%;
@@ -144,20 +191,33 @@ textarea {
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible,
-button:focus-visible {
-  outline: 2px solid var(--acento);
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--tinta);
   outline-offset: 2px;
 }
 
-button.accion-catalogo.eliminar:focus-visible {
-  outline-color: var(--error);
+button.accion-catalogo.eliminar:focus-visible,
+button.peligro:focus-visible {
+  outline-color: var(--peligro);
+}
+
+.kicker {
+  margin: 0;
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--tinta-suave);
 }
 
 .tarjeta {
   background: var(--superficie);
-  border: 1px solid var(--borde);
-  border-radius: var(--radio);
-  padding: 1rem;
+  border: 1px solid var(--regla);
+  border-radius: 0;
+  padding: 1.25rem;
 }
 
 .formulario {
@@ -166,65 +226,94 @@ button.accion-catalogo.eliminar:focus-visible {
   gap: 0.9rem;
 }
 
-.formulario label {
+.formulario label,
+.buscador,
+.filtro-estado,
+.campo > label {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: 0.35rem;
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 12px;
   font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--tinta-suave);
 }
 
-.formulario small {
+.formulario small,
+.bajada {
+  font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
+  font-size: 16px;
   font-weight: 400;
-  color: var(--texto-suave);
+  line-height: 24px;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--tinta-suave);
+}
+
+.bajada {
+  margin: 0.25rem 0 0;
 }
 
 .formulario label:has(input.invalido) {
-  color: var(--error);
+  color: var(--peligro);
 }
 
 .formulario input.invalido {
-  border-color: var(--error);
-  color: var(--error);
+  border-color: var(--peligro);
+  color: var(--peligro);
 }
 
 .formulario input.invalido:focus-visible {
-  outline-color: var(--error);
+  outline-color: var(--peligro);
 }
 
 .resumen-repuesto {
   margin: 0;
   padding: 0.75rem 0.9rem;
-  border-radius: var(--radio);
-  background: var(--ok-fondo);
-  color: var(--ok-texto);
+  border: 1px solid var(--regla);
+  border-radius: 0;
+  background: var(--nota);
+  color: var(--tinta);
   display: flex;
   flex-direction: column;
   gap: 0.15rem;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .resumen-repuesto small {
   font-weight: 400;
-  color: var(--ok-texto);
+  color: var(--tinta-suave);
 }
 
 .resumen-saldo {
   margin: 0;
-  padding: 0.75rem 0.9rem;
-  border-radius: var(--radio);
-  border: 1px solid var(--borde);
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--regla);
   background: var(--superficie);
   display: flex;
   flex-direction: column;
   gap: 0.15rem;
 }
 
+.resumen-saldo strong,
+.total-parcial-monto,
+.totales-cierre dd,
+.lineas-cierre li > span:last-child {
+  font-variant-numeric: tabular-nums;
+}
+
 .resumen-saldo strong {
-  font-size: 1.05rem;
+  font-size: 28px;
+  font-weight: 300;
+  line-height: 32px;
+  letter-spacing: -0.03em;
 }
 
 .resumen-saldo span {
-  color: var(--texto-suave);
+  color: var(--tinta-suave);
 }
 
 .adelantos .encabezado {
@@ -246,21 +335,26 @@ button.accion-catalogo.eliminar:focus-visible {
 }
 
 .error {
-  color: var(--error);
+  color: var(--peligro);
+  font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
+  font-size: 16px;
   font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
   margin: 0;
 }
 
 .aviso {
-  background: var(--ok-fondo);
-  color: var(--ok-texto);
-  border-radius: var(--radio);
+  background: var(--nota);
+  color: var(--tinta);
+  border: 1px solid var(--regla);
+  border-radius: 0;
   padding: 0.6rem 0.9rem;
   margin: 0;
 }
 
 .estado {
-  color: var(--texto-suave);
+  color: var(--tinta-suave);
 }
 
 .avisos-tareas {
@@ -279,10 +373,10 @@ button.accion-catalogo.eliminar:focus-visible {
   align-items: flex-start;
   gap: 0.5rem;
   background: var(--superficie);
-  border: 1px solid var(--acento);
-  border-radius: var(--radio);
+  border: 1px solid var(--tinta);
+  border-radius: 0;
   padding: 0.6rem 0.8rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 4px #00000020;
 }
 
 .aviso-tarea a {
@@ -295,11 +389,11 @@ button.accion-catalogo.eliminar:focus-visible {
 }
 
 .aviso-tarea strong {
-  color: var(--acento);
+  color: var(--tinta);
 }
 
 .aviso-tarea span {
-  color: var(--texto-suave);
+  color: var(--tinta-suave);
   font-size: 0.9rem;
   overflow-wrap: anywhere;
 }
@@ -313,50 +407,141 @@ button.accion-catalogo.eliminar:focus-visible {
 .login {
   min-height: 100svh;
   display: grid;
-  place-items: center;
-  padding: 1rem;
+  align-items: end;
+  padding: 16px;
+}
+
+.login-marca {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 8px 4px 28px;
+}
+
+.login-titulo {
+  max-width: 16ch;
+  font-size: 40px;
+  font-weight: 300;
+  line-height: 44px;
+  letter-spacing: -0.04em;
 }
 
 .login .formulario {
-  width: min(100%, 380px);
+  width: min(100%, 420px);
+  justify-self: start;
+}
+
+.login h1 {
+  margin-top: -0.35rem;
+}
+
+@media (min-width: 900px) {
+  .login {
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 440px);
+    align-items: stretch;
+    padding: 0;
+  }
+
+  .login-marca {
+    justify-content: flex-end;
+    padding: 48px;
+  }
+
+  .login-titulo {
+    font-size: 64px;
+    line-height: 64px;
+  }
+
+  .login .formulario {
+    width: auto;
+    min-height: 100svh;
+    justify-content: center;
+    border-top: 0;
+    border-bottom: 0;
+    border-right: 0;
+    padding: 48px 32px;
+  }
+}
+
+.app {
+  min-height: 100svh;
 }
 
 .barra {
+  position: sticky;
+  top: 0;
+  z-index: 20;
   display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.5rem 1rem;
-  background: var(--superficie);
-  border-bottom: 1px solid var(--borde);
   flex-wrap: wrap;
+  align-items: center;
+  min-height: 61px;
+  background: var(--superficie);
+  border-bottom: 1px solid var(--regla);
 }
 
 .barra a {
-  color: var(--texto);
+  color: var(--tinta);
   text-decoration: none;
+}
+
+.marca {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 16px;
+  font-size: 22px;
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.marca small {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--tinta-suave);
 }
 
 .barra nav {
   display: flex;
+  flex: 1 0 100%;
   flex-wrap: wrap;
-  gap: 1rem;
-  flex: 1;
+  order: 3;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  gap: 0;
+  border-top: 1px solid var(--regla);
+}
+
+.barra nav a {
+  flex: none;
+  padding: 12px 16px;
+  color: var(--tinta-suave);
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .barra nav a.active {
-  color: var(--acento);
-  font-weight: 600;
-}
-
-.marca {
-  font-weight: 700;
-  font-size: 1.1rem;
+  color: var(--tinta);
+  background: var(--control);
+  box-shadow: inset 0 -2px 0 var(--tinta);
 }
 
 .sesion {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  margin-left: auto;
+  padding: 8px 12px;
 }
 
 .sesion span {
@@ -367,16 +552,85 @@ button.accion-catalogo.eliminar:focus-visible {
 }
 
 .sesion small {
-  color: var(--texto-suave);
+  color: var(--tinta-suave);
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+@media (min-width: 900px) {
+  .app {
+    display: grid;
+    grid-template-columns: 232px minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .barra {
+    position: sticky;
+    top: 0;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    height: 100svh;
+    border-bottom: 0;
+    border-right: 1px solid var(--regla);
+  }
+
+  .marca {
+    padding: 28px 20px 16px;
+    font-size: 28px;
+  }
+
+  .barra nav {
+    order: 0;
+    flex: 1 1 auto;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    width: auto;
+    max-width: none;
+    overflow: auto;
+    border-top: 1px solid var(--regla);
+  }
+
+  .barra nav a {
+    padding: 11px 20px;
+  }
+
+  .barra nav a.active {
+    box-shadow: inset 2px 0 0 var(--tinta);
+  }
+
+  .sesion {
+    flex-direction: column;
+    align-items: stretch;
+    margin: 0;
+    padding: 16px;
+    border-top: 1px solid var(--regla);
+  }
+
+  .sesion span {
+    text-align: left;
+  }
+
+  .sesion button {
+    width: 100%;
+  }
 }
 
 .contenido {
-  max-width: 880px;
+  width: min(100%, 1080px);
   margin: 0 auto;
-  padding: 1.25rem 1rem 2rem;
+  padding: 28px 16px 64px;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .contenido {
+    padding: 28px 28px 80px;
+  }
 }
 
 .mis-tareas,
@@ -387,15 +641,12 @@ button.accion-catalogo.eliminar:focus-visible {
 .vehiculos,
 .repuestos,
 .adelantos,
-.configuracion {
+.configuracion,
+.tareas-frecuentes,
+.orden-detalle {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-}
-
-.bajada {
-  color: var(--texto-suave);
-  margin: 0.25rem 0 0;
 }
 
 .configuracion-form {
@@ -418,18 +669,42 @@ button.accion-catalogo.eliminar:focus-visible {
   gap: 0.3rem;
 }
 
-.campo > label {
-  font-weight: 500;
-}
-
 .campo-password {
-  display: flex;
-  gap: 0.5rem;
+  position: relative;
 }
 
-.campo-password button {
-  flex: none;
-  min-width: 5.5rem;
+.campo-password input {
+  padding-right: 2.75rem;
+}
+
+.campo-password .ver-password {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 44px;
+  min-width: 44px;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--tinta);
+}
+
+.campo-password .ver-password:hover:not(:disabled) {
+  background: transparent;
+  color: var(--tinta);
+}
+
+.campo-password .ver-password svg {
+  display: block;
+  width: 22px;
+  height: 22px;
+  margin: 0 auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .campo-porcentaje {
@@ -450,14 +725,21 @@ button.accion-catalogo.eliminar:focus-visible {
 }
 
 .campo-porcentaje > span {
-  font-weight: 600;
+  font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--tinta);
 }
 
 .encabezado {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-end;
   gap: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--regla);
 }
 
 .lista {
@@ -466,7 +748,21 @@ button.accion-catalogo.eliminar:focus-visible {
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: 0;
+  background: var(--superficie);
+  border: 1px solid var(--regla);
+}
+
+.lista > .tarjeta {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  border-bottom: 1px solid var(--regla);
+  padding: 0.9rem 1rem;
+}
+
+.lista > .tarjeta:last-child {
+  border-bottom: 0;
 }
 
 .item {
@@ -484,10 +780,26 @@ button.accion-catalogo.eliminar:focus-visible {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  gap: 0.1rem;
+  font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--tinta);
+}
+
+.item-datos strong {
+  font-weight: 500;
+}
+
+.item-datos > button,
+.tarea-movil > button {
+  align-self: flex-start;
 }
 
 .item-datos span:not(.insignia) {
-  color: var(--texto-suave);
+  color: var(--tinta-suave);
   overflow-wrap: anywhere;
 }
 
@@ -496,20 +808,51 @@ button.accion-catalogo.eliminar:focus-visible {
   margin: 0.2rem 0;
 }
 
-.rol {
-  font-size: 0.85rem;
-  font-weight: 600;
-  padding: 0.15rem 0.6rem;
-  border-radius: 999px;
-  border: 1px solid currentColor;
+.rol,
+.insignia {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 4px 8px;
+  border-radius: 0;
+  border: 1px solid var(--regla);
+  background: transparent;
+  color: var(--tinta);
+  white-space: nowrap;
 }
 
-.rol-administrador {
-  color: var(--admin);
+.rol-administrador,
+.insignia-en_curso {
+  background: var(--tinta);
+  border-color: var(--tinta);
+  color: var(--superficie);
 }
 
 .rol-mecanico {
-  color: var(--mecanico);
+  color: var(--tinta);
+}
+
+.insignia-abierta,
+.insignia-pendiente,
+.insignia-pendiente_de_valorizar {
+  background: var(--ambar);
+  border-color: var(--ambar);
+  color: var(--tinta);
+}
+
+.insignia-cerrada,
+.insignia-terminada,
+.insignia-valorizado,
+.insignia-desactivado {
+  color: var(--tinta-suave);
+}
+
+.insignia-cancelada {
+  color: var(--peligro);
+  border-color: var(--peligro);
 }
 
 .lista[aria-busy='true'] {
@@ -523,9 +866,9 @@ button.accion-catalogo.eliminar:focus-visible {
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
-  background: var(--fondo);
-  border: 1px solid var(--borde);
-  border-radius: var(--radio);
+  background: var(--nota);
+  border: 1px solid var(--regla);
+  border-radius: 0;
 }
 
 .notas li {
@@ -534,7 +877,7 @@ button.accion-catalogo.eliminar:focus-visible {
 
 .notas small {
   display: block;
-  color: var(--texto-suave);
+  color: var(--tinta-suave);
 }
 
 .paginacion {
@@ -549,10 +892,11 @@ button.accion-catalogo.eliminar:focus-visible {
   flex-direction: column;
   align-items: center;
   line-height: 1.3;
+  font-variant-numeric: tabular-nums;
 }
 
 .paginacion small {
-  color: var(--texto-suave);
+  color: var(--tinta-suave);
 }
 
 .item-acciones {
@@ -566,24 +910,34 @@ button.accion-catalogo.eliminar:focus-visible {
 }
 
 .insignia-desactivado {
-  color: var(--texto-suave);
   justify-self: start;
 }
 
 button.peligro {
-  background: var(--error);
-  border-color: var(--error);
-  color: #ffffff;
+  background: var(--peligro);
+  border-color: var(--peligro);
+  color: var(--superficie);
+}
+
+button.peligro:hover:not(:disabled) {
+  background: #731f1f;
 }
 
 button.secundario.peligro {
   background: transparent;
-  color: var(--error);
+  color: var(--peligro);
+  border-color: var(--peligro);
+}
+
+button.secundario.peligro:hover:not(:disabled) {
+  background: var(--peligro-fondo);
 }
 
 .advertencia {
   margin: 0;
-  color: var(--mecanico);
+  padding: 0.6rem 0.75rem;
+  background: var(--ambar);
+  color: var(--tinta);
   font-weight: 500;
 }
 
@@ -593,7 +947,7 @@ button.secundario.peligro {
 
 .reseteo {
   grid-column: 1 / -1;
-  border-top: 1px solid var(--borde);
+  border-top: 1px solid var(--regla);
   padding-top: 0.75rem;
 }
 
@@ -611,40 +965,7 @@ button.secundario.peligro {
   color: inherit;
 }
 
-.insignia {
-  font-size: 0.85rem;
-  font-weight: 600;
-  padding: 0.15rem 0.6rem;
-  border-radius: 999px;
-  border: 1px solid currentColor;
-  white-space: nowrap;
-}
-
-.insignia-abierta,
-.insignia-pendiente,
-.insignia-pendiente_de_valorizar {
-  color: var(--acento);
-}
-
-.insignia-cerrada,
-.insignia-terminada,
-.insignia-valorizado {
-  color: var(--texto-suave);
-}
-
-.insignia-en_curso {
-  color: var(--mecanico);
-}
-
-.insignia-cancelada {
-  color: var(--error);
-}
-
 .filtro-estado {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-  font-weight: 500;
   max-width: 16rem;
 }
 
@@ -652,11 +973,12 @@ button.secundario.peligro {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  border-color: var(--error);
+  border-color: var(--peligro);
+  background: var(--peligro-fondo);
 }
 
 .orden-cancelada strong {
-  color: var(--error);
+  color: var(--peligro);
 }
 
 .cancelar-orden p {
@@ -670,15 +992,19 @@ button.secundario.peligro {
 }
 
 .orden-cerrada > span {
-  color: var(--texto-suave);
+  color: var(--tinta-suave);
 }
 
-.cerrar-orden h2 {
+.cerrar-orden h2,
+.nueva-orden h2,
+.total-parcial .encabezado {
   padding-bottom: 0.75rem;
-  border-bottom: 1px solid var(--borde);
+  border-bottom: 1px solid var(--regla);
 }
 
-.cerrar-orden p {
+.cerrar-orden p,
+.total-parcial p,
+.orden-detalle .encabezado p {
   margin: 0;
 }
 
@@ -688,13 +1014,21 @@ button.secundario.peligro {
   gap: 0.4rem;
 }
 
-.bloque-cierre h3 {
+.bloque-cierre h3,
+.motivo-orden h2,
+.mis-tareas h2 {
   margin: 0;
-  font-size: 0.8rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--texto-suave);
+  color: var(--tinta-suave);
+}
+
+.mis-tareas h2 {
+  margin-top: 0.5rem;
 }
 
 .lineas-cierre {
@@ -711,7 +1045,7 @@ button.secundario.peligro {
   align-items: baseline;
   gap: 1rem;
   padding: 0.45rem 0;
-  border-bottom: 1px solid var(--borde);
+  border-bottom: 1px solid var(--regla);
 }
 
 .lineas-cierre li > span:first-child {
@@ -723,18 +1057,16 @@ button.secundario.peligro {
 
 .lineas-cierre li > span:last-child {
   white-space: nowrap;
-  font-variant-numeric: tabular-nums;
 }
 
 .lineas-cierre small {
-  color: var(--texto-suave);
+  color: var(--tinta-suave);
 }
 
 .totales-cierre {
   margin: 0;
-  padding: 0.75rem 0.9rem;
-  border-radius: var(--radio);
-  border: 1px solid var(--borde);
+  padding: 0.75rem 0;
+  border-top: 1px solid var(--tinta);
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
@@ -747,23 +1079,23 @@ button.secundario.peligro {
 }
 
 .totales-cierre dt {
-  color: var(--texto-suave);
+  color: var(--tinta-suave);
 }
 
 .totales-cierre dd {
   margin: 0;
-  font-variant-numeric: tabular-nums;
 }
 
 .totales-cierre .total {
-  padding-top: 0.3rem;
-  border-top: 1px solid var(--borde);
-  font-size: 1.1rem;
-  font-weight: 700;
+  padding-top: 0.45rem;
+  border-top: 1px solid var(--regla);
+  font-size: 18px;
+  font-weight: 500;
 }
 
-.totales-cierre .total dt {
-  color: var(--texto);
+.totales-cierre .total dt,
+.totales-cierre .total dd {
+  color: var(--tinta);
 }
 
 .bloqueo-cierre {
@@ -771,9 +1103,9 @@ button.secundario.peligro {
   flex-direction: column;
   gap: 0.25rem;
   padding: 0.75rem 0.9rem;
-  border-radius: var(--radio);
-  border: 1px solid var(--error);
-  color: var(--error);
+  border: 1px solid var(--peligro);
+  background: var(--peligro-fondo);
+  color: var(--peligro);
 }
 
 .bloqueo-cierre ul {
@@ -785,6 +1117,11 @@ button.secundario.peligro {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
+  font-size: 16px;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--tinta);
 }
 
 .descartar-pendientes input {
@@ -792,7 +1129,9 @@ button.secundario.peligro {
 }
 
 @media (max-width: 600px) {
-  .cerrar-orden .acciones button {
+  .cerrar-orden .acciones button,
+  .nueva-orden .acciones button,
+  .tarea-movil .acciones button {
     flex: 1;
   }
 }
@@ -803,25 +1142,22 @@ button.secundario.peligro {
   gap: 1rem;
 }
 
-.total-parcial p {
-  margin: 0;
-}
-
 .total-parcial .encabezado {
   align-items: flex-start;
   flex-wrap: wrap;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid var(--borde);
 }
 
 .total-parcial-monto {
-  font-size: 1.35rem;
-  font-variant-numeric: tabular-nums;
+  font-size: 32px;
+  font-weight: 300;
+  line-height: 36px;
+  letter-spacing: -0.03em;
   white-space: nowrap;
 }
 
-.total-parcial .sin-importe {
-  color: var(--texto-suave);
+.total-parcial .sin-importe,
+.sin-importe {
+  color: var(--tinta-suave);
 }
 
 .total-parcial[aria-busy='true'] .totales-cierre,
@@ -829,28 +1165,13 @@ button.secundario.peligro {
   opacity: 0.6;
 }
 
-.volver {
-  color: var(--acento);
-  text-decoration: none;
+.volver,
+.nueva-orden a,
+.item-datos a {
+  color: var(--senal);
   font-weight: 500;
-}
-
-.orden-detalle {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-
-.orden-detalle .encabezado p {
-  margin: 0.15rem 0 0;
-}
-
-.motivo-orden h2 {
-  font-size: 0.8rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--texto-suave);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .motivo-orden p {
@@ -864,11 +1185,6 @@ button.secundario.peligro {
   gap: 1.25rem;
 }
 
-.nueva-orden h2 {
-  padding-bottom: 0.9rem;
-  border-bottom: 1px solid var(--borde);
-}
-
 .nueva-orden label,
 .nueva-orden .buscador {
   gap: 0.45rem;
@@ -877,15 +1193,15 @@ button.secundario.peligro {
 .nueva-orden input,
 .nueva-orden select,
 .nueva-orden textarea {
+  font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
+  font-size: 16px;
   font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
 }
 
 .nueva-orden textarea {
   min-height: 6rem;
-}
-
-.nueva-orden a {
-  color: var(--acento);
 }
 
 .nueva-orden .grupo-vehiculo {
@@ -901,14 +1217,8 @@ button.secundario.peligro {
 .nueva-orden .acciones {
   margin-top: 0.25rem;
   padding-top: 1.1rem;
-  border-top: 1px solid var(--borde);
+  border-top: 1px solid var(--regla);
   gap: 0.75rem;
-}
-
-@media (max-width: 600px) {
-  .nueva-orden .acciones button {
-    flex: 1;
-  }
 }
 
 @media (max-width: 600px) {
@@ -944,19 +1254,15 @@ button.secundario.peligro {
 }
 
 .patente {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  letter-spacing: 0.05em;
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .cambio-duenio {
   grid-column: 1 / -1;
-  border-top: 1px solid var(--borde);
+  border-top: 1px solid var(--regla);
   padding-top: 0.75rem;
-}
-
-.mis-tareas h2 {
-  margin: 0.5rem 0 0;
-  font-size: 1.1rem;
 }
 
 .tarea-movil {
@@ -965,17 +1271,9 @@ button.secundario.peligro {
   gap: 0.75rem;
 }
 
-@media (max-width: 600px) {
-  .tarea-movil .acciones button {
-    flex: 1;
-  }
-}
-
 .buscador {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
-  font-weight: 500;
 }
 
 .advertencia-patente {
@@ -984,4 +1282,17 @@ button.secundario.peligro {
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 0.5rem 0.75rem;
+}
+
+.formulario input,
+.formulario select,
+.formulario textarea,
+.buscador input,
+.filtro-estado select {
+  font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--tinta);
 }

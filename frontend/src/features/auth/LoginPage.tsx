@@ -3,6 +3,25 @@ import { Navigate, useNavigate } from 'react-router-dom'
 import { errorMessage } from '../../lib/api'
 import { useAuth, type MotivoCierre } from './AuthContext'
 
+function OjoAbierto() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M2.5 12S6 6.5 12 6.5 21.5 12 21.5 12 18 17.5 12 17.5 2.5 12 2.5 12z" />
+      <circle cx="12" cy="12" r="2.4" />
+    </svg>
+  )
+}
+
+function OjoCerrado() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M2.5 12S6 6.5 12 6.5 21.5 12 21.5 12 18 17.5 12 17.5 2.5 12 2.5 12z" />
+      <circle cx="12" cy="12" r="2.4" />
+      <path d="M4 19 20 5" />
+    </svg>
+  )
+}
+
 const AVISOS_CIERRE: Record<MotivoCierre, string> = {
   inactividad: 'Tu sesión se cerró por inactividad. Volvé a ingresar.',
   expirada: 'Tu sesión expiró. Volvé a ingresar.',
@@ -35,7 +54,12 @@ export function LoginPage() {
 
   return (
     <main className="login">
+      <div className="login-marca">
+        <p className="kicker">Taller mecánico</p>
+        <p className="login-titulo">Órdenes, tareas y repuestos del día.</p>
+      </div>
       <form className="tarjeta formulario" onSubmit={handleSubmit}>
+        <p className="kicker">Ingreso</p>
         <h1>Gestión de Taller</h1>
         {motivoCierre && !error && (
           <p className="aviso" role="status">
@@ -65,12 +89,13 @@ export function LoginPage() {
             />
             <button
               type="button"
-              className="secundario"
+              className="ver-password"
               aria-controls="password"
               aria-pressed={mostrarPassword}
+              aria-label={mostrarPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
               onClick={() => setMostrarPassword((actual) => !actual)}
             >
-              {mostrarPassword ? 'Ocultar' : 'Ver'}
+              {mostrarPassword ? <OjoAbierto /> : <OjoCerrado />}
             </button>
           </div>
         </div>

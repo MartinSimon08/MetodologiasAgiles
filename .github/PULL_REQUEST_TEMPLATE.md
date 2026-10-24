@@ -11,7 +11,8 @@ Para varios tickets, escribir una línea Closes por issue.
 La línea debe quedar fuera de este comentario y de bloques de código.
 
 PR parcial: escribir Relacionado con #123 y explicar qué falta para completar el ticket.
-Solo el PR final debe usar Closes. Los PRs parciales no mueven la tarjeta automáticamente.
+Solo el PR final debe usar Closes. Los PRs parciales no mueven la tarjeta a revisión.
+El pase a En Desarrollo lo hace el agente al empezar, con script/trello-empezar. Este PR no lo dispara.
 
 Cambio sin ticket: escribir No aplica y explicar el motivo.
 No inventar números de issues ni crear tickets para completar esta plantilla.

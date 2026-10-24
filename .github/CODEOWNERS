@@ -2,6 +2,6 @@
 # un archivo que coincide. El último patrón que coincide gana.
 # Si main exige aprobación de un code owner, alcanza con uno de la lista.
 #
-# Colaboradores con permiso de escritura. El profesor no entra en esta lista.
+# Colaboradores con permiso de escritura.
 
 * @MartinSimon08 @fetcpao @mateolafalce @MatiDelozano @ValentnTorres

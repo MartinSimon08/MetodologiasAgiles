@@ -52,6 +52,24 @@ export interface ResumenCierre {
   saldo: string
 }
 
+export interface TotalParcial {
+  orden_id: number
+  tareas: ResumenCierre['tareas']
+  repuestos: {
+    id: number
+    descripcion: string
+    cantidad: number
+    estado: 'valorizado' | 'pendiente_de_valorizar'
+    costo_unitario: string | null
+    margen: string | null
+    precio_cliente: string | null
+  }[]
+  mano_de_obra: string
+  total_repuestos: string
+  total: string
+  a_cobrar_hoy: string
+}
+
 export const ESTADO_ORDEN_LABELS: Record<EstadoOrden, string> = {
   abierta: 'Abierta',
   cerrada: 'Cerrada',

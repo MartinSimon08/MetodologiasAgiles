@@ -367,6 +367,74 @@ RSpec.describe "Ordenes", type: :request do
     end
   end
 
+  describe "GET /ordenes/:id/total_parcial" do
+    let(:orden) { create(:orden) }
+    let(:carlos) { create(:usuario, nombre: "Carlos") }
+
+    it "desglosa la mano de obra, los repuestos con costo y margen, y el total" do
+      create(:tarea, :terminada, orden: orden, descripcion: "Cambio de aceite", mecanico: carlos, precio: 15_000)
+      create(:tarea, orden: orden, descripcion: "Alineación", precio: 8_000)
+      RepuestoAgregar.call(orden: orden, registrado_por: administrador, descripcion: "Filtro de aceite", cantidad: 2,
+                           costo_unitario: "1000", margen: 50)
+      RepuestoAvisar.call(orden: orden, registrado_por: carlos, descripcion: "Correa", cantidad: 1)
+
+      get "/ordenes/#{orden.id}/total_parcial", headers: auth_headers(administrador)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body["tareas"]).to match([
+        a_hash_including("descripcion" => "Cambio de aceite", "estado" => "terminada", "precio" => "15000.0",
+                         "mecanico" => { "id" => carlos.id, "nombre" => "Carlos" }),
+        a_hash_including("descripcion" => "Alineación", "estado" => "pendiente", "precio" => "8000.0", "mecanico" => nil)
+      ])
+      expect(response.parsed_body["repuestos"]).to match([
+        a_hash_including("descripcion" => "Filtro de aceite", "cantidad" => 2, "estado" => "valorizado",
+                         "costo_unitario" => "1000.0", "margen" => "50.0", "precio_cliente" => "3000.0"),
+        a_hash_including("descripcion" => "Correa", "estado" => "pendiente_de_valorizar",
+                         "costo_unitario" => nil, "margen" => nil, "precio_cliente" => nil)
+      ])
+      expect(response.parsed_body).to include(
+        "mano_de_obra" => "23000.0", "total_repuestos" => "3000.0", "total" => "26000.0", "a_cobrar_hoy" => "18000.0"
+      )
+    end
+
+    it "recalcula el total después de agregar una tarea" do
+      create(:tarea, orden: orden, precio: 8_000)
+      get "/ordenes/#{orden.id}/total_parcial", headers: auth_headers(administrador)
+      expect(response.parsed_body["total"]).to eq("8000.0")
+
+      post "/ordenes/#{orden.id}/tareas", params: { tarea: { descripcion: "Frenos", precio: 4_000 } },
+                                          headers: auth_headers(administrador)
+      get "/ordenes/#{orden.id}/total_parcial", headers: auth_headers(administrador)
+
+      expect(response.parsed_body["total"]).to eq("12000.0")
+    end
+
+    it "rechaza calcularlo en una orden cerrada" do
+      marcar_cerrada(orden)
+
+      get "/ordenes/#{orden.id}/total_parcial", headers: auth_headers(administrador)
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body["errors"]["base"]).to include("El total parcial solo se calcula en órdenes abiertas")
+    end
+
+    it "prohíbe ver costos y márgenes a un mecánico" do
+      RepuestoAgregar.call(orden: orden, registrado_por: administrador, descripcion: "Filtro", cantidad: 1,
+                           costo_unitario: "1000", margen: 50)
+
+      get "/ordenes/#{orden.id}/total_parcial", headers: auth_headers(mecanico)
+
+      expect(response).to have_http_status(:forbidden)
+      expect(response.body).to be_empty
+    end
+
+    it "responde 404 si la orden no existe" do
+      get "/ordenes/0/total_parcial", headers: auth_headers(administrador)
+
+      expect(response).to have_http_status(:not_found)
+    end
+  end
+
   describe "PATCH /ordenes/:id/cerrar" do
     let!(:orden) { create(:orden) }
 

@@ -116,6 +116,21 @@ RSpec.describe Orden, type: :model do
     end
   end
 
+  describe "#total" do
+    it "suma la mano de obra de las tareas no descartadas y el precio de los repuestos valorizados" do
+      orden = create(:orden)
+      create(:tarea, :terminada, orden: orden, precio: 15_000)
+      create(:tarea, orden: orden, precio: 3_000)
+      create(:tarea, orden: orden, precio: 9_000, estado: :cancelada)
+      RepuestoAgregar.call(orden: orden, registrado_por: create(:usuario, :administrador), descripcion: "Filtro",
+                           cantidad: 1, costo_unitario: "1000", margen: 50)
+      RepuestoAvisar.call(orden: orden, registrado_por: create(:usuario), descripcion: "Correa", cantidad: 1)
+
+      expect(orden.mano_de_obra_cargada).to eq(18_000)
+      expect(orden.total).to eq(19_500)
+    end
+  end
+
   it "devuelve el total congelado de una orden cerrada" do
     orden = create(:orden, :cerrada, total_cerrado: 12_345)
     create(:tarea, :terminada, orden: create(:orden, vehiculo: orden.vehiculo), precio: 1)

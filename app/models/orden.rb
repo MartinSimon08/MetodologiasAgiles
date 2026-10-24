@@ -23,7 +23,11 @@ class Orden < ApplicationRecord
   def total
     return total_cerrado if cerrada?
 
-    tareas.sum(:precio).to_d + repuestos.vigentes.sum(:precio_cliente).to_d
+    mano_de_obra_cargada + total_repuestos
+  end
+
+  def mano_de_obra_cargada
+    tareas.not_cancelada.sum(:precio).to_d
   end
 
   def mano_de_obra
@@ -43,7 +47,7 @@ class Orden < ApplicationRecord
   end
 
   def total_reemplazando(repuesto, precio:)
-    tareas.sum(:precio).to_d +
+    mano_de_obra_cargada +
       repuestos.vigentes.where.not(id: repuesto.id).sum(:precio_cliente).to_d +
       precio.to_d
   end

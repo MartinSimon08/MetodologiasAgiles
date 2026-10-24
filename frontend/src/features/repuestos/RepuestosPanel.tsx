@@ -4,6 +4,7 @@ import { Paginacion } from '../../components/Paginacion'
 import { errorMessage, fieldErrors } from '../../lib/api'
 import { fechaHora, importe } from '../../lib/formato'
 import { useAuth } from '../auth/AuthContext'
+import { invalidarTotalesOrden } from '../ordenes/totales'
 import { AvisoRepuestoForm } from './AvisoRepuestoForm'
 import { listarRepuestos, quitarRepuesto, ESTADO_REPUESTO_LABELS, type Repuesto } from './api'
 import { EditarRepuestoForm } from './EditarRepuestoForm'
@@ -29,7 +30,7 @@ export function RepuestosPanel({ ordenId, ordenAbierta }: { ordenId: number; ord
     mutationFn: (id: number) => quitarRepuesto(ordenId, id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['repuestos', ordenId] })
-      queryClient.invalidateQueries({ queryKey: ['adelantos', ordenId] })
+      invalidarTotalesOrden(queryClient, ordenId)
       setQuitandoId(null)
       setAviso('Repuesto quitado. La baja quedó registrada.')
     },

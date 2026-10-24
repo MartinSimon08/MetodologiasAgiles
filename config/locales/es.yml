@@ -92,6 +92,7 @@ es:
               cancelada_no_cerrable: No se puede cerrar una orden cancelada
               tareas_en_curso: No se puede cerrar la orden porque tiene tareas tomadas o en curso
               tareas_pendientes: Hay tareas pendientes sin tomar. Confirmá que se descartan para cerrar la orden
+              total_parcial_no_disponible: El total parcial solo se calcula en órdenes abiertas
         repuesto:
           attributes:
             estado:

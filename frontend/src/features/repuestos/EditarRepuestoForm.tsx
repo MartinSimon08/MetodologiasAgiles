@@ -4,6 +4,7 @@ import { ErroresCampo } from '../../components/ErroresCampo'
 import { errorMessage, fieldErrors } from '../../lib/api'
 import { importe } from '../../lib/formato'
 import { useDebounce } from '../../lib/useDebounce'
+import { invalidarTotalesOrden } from '../ordenes/totales'
 import { editarRepuesto, previsualizarRepuesto, type Repuesto } from './api'
 
 interface Props {
@@ -26,7 +27,7 @@ export function EditarRepuestoForm({ ordenId, repuesto, onGuardado, onCancelar }
       : { cantidad, proveedor }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['repuestos', ordenId] })
-      queryClient.invalidateQueries({ queryKey: ['adelantos', ordenId] })
+      invalidarTotalesOrden(queryClient, ordenId)
       onGuardado()
     },
   })

@@ -55,6 +55,7 @@ Rails.application.routes.draw do
       patch :cancelar
       patch :cerrar
       get :resumen_cierre
+      get :total_parcial
     end
   end
 end

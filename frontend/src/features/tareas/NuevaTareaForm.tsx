@@ -3,6 +3,7 @@ import { useState, type FormEvent } from 'react'
 import { ErroresCampo } from '../../components/ErroresCampo'
 import { errorMessage, fieldErrors } from '../../lib/api'
 import { importe } from '../../lib/formato'
+import { invalidarTotalesOrden } from '../ordenes/totales'
 import { listarTareasFrecuentes } from '../tareasFrecuentes/api'
 import { crearTarea } from './api'
 
@@ -29,7 +30,7 @@ export function NuevaTareaForm({ ordenId, onCreada, onCancelar }: Props) {
     mutationFn: () => crearTarea(ordenId, descripcion, precio),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tareas', ordenId] })
-      queryClient.invalidateQueries({ queryKey: ['adelantos', ordenId] })
+      invalidarTotalesOrden(queryClient, ordenId)
       setDescripcion('')
       setPrecio('')
       setCatalogoId(SIN_CATALOGO)

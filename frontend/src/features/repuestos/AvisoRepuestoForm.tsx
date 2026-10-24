@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
 import { ErroresCampo } from '../../components/ErroresCampo'
 import { errorMessage, fieldErrors } from '../../lib/api'
+import { invalidarTotalesOrden } from '../ordenes/totales'
 import { avisarRepuesto } from './api'
 
 interface Props {
@@ -18,6 +19,7 @@ export function AvisoRepuestoForm({ ordenId, onGuardado, onCancelar }: Props) {
     mutationFn: () => avisarRepuesto(ordenId, { descripcion, cantidad }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['repuestos', ordenId] })
+      invalidarTotalesOrden(queryClient, ordenId)
       onGuardado()
     },
   })

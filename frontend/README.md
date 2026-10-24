@@ -2,7 +2,7 @@
 
 Aplicación React que consume la API de Rails del proyecto (carpeta `../` en la raíz del repo). Pensada como panel único usado tanto desde web (recepción/administración) como desde el celular (mecánicos), con vistas adaptadas según el rol.
 
-La base, el usuario administrador y el servidor de la API se levantan como dice el [README de la raíz](../README.md).
+Desde la raíz del repo, `docker compose up` levanta la base, la API y esta app. El detalle está en el [README de la raíz](../README.md).
 
 ## Stack
 
@@ -12,34 +12,17 @@ La base, el usuario administrador y el servidor de la API se levantan como dice 
 - Axios como cliente HTTP, con interceptor de autenticación (JWT)
 - ESLint para linting
 
-## Requisitos previos
+## Cómo levantarlo
 
-- Node.js `^20.19.0` o `>=22.12.0` (lo exige Vite 8)
-- pnpm (`corepack enable` si no lo tenés). El lockfile es `pnpm-lock.yaml`.
-- El backend corriendo en `http://localhost:3000`
+No se levanta por separado. Desde la raíz del repo, `docker compose up` levanta la base, la API y esta app, y `docker compose down` baja todo. Compose instala las dependencias con pnpm y pasa `VITE_API_URL=http://localhost:3000`.
 
-## Setup local
+La app queda en `http://localhost:5173`. El ingreso es `http://localhost:5173/login`, con el email y la contraseña de `ADMIN_EMAIL` y `ADMIN_PASSWORD` del `.env` de la raíz.
 
-1. Parate en esta carpeta:
-   ```
-   cd frontend
-   ```
-2. Instalá las dependencias:
-   ```
-   pnpm install
-   ```
-3. Copiá `.env.example` a `.env`:
-   ```
-   VITE_API_URL=http://localhost:3000
-   ```
-   Si la variable no está definida, `src/lib/api.ts` usa ese mismo valor.
-4. Levantá el servidor de desarrollo:
-   ```
-   pnpm dev
-   ```
-   La app queda en `http://localhost:5173`. El ingreso es `http://localhost:5173/login`, con el email y la contraseña de `ADMIN_EMAIL` y `ADMIN_PASSWORD` del `.env` de la raíz.
+Abrí esa URL con `localhost`. CORS del backend solo permite `http://localhost:5173`. Vite no cambia de puerto: si 5173 está ocupado, no arranca.
 
-Abrí esa URL con `localhost`. CORS del backend solo permite `http://localhost:5173`. Si ese puerto está ocupado, Vite pasa a otro y las llamadas a la API fallan hasta que 5173 quede libre.
+Los cambios en `src/` se recargan solos. Si cambia `package.json` o `pnpm-lock.yaml`, reiniciá el stack: el contenedor corre `pnpm install` al arrancar.
+
+Para correr los scripts en el host hace falta Node.js `^20.19.0` o `>=22.12.0` (lo exige Vite 8) y pnpm (`corepack enable` si no lo tenés). El lockfile es `pnpm-lock.yaml`.
 
 ## Scripts
 

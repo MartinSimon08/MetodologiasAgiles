@@ -2,6 +2,7 @@ require "rails_helper"
 
 RSpec.describe "Autorización por rol", type: :request do
   accesos = {
+    "GET /llms.txt" => :publico,
     "POST /sesion" => :publico,
     "GET /sesion" => :ambos,
     "GET /configuracion_taller" => :administrador,

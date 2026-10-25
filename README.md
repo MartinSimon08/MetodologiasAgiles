@@ -228,6 +228,16 @@ Cada merge a `main` que pasa el CI se despliega solo con Kamal a una VM gratuita
 - **Tiempo real**: al crear una tarea, la API avisa por Action Cable (Solid Cable). En development el adapter es `async`. El cliente del mecánico está en `frontend/src/lib/cable.ts`.
 - **Commits y pull requests**: el título y cada commit siguen [Conventional Commits](https://www.conventionalcommits.org/) en la forma `tipo(scope): descripción`, en español, imperativo y sin punto final. El CI lo valida con `script/check-conventional-commits`. La descripción del PR usa [`.github/PULL_REQUEST_TEMPLATE.md`](.github/PULL_REQUEST_TEMPLATE.md).
 
+## Aviso en Slack
+
+Cada vez que un pull request se mergea a `main`, el workflow [Avisar en Slack al mergear](.github/workflows/slack-merge.yml) publica un mensaje en el canal del equipo. Usa la app de Slack Gato Hidraulico y su Incoming Webhook.
+
+El mensaje incluye el título, el número con enlace al PR, el autor, la rama de origen y, si la descripción tiene líneas `Closes #N`, los issues que cierra.
+
+Hace falta el secret de Actions `SLACK_WEBHOOK_URL` con la URL del webhook. No va en el código ni en el repositorio. Si el secret no está cargado, el job no falla: lo saltea y deja un aviso en el log.
+
+Para cargarlo: en el repositorio de GitHub, Settings → Secrets and variables → Actions → New repository secret. Nombre: `SLACK_WEBHOOK_URL`. Valor: la URL del Incoming Webhook.
+
 ## Contribuir
 
 Para proponer un cambio, leé [CONTRIBUTING.md](CONTRIBUTING.md). Una vulnerabilidad se reporta en privado, como dice [SECURITY.md](SECURITY.md). Los revisores del grupo están en [`.github/CODEOWNERS`](.github/CODEOWNERS).

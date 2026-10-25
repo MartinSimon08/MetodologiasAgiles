@@ -38,6 +38,7 @@ COPY frontend/package.json frontend/pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 
 COPY frontend/ ./
+COPY llms.txt /llms.txt
 RUN VITE_API_URL=/api pnpm build
 
 # Throw-away build stage to reduce size of final image

@@ -105,9 +105,25 @@ script/check-conventional-commits --from origin/main --to HEAD
 - No crear tickets ni ejecutar importaciones solamente para completar la plantilla.
 - Conservar el marcador `<!-- trello-card:ID -->` de los issues importados.
 
+Cuando detectes que vas a empezar a implementar un ticket, mové esa tarjeta a `En Desarrollo` antes del primer cambio de código. La implementación empieza solo si se cumplen todas estas condiciones:
+
+- Identificaste el issue de este repositorio que corresponde al ticket.
+- El issue tiene el marcador `<!-- trello-card:ID -->`.
+- El pedido es implementar ese ticket. No alcanza con leerlo, revisarlo, estimarlo ni preparar el PR.
+- En esta sesión todavía no creaste la rama, el worktree ni editaste código de esa implementación.
+
+En ese momento, desde la raíz del repositorio, corré:
+
+```
+script/trello-empezar 123
+```
+
+Reemplazá `123` por el número real. No inventes el número. Si el cambio no tiene ticket, no corras el script. Si falta el issue importado, informá que hay que ejecutar `Importar Sprint Backlog` y no crees la tarjeta a mano. No vuelvas a correr el script al abrir el PR, al marcarlo listo para revisión ni al integrarlo.
+
+Al empezar la implementación, la tarjeta pasa de `Sprint Backlog` a `En Desarrollo`.
 Un PR listo con `Closes` mueve la tarjeta a `En Revisión / Esperando Merge`.
 Al integrar ese PR en `main`, la tarjeta pasa a `Hecho`.
-Los PRs parciales no mueven tarjetas automáticamente. Cerrar un PR sin integrarlo conserva la lista actual.
+Los PRs parciales no mueven tarjetas a revisión. Cerrar un PR sin integrarlo conserva la lista actual.
 La automatización solo procesa PRs del mismo repositorio, con autor colaborador y destino en la rama predeterminada.
 Los borradores quedan excluidos hasta que estén listos para revisión.
 

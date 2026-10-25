@@ -27,6 +27,20 @@ ENV RAILS_ENV="production" \
     BUNDLE_WITHOUT="development" \
     LD_PRELOAD="/usr/local/lib/libjemalloc.so"
 
+# Build the React frontend; the API is served under /api from the same origin
+FROM docker.io/library/node:24.18.0-bookworm-slim AS frontend
+
+WORKDIR /frontend
+
+RUN npm install -g pnpm@12.6.0
+
+COPY frontend/package.json frontend/pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
+
+COPY frontend/ ./
+COPY llms.txt /llms.txt
+RUN VITE_API_URL=/api pnpm build
+
 # Throw-away build stage to reduce size of final image
 FROM base AS build
 
@@ -44,8 +58,9 @@ RUN bundle install && \
     # -j 1 disable parallel compilation to avoid a QEMU bug: https://github.com/rails/bootsnap/issues/495
     bundle exec bootsnap precompile -j 1 --gemfile
 
-# Copy application code
+# Copy application code, without the frontend sources
 COPY . .
+RUN rm -rf frontend
 
 # Precompile bootsnap code for faster boot times.
 # -j 1 disable parallel compilation to avoid a QEMU bug: https://github.com/rails/bootsnap/issues/495
@@ -62,9 +77,11 @@ RUN groupadd --system --gid 1000 rails && \
     useradd rails --uid 1000 --gid 1000 --create-home --shell /bin/bash
 USER 1000:1000
 
-# Copy built artifacts: gems, application
+# Copy built artifacts: gems, application, frontend
 COPY --chown=rails:rails --from=build "${BUNDLE_PATH}" "${BUNDLE_PATH}"
 COPY --chown=rails:rails --from=build /rails /rails
+COPY --chown=rails:rails --from=frontend /frontend/dist /rails/frontend/dist
+ENV FRONTEND_DIST_PATH="/rails/frontend/dist"
 
 # Entrypoint prepares the database.
 ENTRYPOINT ["/rails/bin/docker-entrypoint"]

@@ -7,6 +7,7 @@ Tablero: https://trello.com/b/S2Asw6vB/2026-utn-grupo10
 | Evento | Resultado |
 | --- | --- |
 | Importación manual | Crea issues para tarjetas nuevas de `Sprint Backlog`. |
+| Un agente empieza a implementar un issue importado | Mueve la tarjeta de `Sprint Backlog` a `En Desarrollo`. |
 | PR abierto, reabierto o listo para revisión | Mueve la tarjeta a `En Revisión / Esperando Merge`. |
 | PR integrado en `main` | Mueve la tarjeta a `Hecho`. |
 | PR cerrado sin integrar | Conserva la lista actual. |
@@ -69,7 +70,29 @@ El job consulta issues abiertos y cerrados antes de crear nuevos.
 Si falla después de crear un issue, una nueva ejecución puede reparar el enlace sin duplicarlo.
 Los reintentos de importación se ejecutan de uno en uno.
 
-## 4. Asociar un PR
+## 4. Empezar un ticket
+
+La lista `En Desarrollo` tiene que existir en el tablero, abierta y con ese nombre exacto.
+Si el nombre cambia, actualizá `lists` en `script/trello-sync.mjs`.
+
+Un agente mueve la tarjeta cuando detecta que va a empezar la implementación. Eso ocurre solo si ya identificó el issue importado y todavía no creó la rama, el worktree ni el primer cambio de código de ese ticket.
+
+Desde la raíz del repositorio:
+
+```sh
+script/trello-empezar 123
+```
+
+Reemplazá `123` por el número del issue. El script comprueba el marcador `<!-- trello-card:ID -->` y dispara `Actions → Marcar ticket en desarrollo` sobre `main`.
+El job lee ese marcador y mueve la tarjeta de `Sprint Backlog` a `En Desarrollo`.
+
+No mueve la tarjeta si el número es un pull request, si el issue no tiene marcador, si la tarjeta está archivada o en otro tablero, o si está en otra lista distinta de `Sprint Backlog`.
+Si ya está en `En Desarrollo`, no vuelve a escribir. Si está en `En Revisión / Esperando Merge` o en `Hecho`, no retrocede.
+Repetir el comando dispara el workflow otra vez, pero Trello no recibe un movimiento nuevo.
+
+Este paso no reemplaza el pase a revisión. Abrir el PR listo, o sacarlo de borrador, sigue moviendo la tarjeta a `En Revisión / Esperando Merge`.
+
+## 5. Asociar un PR
 
 Agregá una línea independiente en la descripción del PR:
 
@@ -95,11 +118,13 @@ La automatización mueve la tarjeta cuando GitHub informa el merge, sin esperar 
 
 Si falta un secret, la ejecución falla e indica su nombre.
 Si cambian los nombres de las listas, actualizá `lists` en `script/trello-sync.mjs`.
+`En Desarrollo` tiene que estar creada en el tablero antes de empezar un ticket.
 Si Trello devuelve `401`, renová las credenciales.
 Si el workflow falla, comprobá el resumen y los logs antes de repetir la ejecución.
 
 El workflow de PR usa `pull_request_target` y descarga solamente el commit base.
-No ejecuta código del PR con las credenciales de Trello.
+El de desarrollo solo corre en `main` y también descarga esa rama.
+Ninguno ejecuta código del PR con las credenciales de Trello.
 
 Pruebas locales sin credenciales ni escrituras externas:
 

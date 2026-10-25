@@ -3,7 +3,7 @@ class OrdenResumirCierre
 
   def self.call(orden:)
     tareas = orden.tareas.includes(:mecanico).order(:created_at, :id).to_a
-    repuestos = orden.repuestos.order(:created_at, :id).to_a
+    repuestos = orden.repuestos.vigentes.order(:created_at, :id).to_a
     adelantado = orden.adelantos.sum(:importe).to_d
     total = orden.cerrada? ? orden.total_cerrado : orden.total_a_cobrar
 

@@ -97,9 +97,13 @@ es:
           attributes:
             estado:
               ya_valorizado: ya fue valorizado
+              ya_quitado: ya fue quitado de la orden
             orden:
               cerrada: está cerrada
               cancelada: está cancelada
+            base:
+              costo_en_pendiente: El costo y el margen de un repuesto pendiente se cargan con valorizar
+              supera_adelantos: El nuevo total quedaría por debajo de los adelantos ya registrados
         tarea:
           attributes:
             estado:

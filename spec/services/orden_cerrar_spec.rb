@@ -74,6 +74,21 @@ RSpec.describe OrdenCerrar do
     expect(orden.reload).to be_abierta
   end
 
+  it "no cobra un repuesto quitado y cierra si el pendiente ya fue quitado" do
+    create(:tarea, :terminada, orden: orden, precio: 10_000)
+    vigente = agregar_repuesto
+    quitado = RepuestoAgregar.call(orden: orden, registrado_por: administrador, descripcion: "Bujía",
+                                   cantidad: 1, costo_unitario: "500", margen: 20)
+    pendiente = RepuestoAvisar.call(orden: orden, registrado_por: mecanico, descripcion: "Correa", cantidad: 1)
+    RepuestoQuitar.call(repuesto: quitado, quitado_por: administrador)
+    RepuestoQuitar.call(repuesto: pendiente, quitado_por: administrador)
+
+    described_class.call(orden: orden, cerrada_por: administrador)
+
+    expect(orden.reload).to be_cerrada
+    expect(orden.total_cerrado).to eq(10_000 + vigente.precio_cliente)
+  end
+
   it "informa todos los motivos que impiden el cierre a la vez" do
     create(:tarea, :en_curso, orden: orden)
     create(:tarea, orden: orden)

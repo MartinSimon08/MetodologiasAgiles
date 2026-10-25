@@ -75,9 +75,17 @@ jobs:
             and ($url | test("^https://github\\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/pull/[0-9]+$"))
             and ($url | endswith("/" + $numero));
 
+          def resumen_descripcion:
+            ($cuerpo // "") as $texto
+            | if ($texto | gsub("\\s"; "")) == "" then ""
+              elif ($texto | length) > 100 then $texto[0:100] + "..."
+              else $texto
+              end;
+
           (texto($titulo; "Sin título")) as $titulo_visible
           | (texto($autor; "desconocido")) as $autor_visible
           | (texto($rama; "desconocida")) as $rama_visible
+          | (resumen_descripcion) as $descripcion
           | (issues) as $issues
           | (if ($issues | length) > 20 then $issues[0:20] else $issues end) as $issues_visibles
           | (if url_valida then
@@ -95,6 +103,17 @@ jobs:
                 }
               }
             end) as $bloque_enlace
+          | (if $descripcion == "" then []
+             else
+               [{
+                 type: "section",
+                 text: {
+                   type: "plain_text",
+                   text: ("Descripción\n" + $descripcion),
+                   emoji: false
+                 }
+               }]
+             end) as $bloque_descripcion
           | (if ($issues | length) == 0 then []
              elif repo_valido then
                [{
@@ -142,7 +161,7 @@ jobs:
                     { type: "plain_text", text: ("Rama de origen\n" + $rama_visible), emoji: false }
                   ]
                 }
-              ] + $bloque_issues)
+              ] + $bloque_descripcion + $bloque_issues)
             }
           '
           )"

@@ -98,7 +98,7 @@ docker compose exec -e RAILS_ENV=test api sh -c "bin/rails db:test:prepare && bu
 
 Cada vez que un pull request se mergea a `main`, el workflow [Avisar en Slack al mergear](.github/workflows/slack-merge.yml) publica un mensaje en el canal del equipo. Usa la app de Slack Gato Hidraulico y su Incoming Webhook.
 
-El mensaje incluye el título, el número con enlace al PR, el autor, la rama de origen y, si la descripción tiene líneas `Closes #N`, los issues que cierra.
+El mensaje incluye el título, el número con enlace al PR, el autor, la rama de origen, los primeros 100 caracteres de la descripción y, si la descripción tiene líneas `Closes #N`, los issues que cierra. Si la descripción pasa de 100 caracteres, se corta y se agrega `...`.
 
 Hace falta el secret de Actions `SLACK_WEBHOOK_URL` con la URL del webhook. No va en el código ni en el repositorio. Si el secret no está cargado, el job no falla: lo saltea y deja un aviso en el log.
 

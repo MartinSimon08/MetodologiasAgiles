@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Mueve a En Desarrollo la tarjeta del issue que se empieza a implementar.
+# Uso: script/trello-empezar 123
+set -euo pipefail
+
+if [[ $# -ne 1 || ! "$1" =~ ^[1-9][0-9]*$ ]]; then
+  echo "Uso: script/trello-empezar <numero-de-issue>" >&2
+  exit 2
+fi
+
+issue="$1"
+kind="$(gh api "repos/{owner}/{repo}/issues/${issue}" --jq 'if .pull_request then "pr" elif ((.body // "") | split("\n") | any(test("^<!-- trello-card:[a-f0-9]{24} -->$"))) then "card" else "none" end')"
+
+if [[ "$kind" == "pr" ]]; then
+  echo "El número #${issue} es un pull request, no un issue importado." >&2
+  exit 1
+fi
+
+if [[ "$kind" != "card" ]]; then
+  echo "El issue #${issue} no tiene una tarjeta importada. Hay que ejecutar Importar Sprint Backlog." >&2
+  exit 1
+fi
+
+gh workflow run trello-desarrollo.yml --ref main -f "issue=${issue}"
+echo "Pedido enviado: #${issue} hacia En Desarrollo. El workflow corre en main."

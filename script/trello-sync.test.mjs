@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { importCards, syncPullRequest, issueNumbers, findList, lists, resolveMember } from './trello-sync.mjs';
+import { importCards, syncPullRequest, startDevelopment, issueNumbers, findList, lists, resolveMember, parseIssueNumber, actionFor } from './trello-sync.mjs';
 
 const id = '0123456789abcdef01234567';
 const marker = `<!-- trello-card:${id} -->`;
@@ -206,6 +206,74 @@ test('reimportar actualiza responsables y no repite la actualización', async ()
   const writes = state.writes.length;
   await importCards({ ...context, dryRun: false });
   assert.equal(state.writes.length, writes);
+});
+
+test('empezar un ticket mueve la tarjeta de Sprint Backlog a En Desarrollo', async () => {
+  const { state, context } = fixture();
+  state.issues.push({ body: marker });
+  await startDevelopment({ ...context, issueNumber: '1' });
+  assert.equal(state.card.idList, 'development');
+  assert.equal(state.writes.length, 1);
+  assert.equal(state.writes[0].body.idList, 'development');
+  const writes = state.writes.length;
+  await startDevelopment({ ...context, issueNumber: 1 });
+  assert.equal(state.writes.length, writes);
+  assert.match(state.reports.at(-1), /#1 → En Desarrollo/);
+});
+
+test('empezar no retrocede revisión ni Hecho y omite otros casos', async () => {
+  for (const update of [{ idList: 'review' }, { idList: 'done' }, { idList: 'icebox' }, { closed: true }, { idBoard: 'other' }]) {
+    const { state, context } = fixture();
+    state.issues.push({ body: marker });
+    Object.assign(state.card, update);
+    await startDevelopment({ ...context, issueNumber: 1 });
+    assert.equal(state.writes.length, 0);
+  }
+});
+
+test('empezar omite pull requests e issues sin tarjeta', async () => {
+  const pullRequest = fixture();
+  pullRequest.state.issues.push({ body: marker, pull_request: { url: 'https://api.github.com/repos/owner/repo/pulls/1' } });
+  await startDevelopment({ ...pullRequest.context, issueNumber: 1 });
+  assert.equal(pullRequest.state.writes.length, 0);
+
+  const missing = fixture();
+  missing.state.issues.push({ body: 'sin marcador' });
+  await startDevelopment({ ...missing.context, issueNumber: 1 });
+  assert.equal(missing.state.writes.length, 0);
+  assert.match(missing.state.reports.join('\n'), /no tiene una tarjeta importada/);
+});
+
+test('número de issue inválido y acción desconocida fallan sin escrituras', async () => {
+  const { state, context } = fixture();
+  state.issues.push({ body: marker });
+  await assert.rejects(startDevelopment({ ...context, issueNumber: '12a' }), /inválido/);
+  await assert.rejects(startDevelopment({ ...context, issueNumber: '0' }), /inválido/);
+  assert.equal(state.writes.length, 0);
+  assert.equal(parseIssueNumber(' 42 '), 42);
+  assert.equal(actionFor('workflow_dispatch', ''), 'import');
+  assert.equal(actionFor('workflow_dispatch', 'development'), 'development');
+  assert.equal(actionFor('pull_request_target', undefined), 'pull_request');
+  assert.throws(() => actionFor('workflow_dispatch', 'otro'), /no admitida/);
+  assert.throws(() => actionFor('push', undefined), /no admitido/);
+});
+
+test('empezar falla si falta la lista En Desarrollo', async () => {
+  const { state, context } = fixture();
+  state.issues.push({ body: marker });
+  const original = context.trello;
+  context.trello = (path, method, body) => {
+    if (String(path).endsWith('/lists')) {
+      return [
+        { id: 'backlog', name: lists.backlog },
+        { id: 'review', name: lists.review },
+        { id: 'done', name: lists.done },
+      ];
+    }
+    return original(path, method, body);
+  };
+  await assert.rejects(startDevelopment({ ...context, issueNumber: 1 }), /En Desarrollo/);
+  assert.equal(state.writes.length, 0);
 });
 
 test('listas ausentes o ambiguas y relaciones duplicadas fallan sin escrituras', async () => {

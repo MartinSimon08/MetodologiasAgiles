@@ -3,6 +3,7 @@ import { pathToFileURL } from 'node:url';
 
 export const lists = {
   backlog: 'Sprint Backlog',
+  development: 'En Desarrollo',
   review: 'En Revisión / Esperando Merge',
   done: 'Hecho',
 };
@@ -142,6 +143,24 @@ export function cardId(body = '') {
   return body.match(/^<!-- trello-card:([a-f0-9]{24}) -->$/m)?.[1];
 }
 
+export function parseIssueNumber(value) {
+  const text = String(value ?? '').trim();
+  if (!/^[1-9]\d*$/.test(text)) {
+    throw new Error('Número de issue inválido. Usar un entero positivo, por ejemplo 123.');
+  }
+  return Number(text);
+}
+
+export function actionFor(eventName, action) {
+  if (eventName === 'workflow_dispatch') {
+    if (!action) return 'import';
+    if (action === 'development') return 'development';
+    throw new Error('Acción de Trello no admitida.');
+  }
+  if (eventName === 'pull_request_target') return 'pull_request';
+  throw new Error('Evento no admitido.');
+}
+
 export function findList(all, name) {
   const matches = all.filter(list => !list.closed && list.name === name);
   if (matches.length !== 1) throw new Error(`Se esperaba una única lista abierta: ${name}`);
@@ -247,6 +266,40 @@ export async function syncPullRequest({ trello, github, board, number, repositor
   }
 }
 
+export async function startDevelopment({ trello, github, board, issueNumber, report }) {
+  const number = parseIssueNumber(issueNumber);
+  const issue = await github(`/issues/${number}`);
+  if (issue.pull_request) {
+    report(`OMITIDO: #${number} es un pull request, no un issue importado.`);
+    return;
+  }
+  const id = cardId(issue.body ?? '');
+  if (!id) {
+    report(`OMITIDO: #${number} no tiene una tarjeta importada.`);
+    return;
+  }
+  const all = await trello(`/boards/${board.id}/lists`);
+  const backlog = findList(all, lists.backlog);
+  const development = findList(all, lists.development);
+  const review = findList(all, lists.review);
+  const done = findList(all, lists.done);
+  const card = await trello(`/cards/${id}`);
+  if (card.closed || card.idBoard !== board.id) {
+    report(`OMITIDO: #${number}, tarjeta archivada o ajena al tablero.`);
+    return;
+  }
+  if (card.idList === review.id || card.idList === done.id) {
+    report(`OMITIDO: #${number} ya está en revisión o en Hecho. No se retrocede.`);
+    return;
+  }
+  if (card.idList !== backlog.id && card.idList !== development.id) {
+    report(`OMITIDO: #${number} no está en ${backlog.name}.`);
+    return;
+  }
+  if (card.idList !== development.id) await trello(`/cards/${id}`, 'PUT', { idList: development.id });
+  report(`#${number} → ${development.name}`);
+}
+
 export function apiClient(base, headers) {
   return async (path, method = 'GET', body) => {
     let response;
@@ -290,12 +343,13 @@ async function main() {
   const board = await trello('/boards/S2Asw6vB');
   if (board.closed) throw new Error('El tablero está archivado.');
   const context = { trello, github, board, report, repository, defaultBranch: event.repository.default_branch };
-  if (process.env.GITHUB_EVENT_NAME === 'workflow_dispatch') {
+  const action = actionFor(process.env.GITHUB_EVENT_NAME, process.env.TRELLO_ACTION);
+  if (action === 'import') {
     await importCards({ ...context, dryRun: process.env.DRY_RUN !== 'false' });
-  } else if (process.env.GITHUB_EVENT_NAME === 'pull_request_target') {
+  } else if (action === 'development') {
+    await startDevelopment({ ...context, issueNumber: process.env.ISSUE_NUMBER });
+  } else if (action === 'pull_request') {
     await syncPullRequest({ ...context, number: event.pull_request.number });
-  } else {
-    throw new Error('Evento no admitido.');
   }
 }
 

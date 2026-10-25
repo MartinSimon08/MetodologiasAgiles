@@ -1,0 +1,39 @@
+name: Marcar ticket en desarrollo
+
+on:
+  workflow_dispatch:
+    inputs:
+      issue:
+        description: Número del issue importado desde Trello
+        type: string
+        required: true
+
+permissions:
+  contents: read
+  issues: read
+
+concurrency:
+  group: trello-desarrollo-${{ inputs.issue }}
+  cancel-in-progress: false
+
+jobs:
+  move:
+    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - name: Mover tarjeta a En Desarrollo
+        run: node script/trello-sync.mjs
+        env:
+          TRELLO_ACTION: development
+          ISSUE_NUMBER: ${{ inputs.issue }}
+          GITHUB_TOKEN: ${{ github.token }}
+          TRELLO_API_KEY: ${{ secrets.TRELLO_API_KEY }}
+          TRELLO_TOKEN: ${{ secrets.TRELLO_TOKEN }}

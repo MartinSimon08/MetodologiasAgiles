@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@rails/actioncable": "^8.1.400",
     "@tanstack/react-query": "^5.103.1",
     "axios": "^1.20.0",
     "react": "^19.2.8",
@@ -19,6 +20,7 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/node": "^24.13.3",
+    "@types/rails__actioncable": "^8.0.3",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",
     "@vitejs/plugin-react": "^6.1.1",

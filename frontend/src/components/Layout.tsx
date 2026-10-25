@@ -1,6 +1,7 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '../features/auth/AuthContext'
 import { ROL_LABELS } from '../features/auth/types'
+import { NotificacionesTareas } from '../features/tareas/NotificacionesTareas'
 
 export function Layout() {
   const { usuario, logout } = useAuth()
@@ -35,6 +36,7 @@ export function Layout() {
           </button>
         </div>
       </header>
+      <NotificacionesTareas />
       <main className="contenido">
         <Outlet />
       </main>

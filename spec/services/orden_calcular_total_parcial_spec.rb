@@ -42,6 +42,19 @@ RSpec.describe OrdenCalcularTotalParcial do
     expect(parcial.tareas.map(&:precio)).to eq([ 5_000 ])
   end
 
+  it "no incluye un repuesto quitado en el desglose ni en el total" do
+    vigente = agregar_repuesto
+    quitado = RepuestoAgregar.call(orden: orden, registrado_por: administrador, descripcion: "Filtro de aire",
+                                   cantidad: 1, costo_unitario: "800", margen: 25)
+    RepuestoQuitar.call(repuesto: quitado, quitado_por: administrador)
+
+    parcial = total_parcial
+
+    expect(parcial.repuestos).to eq([ vigente ])
+    expect(parcial.total_repuestos).to eq(vigente.precio_cliente)
+    expect(parcial.total).to eq(vigente.precio_cliente)
+  end
+
   it "lista los repuestos pendientes de valorizar sin sumarlos" do
     pendiente = RepuestoAvisar.call(orden: orden, registrado_por: mecanico, descripcion: "Correa", cantidad: 1)
 

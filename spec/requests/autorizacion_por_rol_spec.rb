@@ -2,6 +2,7 @@ require "rails_helper"
 
 RSpec.describe "Autorización por rol", type: :request do
   accesos = {
+    "GET /llms.txt" => :publico,
     "POST /sesion" => :publico,
     "GET /sesion" => :ambos,
     "GET /configuracion_taller" => :administrador,
@@ -38,6 +39,9 @@ RSpec.describe "Autorización por rol", type: :request do
     "POST /ordenes/:orden_id/repuestos" => :ambos,
     "PATCH /ordenes/:orden_id/repuestos/:id/valorizar" => :administrador,
     "POST /ordenes/:orden_id/repuestos/vista_previa" => :administrador,
+    "PATCH /ordenes/:orden_id/repuestos/:id" => :administrador,
+    "PUT /ordenes/:orden_id/repuestos/:id" => :administrador,
+    "DELETE /ordenes/:orden_id/repuestos/:id" => :administrador,
     "GET /ordenes/:orden_id/tareas" => :ambos,
     "POST /ordenes/:orden_id/tareas" => :administrador,
     "PATCH /tareas/:id/tomar" => :mecanico,

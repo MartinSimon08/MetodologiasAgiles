@@ -37,6 +37,7 @@ export interface TareaMecanico {
   estado: EstadoTarea
   mecanico_id: number | null
   tomada_en: string | null
+  terminada_en: string | null
   created_at: string
   orden: { id: number; vehiculo: VehiculoOrden; cliente: string }
   notas: Nota[]
@@ -45,4 +46,13 @@ export interface TareaMecanico {
 export interface TareasMecanico {
   mias: TareaMecanico[]
   disponibles: TareaMecanico[]
+  terminadas_hoy: TareaMecanico[]
+}
+
+export interface TareaDisponibleAviso {
+  id: number
+  descripcion: string
+  orden_id: number
+  cliente: string
+  vehiculo: { id: number; patente: string; marca: string | null; modelo: string | null; anio: number | null }
 }

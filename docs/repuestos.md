@@ -38,11 +38,11 @@ precio_cliente = costo_unitario × cantidad × (1 + margen / 100)
 ganancia = precio_cliente − costo_unitario × cantidad
 ```
 
-Si se omite el margen, se usa el configurado en el taller. El costo unitario debe
-enviarse explícitamente al guardar la compra, incluso cuando se selecciona un
-artículo del catálogo. Una orden cerrada no admite compras. Este ticket incorpora
-la carga necesaria para utilizar el catálogo, alineada con los campos de HU03
-(#20); no agrega edición o eliminación de compras.
+Si se omite el margen al dar de alta, se usa el configurado en el taller. El costo
+unitario debe enviarse explícitamente al guardar la compra, incluso cuando se
+selecciona un artículo del catálogo. Una orden cerrada no admite compras. Este
+ticket incorpora la carga necesaria para utilizar el catálogo, alineada con los
+campos de HU03 (#20). Corregir o quitar una compra ya cargada corresponde a HU16.
 
 ## Aviso del mecánico y valorización (HU14)
 
@@ -61,7 +61,25 @@ valorizar, y no se puede valorizar en una orden cerrada.
 Una orden con compras pendientes de valorizar no se puede cerrar: la validación
 vive en el modelo `Orden`, de modo que cualquier camino que intente cerrarla
 (incluido un futuro flujo de cierre y cobro) queda bloqueado mientras existan
-compras sin costo cargado.
+compras sin costo cargado. Un aviso pendiente que se quitó deja de bloquear el
+cierre.
+
+## Corregir o quitar una compra (HU16)
+
+Mientras la orden está abierta, el administrador puede corregir la cantidad, el
+costo unitario, el margen o el proveedor de un repuesto ya valorizado. El precio
+al cliente y la ganancia se recalculan con la misma fórmula y se vuelven a
+guardar. La descripción, el vínculo con el catálogo y quién cargó la compra no
+cambian. Si no se envía el margen, se conserva el que ya tenía la compra.
+
+Un repuesto pendiente de valorizar admite corrección de cantidad y proveedor. El
+costo y el margen se siguen cargando con valorizar.
+
+Quitar un repuesto pide confirmación en la pantalla. La compra deja de sumar al
+total y queda registrada: se guardan quién la quitó y cuándo, y sigue visible
+como baja. No se borra la fila. Una orden cerrada o cancelada no admite
+correcciones ni bajas. Si el total resultante quedaría por debajo de los
+adelantos ya registrados, la operación se rechaza.
 
 ## API
 
@@ -75,8 +93,10 @@ como cadenas decimales.
 | `POST /repuestos_catalogo` | Cargar nombre y precio en el catálogo |
 | `PATCH /repuestos_catalogo/:id` | Editar nombre y/o precio del catálogo |
 | `DELETE /repuestos_catalogo/:id` | Eliminar del catálogo conservando las líneas de las órdenes; devuelve 204 |
-| `GET /ordenes/:orden_id/repuestos?pagina=1` | Compras registradas en esa orden, con precio y ganancia |
+| `GET /ordenes/:orden_id/repuestos?pagina=1` | Administrador y mecánico. Vigentes de la orden. El administrador recibe precio, ganancia y `quitados`. El mecánico no recibe costo, margen, precio, ganancia ni proveedor |
 | `POST /ordenes/:orden_id/repuestos` | Administrador: registra una compra valorizada. Mecánico: avisa un repuesto pendiente de valorizar (solo `descripcion` y `cantidad`) |
+| `PATCH /ordenes/:orden_id/repuestos/:id` | Administrador: corrige cantidad, costo, margen o proveedor de una compra en una orden abierta y recalcula el precio |
+| `DELETE /ordenes/:orden_id/repuestos/:id` | Administrador: quita la compra del total y registra la baja. Responde el repuesto con `quitado_en` y `quitado_por` |
 | `PATCH /ordenes/:orden_id/repuestos/:id/valorizar` | Administrador: carga el costo (y opcionalmente el margen) de un aviso pendiente |
 
 Los listados aceptan `por_pagina` (20 por defecto, máximo 100).
@@ -134,6 +154,20 @@ Ejemplo de valorización de ese aviso por administración:
 }
 ```
 
+Ejemplo de corrección de una compra valorizada. El precio al cliente se recalcula
+en el servidor. Para quitarla, `DELETE` sobre la misma ruta, sin cuerpo.
+
+```json
+{
+  "repuesto": {
+    "cantidad": 3,
+    "costo_unitario": "100.50",
+    "margen": "20",
+    "proveedor": "Casa Norte"
+  }
+}
+```
+
 ## Migración y verificación
 
 Aplicar `bin/rails db:migrate`. La nueva migración conserva los artículos existentes
@@ -160,6 +194,13 @@ API deben usar el nuevo campo `precio` del catálogo.
     de valorizar. Todavía no hay endpoint ni pantalla para cerrar una orden, así
     que este paso se verifica con los tests de `spec/models/orden_spec.rb`, no
     a mano.
+13. En una orden abierta, corregir cantidad, costo, margen o proveedor de una
+    compra valorizada: el precio al cliente y la ganancia cambian al guardar.
+14. Quitar un repuesto: cancelar lo deja en la orden; confirmar lo saca del
+    total y lo muestra en **Bajas registradas**, con quién lo quitó y cuándo.
+15. En una orden cerrada no aparecen **Corregir** ni **Quitar**.
+16. Si la corrección o la baja dejarían el total por debajo de un adelanto ya
+    registrado, el sistema la rechaza y la compra no cambia.
 
 Pruebas automatizadas:
 
@@ -170,8 +211,10 @@ La demo local usa `metodologias_hu18_demo`; las pruebas, `metodologias_hu18_test
 
 ```sh
 bundle exec rspec spec/services/repuesto_agregar_spec.rb spec/services/repuesto_avisar_spec.rb \
-  spec/services/repuesto_valorizar_spec.rb spec/requests/repuestos_spec.rb \
-  spec/requests/repuestos_catalogo_spec.rb spec/models/orden_spec.rb
+  spec/services/repuesto_valorizar_spec.rb spec/services/repuesto_editar_spec.rb \
+  spec/services/repuesto_quitar_spec.rb spec/requests/repuestos_spec.rb \
+  spec/requests/repuestos_catalogo_spec.rb spec/requests/autorizacion_por_rol_spec.rb \
+  spec/models/orden_spec.rb
 bin/rubocop
 cd frontend
 npm run build

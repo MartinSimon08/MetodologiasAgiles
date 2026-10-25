@@ -5,6 +5,12 @@ Rails.application.routes.draw do
   # Can be used by load balancers and uptime monitors to verify that the app is live.
   get "up" => "rails/health#show", as: :rails_health_check
 
+  scope format: false do
+    get "/llms.txt", to: "llms#show"
+  end
+
+  mount ActionCable.server => "/cable"
+
   resource :sesion, only: %i[show create], controller: "sesiones"
   resource :configuracion_taller, only: %i[show update], controller: "configuraciones_taller"
 
@@ -31,7 +37,7 @@ Rails.application.routes.draw do
 
   resources :ordenes, only: %i[index show create] do
     resources :adelantos, only: %i[index create]
-    resources :repuestos, only: %i[index create] do
+    resources :repuestos, only: %i[index create update destroy] do
       member do
         patch :valorizar
       end

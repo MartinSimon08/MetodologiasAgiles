@@ -13,6 +13,21 @@ export const ESTADO_REPUESTO_LABELS: Record<EstadoRepuesto, string> = {
   valorizado: 'Valorizado',
 }
 
+export type TipoAjuste = 'devolucion' | 'cambio'
+
+export interface AjusteRepuesto {
+  id: number
+  tipo: TipoAjuste
+  cantidad: number
+  costo_unitario: string
+  ajuste_costo: string
+  ajuste_precio_cliente: string
+  precio_original: string
+  motivo: string
+  registrado_en: string
+  registrado_por: { id: number; nombre: string }
+}
+
 export interface Repuesto {
   id: number
   descripcion: string
@@ -22,6 +37,11 @@ export interface Repuesto {
   margen?: string | null
   precio_cliente?: string | null
   ganancia?: string | null
+  precio_vigente?: string | null
+  costo_vigente?: string | null
+  ganancia_vigente?: string | null
+  cantidad_disponible?: number
+  ajustes?: AjusteRepuesto[]
   proveedor?: string | null
   created_at: string
   quitado_en?: string | null
@@ -165,5 +185,20 @@ export async function listarRepuestosPorProveedor(filtros: {
       ...(filtros.hasta ? { hasta: filtros.hasta } : {}),
     },
   })
+  return data
+}
+
+export interface NuevoAjuste {
+  tipo: TipoAjuste
+  cantidad: string
+  costo_unitario: string
+  motivo: string
+}
+
+export async function registrarAjuste(ordenId: number, repuestoId: number, ajuste: NuevoAjuste) {
+  const { data } = await api.post<AjusteRepuesto>(
+    `/ordenes/${ordenId}/repuestos/${repuestoId}/ajustes`,
+    { ajuste },
+  )
   return data
 }

@@ -138,6 +138,21 @@ RSpec.describe Orden, type: :model do
     expect(orden.total).to eq(12_345)
   end
 
+  it "incluye en el total el ajuste de precio de una devolución" do
+    orden = create(:orden)
+    admin = create(:usuario, :administrador)
+    repuesto = RepuestoAgregar.call(
+      orden: orden, registrado_por: admin, descripcion: "Filtro", cantidad: 2, costo_unitario: "100", margen: "0"
+    )
+
+    RepuestoRegistrarAjuste.call(
+      repuesto: repuesto, registrado_por: admin, tipo: "devolucion", cantidad: 1, costo_unitario: "100", motivo: "Falla"
+    )
+
+    expect(repuesto.reload.precio_cliente).to eq(BigDecimal("200"))
+    expect(orden.reload.total).to eq(BigDecimal("100"))
+  end
+
   it "la base impide dos órdenes abiertas para el mismo vehículo aunque se saltee la validación" do
     abierta = create(:orden)
     orden = build(:orden, vehiculo: abierta.vehiculo)

@@ -6,6 +6,8 @@ servers:
   web:
     - 204.216.155.6
 
+deploy_timeout: 120
+
 proxy:
   ssl: true
   host: 204-216-155-6.sslip.io

@@ -7,6 +7,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: coverage-badge
+  cancel-in-progress: false
+
 jobs:
   coverage:
     runs-on: ubuntu-latest
@@ -63,8 +67,13 @@ jobs:
 
       - name: Publish coverage badge
         run: |
-          git fetch origin badges
-          git checkout --force -B badges origin/badges
+          if git ls-remote --exit-code --heads origin badges > /dev/null; then
+            git fetch origin +refs/heads/badges:refs/remotes/origin/badges
+            git checkout --force -B badges origin/badges
+          else
+            git checkout --orphan badges
+            git rm -r --cached --quiet .
+          fi
           cp /tmp/coverage.json coverage.json
           git add coverage.json
           if git diff --cached --quiet; then

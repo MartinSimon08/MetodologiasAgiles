@@ -63,7 +63,7 @@ class OrdenesController < ApplicationController
       estado: resumen.orden.estado,
       tareas: resumen.tareas.map { |tarea| serialize_linea_tarea(tarea) },
       repuestos: resumen.repuestos.map do |repuesto|
-        repuesto.as_json(only: %i[id descripcion cantidad estado]).merge("precio_cliente" => repuesto.precio_cliente&.to_s("F"))
+        repuesto.as_json(only: %i[id descripcion cantidad estado]).merge("precio_cliente" => precio_de_linea(repuesto))
       end,
       mano_de_obra: resumen.mano_de_obra.to_s("F"),
       total_repuestos: resumen.total_repuestos.to_s("F"),
@@ -80,7 +80,7 @@ class OrdenesController < ApplicationController
       repuestos: parcial.repuestos.map do |repuesto|
         repuesto.as_json(only: %i[id descripcion cantidad estado]).merge(
           "costo_unitario" => repuesto.costo_unitario&.to_s("F"), "margen" => repuesto.margen&.to_s("F"),
-          "precio_cliente" => repuesto.precio_cliente&.to_s("F")
+          "precio_cliente" => precio_de_linea(repuesto)
         )
       end,
       mano_de_obra: parcial.mano_de_obra.to_s("F"),
@@ -88,6 +88,11 @@ class OrdenesController < ApplicationController
       total: parcial.total.to_s("F"),
       a_cobrar_hoy: parcial.a_cobrar_hoy.to_s("F")
     }
+  end
+
+  def precio_de_linea(repuesto)
+    monto = repuesto.valorizado? ? repuesto.precio_vigente : repuesto.precio_cliente
+    monto&.to_s("F")
   end
 
   def serialize_linea_tarea(tarea)

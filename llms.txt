@@ -1,0 +1,19 @@
+# Gestión de Taller
+
+> Software de gestión para un único taller mecánico. La orden de trabajo reúne al cliente, el vehículo, las tareas, los repuestos comprados al momento y el cobro.
+
+Reemplaza el cuaderno y WhatsApp con los que el taller coordina el día. Cualquier mecánico puede tomar una tarea disponible, terminarla o liberarla. Los repuestos se cargan sobre la orden con el costo real y un margen, sin inventario permanente. El catálogo de repuestos guarda un costo de referencia, no stock. Al cerrar la orden se calcula el total de mano de obra y repuestos. Los adelantos se registran mientras la orden está abierta.
+
+La interfaz es una PWA React: recepción en la web y vista móvil para mecánicos. La API es Ruby on Rails 8 con PostgreSQL. Los roles son administrador y mecánico.
+
+## Documentación
+
+- [Guía del proyecto](https://raw.githubusercontent.com/MartinSimon08/MetodologiasAgiles/main/README.md): stack, puesta en marcha y convenciones
+- [Instrucciones para agentes](https://raw.githubusercontent.com/MartinSimon08/MetodologiasAgiles/main/AGENTS.md): producto, arquitectura y reglas de código
+- [Repuestos](https://raw.githubusercontent.com/MartinSimon08/MetodologiasAgiles/main/docs/repuestos.md): catálogo de referencia, carga en la orden, valorización y bajas
+
+## Optional
+
+- [Trello y GitHub](https://raw.githubusercontent.com/MartinSimon08/MetodologiasAgiles/main/docs/trello-github.md): tickets de sprint y pull requests
+- [Frontend](https://raw.githubusercontent.com/MartinSimon08/MetodologiasAgiles/main/frontend/README.md): la PWA de recepción y de mecánicos
+- [Repositorio](https://github.com/MartinSimon08/MetodologiasAgiles): código fuente

@@ -1,13 +1,19 @@
 class RepuestosController < ApplicationController
   include Paginable
 
-  before_action :require_administrador!, only: %i[valorizar vista_previa]
-  before_action :set_orden, only: %i[index create valorizar vista_previa]
-  before_action :set_repuesto, only: :valorizar
+  before_action :require_administrador!, only: %i[valorizar vista_previa update destroy]
+  before_action :set_orden, only: %i[index create valorizar vista_previa update destroy]
+  before_action :set_repuesto, only: %i[valorizar update destroy]
 
   def index
-    repuestos, meta = paginar(@orden.repuestos.includes(:registrado_por).order(created_at: :desc, id: :desc))
-    render json: { repuestos: repuestos.map { |repuesto| serialize(repuesto) }, meta: meta }
+    vigentes = @orden.repuestos.vigentes.includes(:registrado_por, :quitado_por).order(created_at: :desc, id: :desc)
+    repuestos, meta = paginar(vigentes)
+    cuerpo = { repuestos: repuestos.map { |repuesto| serialize(repuesto) }, meta: meta }
+    if current_usuario.administrador?
+      cuerpo[:quitados] = @orden.repuestos.quitados.includes(:registrado_por, :quitado_por)
+        .order(quitado_en: :desc, id: :desc).map { |repuesto| serialize(repuesto) }
+    end
+    render json: cuerpo
   end
 
   def create
@@ -17,6 +23,16 @@ class RepuestosController < ApplicationController
       RepuestoAvisar.call(orden: @orden, registrado_por: current_usuario, **aviso_params.to_h.symbolize_keys)
     end
     render json: serialize(repuesto), status: :created
+  end
+
+  def update
+    repuesto = RepuestoEditar.call(repuesto: @repuesto, atributos: editar_params.to_h.symbolize_keys)
+    render json: serialize(repuesto)
+  end
+
+  def destroy
+    repuesto = RepuestoQuitar.call(repuesto: @repuesto, quitado_por: current_usuario)
+    render json: serialize(repuesto)
   end
 
   def valorizar
@@ -55,11 +71,16 @@ class RepuestosController < ApplicationController
     params.require(:repuesto).permit(:costo_unitario, :margen).with_defaults(costo_unitario: nil)
   end
 
+  def editar_params
+    params.require(:repuesto).permit(:cantidad, :costo_unitario, :margen, :proveedor)
+  end
+
   def serialize(repuesto)
     datos = repuesto.as_json(only: %i[id orden_id repuesto_catalogo_id descripcion cantidad registrado_por_id estado created_at])
     if current_usuario.administrador?
-      datos.merge!(repuesto.as_json(only: %i[costo_unitario margen precio_cliente proveedor]))
+      datos.merge!(repuesto.as_json(only: %i[costo_unitario margen precio_cliente proveedor quitado_en]))
       datos["ganancia"] = repuesto.valorizado? ? ganancia(repuesto) : nil
+      datos[:quitado_por] = repuesto.quitado_por&.as_json(only: %i[id nombre])
     end
     datos[:registrado_por] = repuesto.registrado_por.as_json(only: %i[id nombre])
     datos

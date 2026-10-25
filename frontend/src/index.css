@@ -1397,3 +1397,34 @@ button.opcion:focus-visible {
   text-transform: none;
   color: var(--tinta);
 }
+
+.repuestos .item-acciones {
+  margin-top: 0.35rem;
+  justify-content: flex-start;
+}
+
+.confirmacion-baja {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.confirmacion-baja p {
+  margin: 0;
+}
+
+.repuestos-quitados {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.repuestos-quitados .lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.repuesto-quitado {
+  opacity: 0.82;
+}

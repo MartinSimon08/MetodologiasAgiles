@@ -213,7 +213,12 @@ docker compose exec frontend pnpm exec tsc -b --pretty false
 - `frontend/src/features/`: pantallas por dominio. La guía está en [`frontend/README.md`](frontend/README.md).
 - `spec/`: RSpec y FactoryBot.
 - [`docs/repuestos.md`](docs/repuestos.md): catálogo y repuestos cargados en la orden.
+- [`docs/deploy.md`](docs/deploy.md): deploy a producción con Kamal.
 - [`docs/trello-github.md`](docs/trello-github.md): tickets de Trello e issues de GitHub.
+
+## Deploy
+
+Cada merge a `main` que pasa el CI se despliega solo con Kamal a una VM gratuita de Oracle Cloud. La app queda en `https://204-216-155-6.sslip.io`. Detalles, secrets y comandos: [Deploy a producción](docs/deploy.md).
 
 ## Convenciones del proyecto
 

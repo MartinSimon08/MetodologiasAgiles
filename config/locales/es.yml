@@ -7,6 +7,7 @@ es:
       adelanto: Adelanto
       tarea: Tarea
       repuesto: Repuesto
+      ajuste_repuesto: Ajuste de repuesto
       repuesto_catalogo: Repuesto del catálogo
       tarea_frecuente: Tarea frecuente
       vehiculo: Vehículo
@@ -53,6 +54,15 @@ es:
         comprobante: Foto del comprobante
         repuesto_catalogo: Repuesto del catálogo
         registrado_por: Administrador
+      ajuste_repuesto:
+        repuesto: Repuesto
+        orden: Orden
+        tipo: Tipo
+        cantidad: Cantidad
+        costo_unitario: Costo unitario
+        motivo: Motivo
+        ajuste_costo: Ajuste de costo
+        ajuste_precio_cliente: Ajuste de precio al cliente
       repuesto_catalogo:
         nombre: Nombre
       vehiculo:
@@ -109,6 +119,19 @@ es:
             base:
               costo_en_pendiente: El costo y el margen de un repuesto pendiente se cargan con valorizar
               supera_adelantos: El nuevo total quedaría por debajo de los adelantos ya registrados
+        ajuste_repuesto:
+          attributes:
+            orden:
+              cerrada_congelada: está cerrada y su total está congelado. Hay que reabrir la orden para corregirlo
+              cancelada: está cancelada
+            repuesto:
+              sin_valorizar: tiene que estar valorizado
+              ya_quitado: ya fue quitado de la orden
+            cantidad:
+              supera_disponible: supera las unidades que todavía no se devolvieron ni cambiaron
+            base:
+              deja_total_bajo_adelantos: El ajuste dejaría el total de la orden por debajo de los adelantos ya registrados
+              no_calculado: No se pudo calcular el ajuste
         tarea:
           attributes:
             estado:

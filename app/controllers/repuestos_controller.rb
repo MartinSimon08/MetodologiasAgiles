@@ -1,19 +1,20 @@
 class RepuestosController < ApplicationController
   include Paginable
+  include SerializaAjusteRepuesto
 
   before_action :require_administrador!, only: %i[valorizar vista_previa update destroy]
   before_action :set_orden, only: %i[index create valorizar vista_previa update destroy comprobante adjuntar_comprobante]
   before_action :set_repuesto, only: %i[valorizar update destroy comprobante adjuntar_comprobante]
 
   def index
-    vigentes = @orden.repuestos.vigentes.with_attached_comprobante
-      .includes(:registrado_por, :quitado_por).order(created_at: :desc, id: :desc)
+    incluye = [ :registrado_por, :quitado_por, { ajustes: :registrado_por } ]
+    vigentes = @orden.repuestos.vigentes.with_attached_comprobante.includes(incluye)
+      .order(created_at: :desc, id: :desc)
     repuestos, meta = paginar(vigentes)
     cuerpo = { repuestos: repuestos.map { |repuesto| serialize(repuesto) }, meta: meta }
     if current_usuario.administrador?
-      cuerpo[:quitados] = @orden.repuestos.quitados.with_attached_comprobante
-        .includes(:registrado_por, :quitado_por).order(quitado_en: :desc, id: :desc)
-        .map { |repuesto| serialize(repuesto) }
+      cuerpo[:quitados] = @orden.repuestos.quitados.with_attached_comprobante.includes(incluye)
+        .order(quitado_en: :desc, id: :desc).map { |repuesto| serialize(repuesto) }
     end
     render json: cuerpo
   end
@@ -96,6 +97,13 @@ class RepuestosController < ApplicationController
       datos.merge!(repuesto.as_json(only: %i[costo_unitario margen precio_cliente proveedor quitado_en]))
       datos["ganancia"] = repuesto.valorizado? ? ganancia(repuesto) : nil
       datos[:quitado_por] = repuesto.quitado_por&.as_json(only: %i[id nombre])
+      datos[:precio_vigente] = repuesto.precio_vigente && dinero(repuesto.precio_vigente)
+      datos[:costo_vigente] = repuesto.costo_vigente && dinero(repuesto.costo_vigente)
+      datos[:ganancia_vigente] = if repuesto.precio_vigente
+        dinero(repuesto.precio_vigente - repuesto.costo_vigente)
+      end
+      datos[:cantidad_disponible] = repuesto.cantidad_disponible
+      datos[:ajustes] = ajustes_de(repuesto).map { |ajuste| serialize_ajuste(ajuste) }
     end
     datos[:registrado_por] = repuesto.registrado_por.as_json(only: %i[id nombre])
     datos["comprobante"] = comprobante_json(repuesto)
@@ -107,6 +115,14 @@ class RepuestosController < ApplicationController
 
     blob = repuesto.comprobante.blob
     { nombre: blob.filename.to_s, content_type: blob.content_type, byte_size: blob.byte_size }
+  end
+
+  def ajustes_de(repuesto)
+    if repuesto.ajustes.loaded?
+      repuesto.ajustes.sort_by { |ajuste| [ ajuste.created_at, ajuste.id ] }.reverse
+    else
+      repuesto.ajustes.includes(:registrado_por).order(created_at: :desc, id: :desc)
+    end
   end
 
   def ganancia(repuesto)

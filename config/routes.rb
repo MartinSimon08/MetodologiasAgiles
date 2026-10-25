@@ -67,6 +67,7 @@ Rails.application.routes.draw do
       patch :cerrar
       get :resumen_cierre
       get :total_parcial
+      get :presupuesto
     end
   end
 end

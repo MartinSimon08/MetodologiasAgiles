@@ -33,20 +33,21 @@ RSpec.describe "Tareas del mecánico", type: :request do
 
       get "/tareas_mecanico", headers: auth_headers(mecanico)
 
-      expect(response.parsed_body).to eq("mias" => [], "disponibles" => [])
+      expect(response.parsed_body).to eq("mias" => [], "disponibles" => [], "terminadas_hoy" => [])
     end
 
     it "devuelve las tareas sin importes" do
       create(:tarea, :en_curso, orden: orden, mecanico: mecanico, precio: 15_000)
       create(:tarea, orden: orden, precio: 20_000)
+      create(:tarea, :terminada, orden: orden, mecanico: mecanico, precio: 10_000)
 
       get "/tareas_mecanico", headers: auth_headers(mecanico)
 
-      tareas = response.parsed_body.values_at("mias", "disponibles").flatten
-      expect(tareas.size).to eq(2)
+      tareas = response.parsed_body.values_at("mias", "disponibles", "terminadas_hoy").flatten
+      expect(tareas.size).to eq(3)
       expect(tareas.map(&:keys)).to all(
-        contain_exactly("id", "orden_id", "descripcion", "estado", "mecanico_id", "tomada_en", "created_at", "orden",
-                         "notas")
+        contain_exactly("id", "orden_id", "descripcion", "estado", "mecanico_id", "tomada_en", "terminada_en",
+                         "created_at", "orden", "notas")
       )
       expect(tareas.map { |tarea| tarea["orden"].keys }).to all(contain_exactly("id", "vehiculo", "cliente"))
     end
@@ -59,6 +60,56 @@ RSpec.describe "Tareas del mecánico", type: :request do
 
       expect(response.parsed_body["disponibles"].first["notas"].pluck("contenido"))
         .to eq([ "Pidió que la revisen urgente" ])
+    end
+
+    it "incluye las tareas que el mecánico terminó hoy, ordenadas por más reciente" do
+      mas_vieja = create(:tarea, :terminada, orden: orden, mecanico: mecanico, terminada_en: 3.hours.ago)
+      mas_nueva = create(:tarea, :terminada, orden: orden, mecanico: mecanico, terminada_en: 1.hour.ago)
+
+      get "/tareas_mecanico", headers: auth_headers(mecanico)
+
+      expect(response.parsed_body["terminadas_hoy"].pluck("id")).to eq([ mas_nueva.id, mas_vieja.id ])
+    end
+
+    it "no incluye tareas terminadas en días anteriores" do
+      create(:tarea, :terminada, orden: orden, mecanico: mecanico, terminada_en: 2.days.ago)
+
+      get "/tareas_mecanico", headers: auth_headers(mecanico)
+
+      expect(response.parsed_body["terminadas_hoy"]).to be_empty
+    end
+
+    it "no incluye tareas terminadas por otro mecánico" do
+      create(:tarea, :terminada, orden: orden, mecanico: otro_mecanico)
+
+      get "/tareas_mecanico", headers: auth_headers(mecanico)
+
+      expect(response.parsed_body["terminadas_hoy"]).to be_empty
+    end
+
+    it "incluye tareas terminadas hoy aunque la orden ya esté cerrada o cancelada" do
+      terminada = create(:tarea, :terminada, orden: orden, mecanico: mecanico)
+      orden.update!(estado: :cancelada, cancelada_en: Time.current)
+
+      get "/tareas_mecanico", headers: auth_headers(mecanico)
+
+      expect(response.parsed_body["terminadas_hoy"].pluck("id")).to eq([ terminada.id ])
+    end
+
+    it "usa el día calendario de Argentina, no el de UTC, para decidir qué es \"hoy\"" do
+      zona_argentina = ActiveSupport::TimeZone["Buenos Aires"]
+      noche_en_argentina = zona_argentina.parse("2026-10-23 23:30:00")
+      manana_siguiente_en_argentina = zona_argentina.parse("2026-10-24 10:00:00")
+
+      travel_to noche_en_argentina do
+        create(:tarea, :terminada, orden: orden, mecanico: mecanico)
+      end
+
+      travel_to manana_siguiente_en_argentina do
+        get "/tareas_mecanico", headers: auth_headers(mecanico)
+      end
+
+      expect(response.parsed_body["terminadas_hoy"]).to be_empty
     end
 
     it "prohíbe el acceso a un administrador" do

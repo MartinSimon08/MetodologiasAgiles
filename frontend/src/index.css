@@ -1428,3 +1428,80 @@ button.opcion:focus-visible {
 .repuesto-quitado {
   opacity: 0.82;
 }
+
+.comprobante {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.45rem;
+}
+
+.comprobante-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.comprobante-nombre {
+  color: var(--tinta-suave);
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
+}
+
+label.boton-archivo {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 6px 14px;
+  border: 1px solid var(--regla);
+  background: transparent;
+  color: var(--tinta);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+label.boton-archivo:hover {
+  background: rgb(0 0 0 / 0.05);
+}
+
+label.boton-archivo input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  min-height: 0;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+  white-space: nowrap;
+}
+
+label.boton-archivo:focus-within {
+  outline: 2px solid var(--tinta);
+  outline-offset: 2px;
+}
+
+label.boton-archivo:has(input:disabled) {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.comprobante-vista {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.comprobante-vista img {
+  display: block;
+  max-width: min(100%, 28rem);
+  max-height: 24rem;
+  object-fit: contain;
+  background: var(--blanco);
+  border: 1px solid var(--regla);
+}

@@ -40,6 +40,8 @@ Rails.application.routes.draw do
     resources :repuestos, only: %i[index create update destroy] do
       member do
         patch :valorizar
+        get :comprobante
+        post :adjuntar_comprobante, path: :comprobante
       end
       collection do
         post :vista_previa

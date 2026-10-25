@@ -3,6 +3,7 @@ class Repuesto < ApplicationRecord
   belongs_to :repuesto_catalogo, optional: true
   belongs_to :registrado_por, class_name: "Usuario"
   belongs_to :quitado_por, class_name: "Usuario", optional: true, inverse_of: :repuestos_quitados
+  has_one_attached :comprobante
 
   enum :estado, { pendiente_de_valorizar: "pendiente_de_valorizar", valorizado: "valorizado" },
     validate: true, default: :valorizado

@@ -15,6 +15,34 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_25_230000) do
   enable_extension "pg_catalog.plpgsql"
   enable_extension "unaccent"
 
+  create_table "active_storage_attachments", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "record_type", null: false
+    t.bigint "record_id", null: false
+    t.bigint "blob_id", null: false
+    t.datetime "created_at", null: false
+    t.index ["blob_id"], name: "index_active_storage_attachments_on_blob_id"
+    t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
+  end
+
+  create_table "active_storage_blobs", force: :cascade do |t|
+    t.string "key", null: false
+    t.string "filename", null: false
+    t.string "content_type"
+    t.text "metadata"
+    t.string "service_name", null: false
+    t.bigint "byte_size", null: false
+    t.string "checksum"
+    t.datetime "created_at", null: false
+    t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
+  end
+
+  create_table "active_storage_variant_records", force: :cascade do |t|
+    t.bigint "blob_id", null: false
+    t.string "variation_digest", null: false
+    t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
   create_table "adelantos", force: :cascade do |t|
     t.bigint "orden_id", null: false
     t.decimal "importe", precision: 12, scale: 2, null: false
@@ -96,20 +124,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_25_230000) do
     t.bigint "orden_id", null: false
     t.decimal "precio_cliente", precision: 24, scale: 2
     t.string "proveedor"
-    t.datetime "quitado_en"
-    t.bigint "quitado_por_id"
     t.bigint "registrado_por_id", null: false
     t.bigint "repuesto_catalogo_id"
     t.datetime "updated_at", null: false
+    t.bigint "quitado_por_id"
+    t.datetime "quitado_en"
     t.index ["orden_id"], name: "index_repuestos_on_orden_id"
     t.index ["quitado_por_id"], name: "index_repuestos_on_quitado_por_id"
     t.index ["registrado_por_id"], name: "index_repuestos_on_registrado_por_id"
     t.index ["repuesto_catalogo_id"], name: "index_repuestos_on_repuesto_catalogo_id"
+    t.check_constraint "(quitado_en IS NULL) = (quitado_por_id IS NULL)", name: "repuestos_quitado_consistente"
     t.check_constraint "cantidad > 0", name: "repuestos_cantidad_positiva"
     t.check_constraint "costo_unitario >= 0::numeric", name: "repuestos_costo_no_negativo"
     t.check_constraint "estado::text <> 'valorizado'::text OR costo_unitario IS NOT NULL AND margen IS NOT NULL AND precio_cliente IS NOT NULL", name: "repuestos_valorizado_completo"
     t.check_constraint "margen >= 0::numeric AND margen <= 100::numeric", name: "repuestos_margen_valido"
-    t.check_constraint "(quitado_en IS NULL) = (quitado_por_id IS NULL)", name: "repuestos_quitado_consistente"
   end
 
   create_table "repuestos_catalogo", force: :cascade do |t|
@@ -180,6 +208,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_25_230000) do
     t.check_constraint "kilometraje >= 0", name: "vehiculos_kilometraje_no_negativo"
   end
 
+  add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "adelantos", "ordenes"
   add_foreign_key "adelantos", "usuarios", column: "registrado_por_id"
   add_foreign_key "ajustes_repuesto", "repuestos"

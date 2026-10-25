@@ -81,6 +81,20 @@ como baja. No se borra la fila. Una orden cerrada o cancelada no admite
 correcciones ni bajas. Si el total resultante quedaría por debajo de los
 adelantos ya registrados, la operación se rechaza.
 
+## Foto del comprobante (HU24)
+
+En una orden abierta, el mecánico o el administrador pueden adjuntar una foto
+del comprobante de compra a un repuesto para respaldar el gasto real. Hay una
+sola foto por repuesto: subir otra reemplaza la anterior.
+
+La foto queda en el repuesto, y el repuesto pertenece a la orden, así que el
+comprobante sigue asociado a esa compra y a esa orden. Se consulta desde el
+detalle, también si la orden se cerró o se canceló, y en las bajas registradas.
+
+Formatos aceptados: JPG, PNG y WebP, hasta 8 MB. No se puede adjuntar en una
+orden cerrada o cancelada, ni en un repuesto ya quitado. La foto que ya estaba
+se sigue pudiendo ver.
+
 ## API
 
 Todos estos endpoints requieren JWT. Salvo donde se indica, son de administrador;
@@ -93,11 +107,13 @@ como cadenas decimales.
 | `POST /repuestos_catalogo` | Cargar nombre y precio en el catálogo |
 | `PATCH /repuestos_catalogo/:id` | Editar nombre y/o precio del catálogo |
 | `DELETE /repuestos_catalogo/:id` | Eliminar del catálogo conservando las líneas de las órdenes; devuelve 204 |
-| `GET /ordenes/:orden_id/repuestos?pagina=1` | Administrador y mecánico. Vigentes de la orden. El administrador recibe precio, ganancia y `quitados`. El mecánico no recibe costo, margen, precio, ganancia ni proveedor |
+| `GET /ordenes/:orden_id/repuestos?pagina=1` | Administrador y mecánico. Vigentes de la orden, con `comprobante` en `null` o con `nombre`, `content_type` y `byte_size`. El administrador recibe precio, ganancia y `quitados`. El mecánico no recibe costo, margen, precio, ganancia ni proveedor |
 | `POST /ordenes/:orden_id/repuestos` | Administrador: registra una compra valorizada. Mecánico: avisa un repuesto pendiente de valorizar (solo `descripcion` y `cantidad`) |
 | `PATCH /ordenes/:orden_id/repuestos/:id` | Administrador: corrige cantidad, costo, margen o proveedor de una compra en una orden abierta y recalcula el precio |
 | `DELETE /ordenes/:orden_id/repuestos/:id` | Administrador: quita la compra del total y registra la baja. Responde el repuesto con `quitado_en` y `quitado_por` |
 | `PATCH /ordenes/:orden_id/repuestos/:id/valorizar` | Administrador: carga el costo (y opcionalmente el margen) de un aviso pendiente |
+| `POST /ordenes/:orden_id/repuestos/:id/comprobante` | Administrador y mecánico. Adjunta o reemplaza la foto (`multipart/form-data`, campo `comprobante`) en una orden abierta. Responde el repuesto |
+| `GET /ordenes/:orden_id/repuestos/:id/comprobante` | Administrador y mecánico. Devuelve la imagen. Responde 404 si ese repuesto no tiene foto |
 | `POST /ordenes/:orden_id/repuestos/:repuesto_id/ajustes` | Administrador: registra una devolución o un cambio sobre el repuesto original |
 
 Los listados aceptan `por_pagina` (20 por defecto, máximo 100).
@@ -249,12 +265,18 @@ API deben usar el nuevo campo `precio` del catálogo.
 15. En una orden cerrada no aparecen **Corregir** ni **Quitar**.
 16. Si la corrección o la baja dejarían el total por debajo de un adelanto ya
     registrado, el sistema la rechaza y la compra no cambia.
-17. Como administrador, en un repuesto valorizado de una orden abierta, registrar
+17. En una orden abierta, como mecánico, adjuntar una foto JPG, PNG o WebP a un
+    repuesto y abrirla con **Ver comprobante**.
+18. Reemplazar la foto y confirmar que se ve la nueva.
+19. Como administrador, abrir **Cargar costo** de un aviso que tenga foto y
+    consultar el comprobante. En una orden cerrada no aparece **Adjuntar foto**,
+    y la foto ya cargada se sigue viendo.
+20. Como administrador, en un repuesto valorizado de una orden abierta, registrar
     una devolución de parte de las unidades. El renglón original conserva costo
     y precio, el historial muestra la devolución y el precio vigente baja.
-18. Registrar un cambio con otro costo unitario. El historial muestra el costo
+21. Registrar un cambio con otro costo unitario. El historial muestra el costo
     del reemplazo y el precio vigente usa el margen original.
-19. Confirmar que no se puede devolver o cambiar más unidades que las que siguen
+22. Confirmar que no se puede devolver o cambiar más unidades que las que siguen
     disponibles, ni hacerlo en una orden cerrada, cancelada o sobre un repuesto
     ya quitado. El total congelado no se modifica.
 
@@ -268,7 +290,8 @@ La demo local usa `metodologias_hu18_demo`; las pruebas, `metodologias_hu18_test
 ```sh
 bundle exec rspec spec/services/repuesto_agregar_spec.rb spec/services/repuesto_avisar_spec.rb \
   spec/services/repuesto_valorizar_spec.rb spec/services/repuesto_editar_spec.rb \
-  spec/services/repuesto_quitar_spec.rb spec/services/repuesto_registrar_ajuste_spec.rb \
+  spec/services/repuesto_quitar_spec.rb spec/services/repuesto_adjuntar_comprobante_spec.rb \
+  spec/services/repuesto_registrar_ajuste_spec.rb \
   spec/requests/repuestos_spec.rb spec/requests/ajustes_repuesto_spec.rb \
   spec/requests/repuestos_catalogo_spec.rb spec/requests/autorizacion_por_rol_spec.rb \
   spec/models/orden_spec.rb

@@ -163,9 +163,10 @@ RSpec.describe "Repuestos", type: :request do
         include("descripcion" => "Bujía", "cantidad" => 4, "estado" => "pendiente_de_valorizar")
       )
       response.parsed_body["repuestos"].each do |repuesto|
+        expect(repuesto["comprobante"]).to be_nil
         expect(repuesto.keys).to contain_exactly(
           "id", "orden_id", "repuesto_catalogo_id", "descripcion", "cantidad", "estado",
-          "registrado_por_id", "registrado_por", "created_at"
+          "registrado_por_id", "registrado_por", "created_at", "comprobante"
         )
       end
     end
@@ -488,5 +489,117 @@ RSpec.describe "Repuestos", type: :request do
   it "prohíbe a mecánicos consultar costos del catálogo" do
     get "/repuestos_catalogo", headers: auth_headers(mecanico)
     expect(response).to have_http_status(:forbidden)
+  end
+
+  describe "comprobante de un repuesto" do
+    let(:repuesto) { RepuestoAvisar.call(orden: orden, registrado_por: mecanico, descripcion: "Filtro", cantidad: 1) }
+    let(:ruta) { "/ordenes/#{orden.id}/repuestos/#{repuesto.id}/comprobante" }
+
+    it "permite al mecánico adjuntar la foto y consultarla, asociada a la orden" do
+      post ruta, params: { comprobante: archivo_comprobante }, headers: auth_headers(mecanico)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body["comprobante"]).to include("nombre" => "comprobante.png", "content_type" => "image/png")
+      expect(response.parsed_body["comprobante"]["byte_size"]).to be > 0
+      expect(response.parsed_body.keys).not_to include("costo_unitario", "margen", "precio_cliente", "ganancia", "proveedor")
+      expect(orden.repuestos.find(repuesto.id).comprobante).to be_attached
+
+      get "/ordenes/#{orden.id}/repuestos", headers: auth_headers(mecanico)
+
+      fila = response.parsed_body["repuestos"].find { |item| item["id"] == repuesto.id }
+      expect(fila["comprobante"]).to include("nombre" => "comprobante.png", "content_type" => "image/png")
+      expect(fila.keys).not_to include("costo_unitario", "margen", "precio_cliente", "ganancia")
+
+      get ruta, headers: auth_headers(mecanico)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.media_type).to eq("image/png")
+      expect(response.body.b).to eq(File.binread(Rails.root.join("spec/fixtures/files/comprobante.png")))
+      expect(response.headers["Content-Disposition"]).to include("inline").and include("comprobante.png")
+      expect(response.headers["Cache-Control"]).to include("no-store")
+    end
+
+    it "permite al administrador adjuntar y consultar la misma foto" do
+      post ruta, params: { comprobante: archivo_comprobante }, headers: auth_headers(admin)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body["comprobante"]).to include("nombre" => "comprobante.png")
+
+      get ruta, headers: auth_headers(admin)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.media_type).to eq("image/png")
+    end
+
+    it "reemplaza la foto anterior" do
+      post ruta, params: { comprobante: archivo_comprobante }, headers: auth_headers(mecanico)
+      post ruta, params: { comprobante: archivo_comprobante("comprobante.jpg", tipo: "image/jpeg") },
+        headers: auth_headers(mecanico)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body["comprobante"]).to include("nombre" => "comprobante.jpg", "content_type" => "image/jpeg")
+
+      get ruta, headers: auth_headers(mecanico)
+
+      expect(response.media_type).to eq("image/jpeg")
+      expect(response.body.b).to eq(File.binread(Rails.root.join("spec/fixtures/files/comprobante.jpg")))
+    end
+
+    it "rechaza un archivo que no es una foto" do
+      post ruta, params: { comprobante: archivo_texto }, headers: auth_headers(mecanico)
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body["errors"]["comprobante"]).to include("Foto del comprobante tiene que ser JPG, PNG o WebP")
+      expect(repuesto.reload.comprobante).not_to be_attached
+    end
+
+    it "rechaza el pedido sin archivo" do
+      post ruta, headers: auth_headers(mecanico)
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body["errors"]["comprobante"]).to include("Foto del comprobante no puede estar en blanco")
+    end
+
+    it "rechaza la foto en una orden cerrada y en una cancelada" do
+      repuesto
+      marcar_cerrada(orden)
+      post ruta, params: { comprobante: archivo_comprobante }, headers: auth_headers(mecanico)
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body["errors"]["orden"]).to include("Orden está cerrada")
+
+      orden.update!(estado: :cancelada, cancelada_en: Time.current, cerrada_en: nil, cerrada_por: nil, total_cerrado: nil)
+      post ruta, params: { comprobante: archivo_comprobante }, headers: auth_headers(mecanico)
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body["errors"]["orden"]).to include("Orden está cancelada")
+      expect(repuesto.reload.comprobante).not_to be_attached
+    end
+
+    it "rechaza una foto nueva en un repuesto quitado y conserva la consulta" do
+      post ruta, params: { comprobante: archivo_comprobante }, headers: auth_headers(mecanico)
+      RepuestoQuitar.call(repuesto: repuesto, quitado_por: admin)
+
+      post ruta, params: { comprobante: archivo_comprobante("comprobante.jpg", tipo: "image/jpeg") },
+        headers: auth_headers(admin)
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body["errors"]["estado"]).to include("Estado ya fue quitado de la orden")
+
+      get ruta, headers: auth_headers(admin)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.media_type).to eq("image/png")
+    end
+
+    it "devuelve 404 si el repuesto no tiene foto o no pertenece a la orden" do
+      get ruta, headers: auth_headers(mecanico)
+      expect(response).to have_http_status(:not_found)
+
+      post ruta, params: { comprobante: archivo_comprobante }, headers: auth_headers(mecanico)
+      get "/ordenes/#{create(:orden).id}/repuestos/#{repuesto.id}/comprobante", headers: auth_headers(mecanico)
+
+      expect(response).to have_http_status(:not_found)
+    end
   end
 end

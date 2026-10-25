@@ -3,6 +3,7 @@ import { useState, type FormEvent } from 'react'
 import { ErroresCampo } from '../../components/ErroresCampo'
 import { errorMessage, fieldErrors } from '../../lib/api'
 import { invalidarTotalesOrden } from '../ordenes/totales'
+import { ComprobanteRepuesto } from './ComprobanteRepuesto'
 import { valorizarRepuesto, type Repuesto } from './api'
 
 interface Props {
@@ -34,6 +35,9 @@ export function ValorizarRepuestoForm({ ordenId, repuesto, onGuardado, onCancela
   return (
     <form className="tarjeta formulario" onSubmit={guardar}>
       <h2>Cargar costo: {repuesto.descripcion}</h2>
+      {repuesto.comprobante
+        ? <ComprobanteRepuesto ordenId={ordenId} repuesto={repuesto} puedeAdjuntar={false} />
+        : <p className="estado">Todavía no hay foto del comprobante.</p>}
       <fieldset disabled={mutation.isPending}>
         <label>
           Costo unitario real ($)

@@ -51,6 +51,7 @@ es:
         costo_unitario: Costo unitario real
         margen: Margen
         estado: Estado
+        comprobante: Foto del comprobante
         repuesto_catalogo: Repuesto del catálogo
         registrado_por: Administrador
       ajuste_repuesto:
@@ -111,6 +112,10 @@ es:
             orden:
               cerrada: está cerrada
               cancelada: está cancelada
+            comprobante:
+              en_blanco: no puede estar en blanco
+              demasiado_grande: no puede superar 8 MB
+              tipo_invalido: tiene que ser JPG, PNG o WebP
             base:
               costo_en_pendiente: El costo y el margen de un repuesto pendiente se cargan con valorizar
               supera_adelantos: El nuevo total quedaría por debajo de los adelantos ya registrados

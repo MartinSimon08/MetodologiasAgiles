@@ -6,6 +6,7 @@ import { fechaHora, importe } from '../../lib/formato'
 import { useAuth } from '../auth/AuthContext'
 import { invalidarTotalesOrden } from '../ordenes/totales'
 import { AvisoRepuestoForm } from './AvisoRepuestoForm'
+import { ComprobanteRepuesto } from './ComprobanteRepuesto'
 import { listarRepuestos, quitarRepuesto, ESTADO_REPUESTO_LABELS, type AjusteRepuesto, type Repuesto, type TipoAjuste } from './api'
 import { EditarRepuestoForm } from './EditarRepuestoForm'
 import { NuevoRepuestoForm } from './NuevoRepuestoForm'
@@ -167,6 +168,7 @@ export function RepuestosPanel({ ordenId, ordenAbierta }: { ordenId: number; ord
                 )}
               </>
             )}
+            <ComprobanteRepuesto ordenId={ordenId} repuesto={repuesto} puedeAdjuntar={ordenAbierta} />
             {esAdministrador && ordenAbierta && quitandoId === repuesto.id ? (
               <ConfirmacionQuitar repuesto={repuesto} pendiente={quitar.isPending}
                 error={quitar.isError ? quitar.error : null}
@@ -223,6 +225,7 @@ export function RepuestosPanel({ ordenId, ordenAbierta }: { ordenId: number; ord
               Quitado por {repuesto.quitado_por?.nombre ?? 'administración'}
               {repuesto.quitado_en && ` · ${fechaHora(repuesto.quitado_en)}`}
             </span>
+            <ComprobanteRepuesto ordenId={ordenId} repuesto={repuesto} puedeAdjuntar={false} />
           </li>)}
         </ul>
       </section>}

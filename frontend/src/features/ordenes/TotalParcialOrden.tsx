@@ -46,17 +46,20 @@ export function TotalParcialOrden({ ordenId }: { ordenId: number }) {
             {datos.tareas.length === 0 && <p className="estado">Todavía no hay tareas cargadas.</p>}
             <ul className="lineas-cierre">
               {datos.tareas.map((tarea) => (
-                <li key={tarea.id}>
+                <li key={tarea.id} className={tarea.aprobacion === 'rechazada' ? 'linea-rechazada' : undefined}>
                   <span>
                     {tarea.descripcion}
                     <small>
                       {ESTADO_TAREA_LABELS[tarea.estado]} · {responsable(tarea)}
+                      {tarea.aprobacion === 'rechazada' ? ' · Rechazada, no suma' : ''}
                     </small>
                   </span>
-                  {tarea.precio != null ? (
-                    <span>$ {importe(tarea.precio)}</span>
-                  ) : (
+                  {tarea.precio == null ? (
                     <span className="sin-importe">Sin precio</span>
+                  ) : tarea.aprobacion === 'rechazada' ? (
+                    <span className="sin-importe">No suma · $ {importe(tarea.precio)}</span>
+                  ) : (
+                    <span>$ {importe(tarea.precio)}</span>
                   )}
                 </li>
               ))}
@@ -68,7 +71,7 @@ export function TotalParcialOrden({ ordenId }: { ordenId: number }) {
             {datos.repuestos.length === 0 && <p className="estado">Todavía no hay repuestos cargados.</p>}
             <ul className="lineas-cierre">
               {datos.repuestos.map((repuesto) => (
-                <li key={repuesto.id}>
+                <li key={repuesto.id} className={repuesto.aprobacion === 'rechazado' ? 'linea-rechazada' : undefined}>
                   <span>
                     {repuesto.descripcion}
                     {repuesto.estado === 'valorizado' ? (
@@ -80,7 +83,11 @@ export function TotalParcialOrden({ ordenId }: { ordenId: number }) {
                       <small>Cantidad: {repuesto.cantidad} · Falta cargar el costo</small>
                     )}
                   </span>
-                  {repuesto.estado === 'valorizado' ? (
+                  {repuesto.aprobacion === 'rechazado' ? (
+                    <span className="sin-importe">
+                      No suma{repuesto.precio_cliente != null ? ` · $ ${importe(repuesto.precio_cliente)}` : ''}
+                    </span>
+                  ) : repuesto.estado === 'valorizado' ? (
                     <span>$ {importe(repuesto.precio_cliente!)}</span>
                   ) : (
                     <span className="insignia insignia-pendiente_de_valorizar">

@@ -906,9 +906,19 @@ button.peligro:focus-visible {
 }
 
 .insignia-cancelada,
-.insignia-rechazada {
+.insignia-rechazada,
+.insignia-rechazado {
   color: var(--peligro);
   border-color: var(--peligro);
+}
+
+.insignia-aprobada,
+.insignia-aprobado {
+  border-color: var(--tinta);
+}
+
+.linea-rechazada {
+  color: var(--tinta-suave);
 }
 
 .lista[aria-busy='true'] {

@@ -3,16 +3,17 @@ class RepuestosController < ApplicationController
   include SerializaAjusteRepuesto
 
   before_action :require_administrador!, only: %i[valorizar vista_previa update destroy]
-  before_action :set_orden, only: %i[index create valorizar vista_previa update destroy]
-  before_action :set_repuesto, only: %i[valorizar update destroy]
+  before_action :set_orden, only: %i[index create valorizar vista_previa update destroy comprobante adjuntar_comprobante]
+  before_action :set_repuesto, only: %i[valorizar update destroy comprobante adjuntar_comprobante]
 
   def index
     incluye = [ :registrado_por, :quitado_por, { ajustes: :registrado_por } ]
-    vigentes = @orden.repuestos.vigentes.includes(incluye).order(created_at: :desc, id: :desc)
+    vigentes = @orden.repuestos.vigentes.with_attached_comprobante.includes(incluye)
+      .order(created_at: :desc, id: :desc)
     repuestos, meta = paginar(vigentes)
     cuerpo = { repuestos: repuestos.map { |repuesto| serialize(repuesto) }, meta: meta }
     if current_usuario.administrador?
-      cuerpo[:quitados] = @orden.repuestos.quitados.includes(incluye)
+      cuerpo[:quitados] = @orden.repuestos.quitados.with_attached_comprobante.includes(incluye)
         .order(quitado_en: :desc, id: :desc).map { |repuesto| serialize(repuesto) }
     end
     render json: cuerpo
@@ -39,6 +40,19 @@ class RepuestosController < ApplicationController
 
   def valorizar
     repuesto = RepuestoValorizar.call(repuesto: @repuesto, **valorizar_params.to_h.symbolize_keys)
+    render json: serialize(repuesto)
+  end
+
+  def comprobante
+    blob = @repuesto.comprobante.blob if @repuesto.comprobante.attached?
+    return head :not_found unless blob
+
+    response.headers["Cache-Control"] = "private, no-store"
+    send_data blob.download, type: blob.content_type, disposition: "inline", filename: blob.filename.to_s
+  end
+
+  def adjuntar_comprobante
+    repuesto = RepuestoAdjuntarComprobante.call(repuesto: @repuesto, archivo: params[:comprobante])
     render json: serialize(repuesto)
   end
 
@@ -92,7 +106,15 @@ class RepuestosController < ApplicationController
       datos[:ajustes] = ajustes_de(repuesto).map { |ajuste| serialize_ajuste(ajuste) }
     end
     datos[:registrado_por] = repuesto.registrado_por.as_json(only: %i[id nombre])
+    datos["comprobante"] = comprobante_json(repuesto)
     datos
+  end
+
+  def comprobante_json(repuesto)
+    return unless repuesto.comprobante.attached?
+
+    blob = repuesto.comprobante.blob
+    { nombre: blob.filename.to_s, content_type: blob.content_type, byte_size: blob.byte_size }
   end
 
   def ajustes_de(repuesto)

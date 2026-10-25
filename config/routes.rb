@@ -42,6 +42,8 @@ Rails.application.routes.draw do
       resources :ajustes, only: :create, controller: "ajustes_repuesto"
       member do
         patch :valorizar
+        get :comprobante
+        post :adjuntar_comprobante, path: :comprobante
       end
       collection do
         post :vista_previa
@@ -53,6 +55,8 @@ Rails.application.routes.draw do
         patch :completar
         patch :liberar
         patch :actualizar_precio
+        patch :aprobar
+        patch :rechazar
       end
       resources :notas, only: :create, controller: "tarea_notas"
     end

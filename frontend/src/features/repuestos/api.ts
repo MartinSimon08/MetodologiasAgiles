@@ -47,6 +47,13 @@ export interface Repuesto {
   quitado_en?: string | null
   registrado_por: { id: number; nombre: string }
   quitado_por?: { id: number; nombre: string } | null
+  comprobante: Comprobante | null
+}
+
+export interface Comprobante {
+  nombre: string
+  content_type: string
+  byte_size: number
 }
 
 export interface CambiosRepuesto {
@@ -185,6 +192,18 @@ export async function listarRepuestosPorProveedor(filtros: {
       ...(filtros.hasta ? { hasta: filtros.hasta } : {}),
     },
   })
+  return data
+}
+
+export async function adjuntarComprobante(ordenId: number, id: number, archivo: File) {
+  const form = new FormData()
+  form.append('comprobante', archivo)
+  const { data } = await api.post<Repuesto>(`/ordenes/${ordenId}/repuestos/${id}/comprobante`, form)
+  return data
+}
+
+export async function verComprobante(ordenId: number, id: number) {
+  const { data } = await api.get<Blob>(`/ordenes/${ordenId}/repuestos/${id}/comprobante`, { responseType: 'blob' })
   return data
 }
 

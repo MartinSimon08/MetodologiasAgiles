@@ -23,6 +23,23 @@ RSpec.describe TareaTomar do
     expect(tarea.reload.mecanico).to eq(otro_mecanico)
   end
 
+  it "rechaza tomar una tarea cuya aprobación fue rechazada" do
+    tarea.update!(aprobacion: :rechazada)
+
+    expect { described_class.call(tarea: tarea, mecanico: mecanico) }
+      .to raise_error(ActiveRecord::RecordInvalid)
+
+    expect(tarea.reload.mecanico).to be_nil
+  end
+
+  it "permite tomar una tarea aprobada" do
+    tarea.update!(aprobacion: :aprobada)
+
+    described_class.call(tarea: tarea, mecanico: mecanico)
+
+    expect(tarea.reload).to be_en_curso
+  end
+
   it "rechaza tomar una tarea ya terminada" do
     tarea.update!(estado: :terminada, mecanico: mecanico, tomada_en: 1.hour.ago, terminada_en: Time.current)
 

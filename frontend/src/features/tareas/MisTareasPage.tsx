@@ -7,7 +7,7 @@ import { fechaHora } from '../../lib/formato'
 import { describirVehiculo } from '../ordenes/types'
 import { agregarNotaTarea, completarTarea, liberarTarea, listarTareasMecanico, tomarTarea } from './api'
 import { NotasTarea } from './NotasTarea'
-import type { TareaMecanico } from './types'
+import { APROBACION_TAREA_LABELS, type TareaMecanico } from './types'
 
 const ACTUALIZACION_MS = 30 * 1000
 
@@ -81,6 +81,9 @@ export function MisTareasPage() {
         </span>
         <span>{tarea.orden.cliente}</span>
         {tarea.terminada_en && <span>Terminada a las {fechaHora(tarea.terminada_en)}</span>}
+        {tarea.aprobacion === 'rechazada' && (
+          <span className="insignia insignia-rechazada">{APROBACION_TAREA_LABELS.rechazada}</span>
+        )}
         <NotasTarea notas={tarea.notas} />
         {agregandoNotaId === tarea.id ? (
           <div className="formulario">

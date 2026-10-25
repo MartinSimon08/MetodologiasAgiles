@@ -121,8 +121,8 @@ RSpec.describe "Tareas", type: :request do
 
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body["tareas"].first.keys).to contain_exactly(
-        "id", "orden_id", "descripcion", "estado", "mecanico_id", "mecanico", "tomada_en", "terminada_en",
-        "created_at", "notas"
+        "id", "orden_id", "descripcion", "estado", "aprobacion", "mecanico_id", "mecanico", "tomada_en",
+        "terminada_en", "created_at", "notas"
       )
     end
 
@@ -342,6 +342,85 @@ RSpec.describe "Tareas", type: :request do
 
     it "exige autenticación" do
       patch "/tareas/#{tarea.id}/actualizar_precio", params: { tarea: { precio: "15000" } }, as: :json
+
+      expect(response).to have_http_status(:unauthorized)
+    end
+  end
+
+  describe "PATCH /tareas/:id/aprobar" do
+    let!(:tarea) { create(:tarea, orden: orden) }
+
+    it "permite al administrador aprobar una tarea pendiente" do
+      patch "/tareas/#{tarea.id}/aprobar", headers: auth_headers(admin)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body["aprobacion"]).to eq("aprobada")
+    end
+
+    it "rechaza aprobar una tarea de una orden cerrada" do
+      terminada = create(:tarea, :terminada, orden: orden)
+      marcar_cerrada(orden)
+
+      patch "/tareas/#{terminada.id}/aprobar", headers: auth_headers(admin)
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body["errors"]).to have_key("orden")
+    end
+
+    it "prohíbe a un mecánico aprobar tareas" do
+      patch "/tareas/#{tarea.id}/aprobar", headers: auth_headers(mecanico)
+
+      expect(response).to have_http_status(:forbidden)
+    end
+
+    it "exige autenticación" do
+      patch "/tareas/#{tarea.id}/aprobar"
+
+      expect(response).to have_http_status(:unauthorized)
+    end
+  end
+
+  describe "PATCH /tareas/:id/rechazar" do
+    let!(:tarea) { create(:tarea, :en_curso, orden: orden, mecanico: mecanico) }
+
+    it "libera la tarea tomada, la marca rechazada y avisa al mecánico" do
+      expect {
+        patch "/tareas/#{tarea.id}/rechazar", headers: auth_headers(admin)
+      }.to have_broadcasted_to(mecanico).from_channel(TareasChannel).with(
+        hash_including("tipo" => "tarea_rechazada", "id" => tarea.id)
+      )
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body).to include("estado" => "pendiente", "aprobacion" => "rechazada", "mecanico_id" => nil)
+    end
+
+    it "deja terminada y rechazada una tarea ya terminada" do
+      terminada = create(:tarea, :terminada, orden: orden, mecanico: mecanico)
+
+      patch "/tareas/#{terminada.id}/rechazar", headers: auth_headers(admin)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body).to include("estado" => "terminada", "aprobacion" => "rechazada")
+    end
+
+    it "rechaza rechazar una tarea de una orden cerrada" do
+      terminada = create(:tarea, :terminada, orden: orden)
+      marcar_cerrada(orden)
+
+      patch "/tareas/#{terminada.id}/rechazar", headers: auth_headers(admin)
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body["errors"]).to have_key("orden")
+    end
+
+    it "prohíbe a un mecánico rechazar tareas" do
+      patch "/tareas/#{tarea.id}/rechazar", headers: auth_headers(mecanico)
+
+      expect(response).to have_http_status(:forbidden)
+    end
+
+    it "exige autenticación" do
+      patch "/tareas/#{tarea.id}/rechazar"
 
       expect(response).to have_http_status(:unauthorized)
     end

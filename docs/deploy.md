@@ -14,6 +14,7 @@ Cada push a `main` dispara el workflow `CI`. Si termina bien, el workflow `Deplo
 - Un solo contenedor sirve todo: el frontend compilado en `/` y la API en `/api`. El `Dockerfile` compila `frontend/` con `VITE_API_URL=/api` y `config.ru` monta Rails bajo `/api` cuando existe `FRONTEND_DIST_PATH`. En desarrollo no cambia nada.
 - Postgres 16 corre como accessory de Kamal (`metodologias_agiles-db`), sin puerto publicado, con memoria ajustada para 1 GB. Los datos quedan en `/home/ubuntu/metodologias_agiles-db/data` de la VM.
 - La imagen se construye en el runner de GitHub y viaja a la VM por SSH (registry local de Kamal), así que no hace falta un registry externo ni compilar en la VM.
+- Rails tarda unos 40 segundos en arrancar en esta VM. Por eso `deploy_timeout` está en 120: Kamal espera ese tiempo a que `/api/up` responda antes de dar por caído el contenedor nuevo. Mientras tanto sigue sirviendo la versión anterior.
 - Solid Queue no corre en producción porque la app no tiene jobs. Si se agregan, sumar `SOLID_QUEUE_IN_PUMA: true` en `env.clear` y medir la memoria.
 
 ## Secrets de GitHub Actions

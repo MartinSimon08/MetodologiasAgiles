@@ -15,5 +15,13 @@ FactoryBot.define do
       tomada_en { 1.hour.ago }
       terminada_en { Time.current }
     end
+
+    trait :aprobada do
+      aprobacion { :aprobada }
+    end
+
+    trait :rechazada do
+      aprobacion { :rechazada }
+    end
   end
 end

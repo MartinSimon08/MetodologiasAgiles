@@ -40,6 +40,16 @@ export async function actualizarPrecioTarea(id: number, precio: string) {
   return data
 }
 
+export async function aprobarTarea(id: number) {
+  const { data } = await api.patch<Tarea>(`/tareas/${id}/aprobar`)
+  return data
+}
+
+export async function rechazarTarea(id: number) {
+  const { data } = await api.patch<Tarea>(`/tareas/${id}/rechazar`)
+  return data
+}
+
 export async function listarTareasMecanico() {
   const { data } = await api.get<TareasMecanico>('/tareas_mecanico')
   return data

@@ -28,11 +28,11 @@ class Orden < ApplicationRecord
   end
 
   def mano_de_obra_cargada
-    tareas.not_cancelada.sum(:precio).to_d
+    tareas.not_cancelada.where.not(aprobacion: :rechazada).sum(:precio).to_d
   end
 
   def mano_de_obra
-    tareas.terminada.sum(:precio).to_d
+    tareas.terminada.where.not(aprobacion: :rechazada).sum(:precio).to_d
   end
 
   def total_repuestos

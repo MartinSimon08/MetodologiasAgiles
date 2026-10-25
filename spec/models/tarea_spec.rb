@@ -20,6 +20,17 @@ RSpec.describe Tarea, type: :model do
     expect(create(:tarea)).to be_pendiente
   end
 
+  it "nace con la aprobación pendiente, aunque se agregue después de aprobar otras tareas de la misma orden" do
+    orden = create(:orden)
+    create(:tarea, :aprobada, orden: orden)
+
+    expect(create(:tarea, orden: orden)).to be_aprobacion_pendiente
+  end
+
+  it "rechaza una aprobación desconocida" do
+    expect(build(:tarea, aprobacion: "en_revision")).not_to be_valid
+  end
+
   it "permite no cargar precio" do
     expect(build(:tarea, precio: nil)).to be_valid
   end

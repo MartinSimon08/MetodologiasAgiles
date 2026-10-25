@@ -27,6 +27,14 @@ RSpec.describe "Tareas del mecánico", type: :request do
       )
     end
 
+    it "no ofrece una tarea pendiente cuya aprobación fue rechazada" do
+      create(:tarea, :rechazada, orden: orden)
+
+      get "/tareas_mecanico", headers: auth_headers(mecanico)
+
+      expect(response.parsed_body["disponibles"]).to be_empty
+    end
+
     it "no ofrece tareas de órdenes canceladas" do
       create(:tarea, orden: orden)
       orden.update!(estado: :cancelada, cancelada_en: Time.current)
@@ -46,8 +54,8 @@ RSpec.describe "Tareas del mecánico", type: :request do
       tareas = response.parsed_body.values_at("mias", "disponibles", "terminadas_hoy").flatten
       expect(tareas.size).to eq(3)
       expect(tareas.map(&:keys)).to all(
-        contain_exactly("id", "orden_id", "descripcion", "estado", "mecanico_id", "tomada_en", "terminada_en",
-                         "created_at", "orden", "notas")
+        contain_exactly("id", "orden_id", "descripcion", "estado", "aprobacion", "mecanico_id", "tomada_en",
+                         "terminada_en", "created_at", "orden", "notas")
       )
       expect(tareas.map { |tarea| tarea["orden"].keys }).to all(contain_exactly("id", "vehiculo", "cliente"))
     end

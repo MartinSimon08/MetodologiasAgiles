@@ -1,6 +1,7 @@
 import type { VehiculoOrden } from '../ordenes/types'
 
 export type EstadoTarea = 'pendiente' | 'en_curso' | 'terminada' | 'cancelada'
+export type AprobacionTarea = 'pendiente' | 'aprobada' | 'rechazada'
 
 export interface Nota {
   id: number
@@ -14,6 +15,7 @@ export interface Tarea {
   orden_id: number
   descripcion: string
   estado: EstadoTarea
+  aprobacion: AprobacionTarea
   precio?: number | null
   mecanico_id: number | null
   mecanico: { id: number; nombre: string } | null
@@ -30,11 +32,18 @@ export const ESTADO_TAREA_LABELS: Record<EstadoTarea, string> = {
   cancelada: 'Descartada',
 }
 
+export const APROBACION_TAREA_LABELS: Record<AprobacionTarea, string> = {
+  pendiente: 'Sin revisar',
+  aprobada: 'Aprobada',
+  rechazada: 'Rechazada',
+}
+
 export interface TareaMecanico {
   id: number
   orden_id: number
   descripcion: string
   estado: EstadoTarea
+  aprobacion: AprobacionTarea
   mecanico_id: number | null
   tomada_en: string | null
   terminada_en: string | null
@@ -50,9 +59,19 @@ export interface TareasMecanico {
 }
 
 export interface TareaDisponibleAviso {
+  tipo?: undefined
   id: number
   descripcion: string
   orden_id: number
   cliente: string
   vehiculo: { id: number; patente: string; marca: string | null; modelo: string | null; anio: number | null }
 }
+
+export interface TareaRechazadaAviso {
+  tipo: 'tarea_rechazada'
+  id: number
+  descripcion: string
+  orden_id: number
+}
+
+export type AvisoTarea = TareaDisponibleAviso | TareaRechazadaAviso

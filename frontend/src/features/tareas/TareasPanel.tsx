@@ -1,6 +1,7 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { BotonNuevo } from '../../components/BotonNuevo'
 import { Paginacion } from '../../components/Paginacion'
 import { errorMessage } from '../../lib/api'
 import { importe } from '../../lib/formato'
@@ -87,14 +88,14 @@ export function TareasPanel({ ordenId, ordenAbierta }: Props) {
       <header className="encabezado">
         <h2>Tareas</h2>
         {esAdministrador && ordenAbierta && !creando && (
-          <button
+          <BotonNuevo
             onClick={() => {
               setError(null)
               setCreando(true)
             }}
           >
             Nueva tarea
-          </button>
+          </BotonNuevo>
         )}
       </header>
 

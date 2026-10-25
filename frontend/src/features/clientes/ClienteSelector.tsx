@@ -1,11 +1,5 @@
-import { keepPreviousData, useQuery } from '@tanstack/react-query'
-import { useState } from 'react'
-import { Buscador } from '../../components/Buscador'
-import { ErroresCampo } from '../../components/ErroresCampo'
-import { Paginacion } from '../../components/Paginacion'
-import { errorMessage } from '../../lib/api'
-import { useDebounce } from '../../lib/useDebounce'
-import { listarClientes } from './api'
+import { SelectorBuscable } from '../../components/SelectorBuscable'
+import { listarClientes, type Cliente } from './api'
 
 interface Props {
   etiqueta: string
@@ -16,70 +10,29 @@ interface Props {
   autoFocus?: boolean
 }
 
-export function ClienteSelector({ etiqueta, valor, onCambiar, excluirId, errores, autoFocus }: Props) {
-  const [pagina, setPagina] = useState(1)
-  const [busqueda, setBusqueda] = useState('')
-  const q = useDebounce(busqueda.trim())
+async function cargar(pagina: number, q: string) {
+  const { clientes, meta } = await listarClientes(pagina, q)
+  return { items: clientes, meta }
+}
 
-  const clientes = useQuery({
-    queryKey: ['clientes', pagina, q],
-    queryFn: () => listarClientes(pagina, q),
-    placeholderData: keepPreviousData,
-  })
-
-  const opciones = clientes.data?.clientes.filter((cliente) => cliente.id !== excluirId) ?? []
-
+export function ClienteSelector(props: Props) {
   return (
-    <div className="selector-cliente">
-      <Buscador
-        etiqueta="Buscar cliente"
-        autoFocus={autoFocus}
-        placeholder="Nombre, teléfono o patente"
-        valor={busqueda}
-        onCambiar={(valor) => {
-          onCambiar(null)
-          setPagina(1)
-          setBusqueda(valor)
-        }}
-      />
-      <label>
-        {etiqueta}
-        <select
-          value={valor ?? ''}
-          onChange={(e) => onCambiar(e.target.value ? Number(e.target.value) : null)}
-          disabled={clientes.isPending}
-          required
-        >
-          <option value="">
-            {clientes.isPending
-              ? 'Cargando clientes…'
-              : opciones.length === 0
-                ? q
-                  ? 'Ningún cliente coincide con la búsqueda'
-                  : 'No hay clientes para elegir'
-                : 'Elegí un cliente'}
-          </option>
-          {opciones.map((cliente) => (
-            <option key={cliente.id} value={cliente.id}>
-              {cliente.nombre} · {cliente.telefono}
-            </option>
-          ))}
-        </select>
-        <ErroresCampo errores={errores} />
-      </label>
-      {clientes.isError && (
-        <span className="error">{errorMessage(clientes.error, 'No se pudieron cargar los clientes.')}</span>
+    <SelectorBuscable<Cliente>
+      {...props}
+      placeholder="Nombre, teléfono o patente"
+      queryKey="clientes"
+      cargar={cargar}
+      describir={(cliente) => (
+        <>
+          <strong>{cliente.nombre}</strong>
+          <span>{cliente.telefono}</span>
+        </>
       )}
-      {clientes.data && (
-        <Paginacion
-          meta={clientes.data.meta}
-          cargando={clientes.isPlaceholderData}
-          onCambiar={(nueva) => {
-            onCambiar(null)
-            setPagina(nueva)
-          }}
-        />
-      )}
-    </div>
+      textos={{
+        cargando: 'Cargando clientes…',
+        sinResultados: 'Ningún cliente coincide con la búsqueda.',
+        error: 'No se pudieron cargar los clientes.',
+      }}
+    />
   )
 }

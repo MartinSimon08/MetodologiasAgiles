@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
+import { EncabezadoPagina } from '../../components/EncabezadoPagina'
 import { ErroresCampo } from '../../components/ErroresCampo'
 import { errorMessage, fieldErrors } from '../../lib/api'
 import {
@@ -85,12 +86,7 @@ export function ConfiguracionPage() {
 
   return (
     <section className="configuracion">
-      <header className="encabezado">
-        <div>
-          <h1>Configuración</h1>
-          <p className="bajada">Valores generales que usa el taller.</p>
-        </div>
-      </header>
+      <EncabezadoPagina titulo="Configuración" bajada="Valores generales que usa el taller." />
 
       {configuracion.isPending && <p className="estado">Cargando configuración…</p>}
       {configuracion.isError && (

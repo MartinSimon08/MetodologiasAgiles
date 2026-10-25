@@ -10,9 +10,10 @@ export function Layout() {
     <div className="app">
       <header className="barra">
         <NavLink to="/" className="marca">
+          <small>Gestión</small>
           Taller
         </NavLink>
-        <nav>
+        <nav aria-label="Secciones">
           {usuario?.rol === 'mecanico' && <NavLink to="/mis-tareas">Mis tareas</NavLink>}
           <NavLink to="/ordenes">Órdenes</NavLink>
           {usuario?.rol === 'administrador' && (

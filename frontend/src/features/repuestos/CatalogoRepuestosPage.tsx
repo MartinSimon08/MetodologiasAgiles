@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { BotonNuevo } from '../../components/BotonNuevo'
+import { EncabezadoPagina } from '../../components/EncabezadoPagina'
 import { errorMessage } from '../../lib/api'
 import { CatalogoRepuestos } from './CatalogoRepuestos'
 import { RepuestoCatalogoForm } from './RepuestoCatalogoForm'
@@ -26,15 +28,23 @@ export function CatalogoRepuestosPage() {
 
   return (
     <section className="repuestos">
-      <header>
-        <h1>Catálogo de repuestos</h1>
-        <p className="bajada">Cargá repuestos y sus precios para autocompletar las órdenes.</p>
-      </header>
-      <button type="button" onClick={() => {
-        setAviso('')
-        eliminar.reset()
-        setEditando(null)
-      }} disabled={!puedeGestionar}>Nuevo repuesto</button>
+      <EncabezadoPagina
+        titulo="Catálogo de repuestos"
+        bajada="Cargá repuestos y sus precios para autocompletar las órdenes."
+      >
+        {editando === undefined && (
+          <BotonNuevo
+            onClick={() => {
+              setAviso('')
+              eliminar.reset()
+              setEditando(null)
+            }}
+            disabled={!puedeGestionar}
+          >
+            Nuevo repuesto
+          </BotonNuevo>
+        )}
+      </EncabezadoPagina>
       {aviso && <p className="aviso" role="status">{aviso}</p>}
       {eliminar.isPending && <p className="estado" role="status">Eliminando repuesto…</p>}
       {eliminar.isError && <p className="error" role="alert">

@@ -58,7 +58,7 @@ jobs:
             | recortar;
 
           def escapar_mrkdwn:
-            gsub("&"; "&amp;") | gsub("<"; "&lt;") | gsub(">"; "&gt;") | gsub("`"; "\u0027");
+            gsub("&"; "&amp;") | gsub("<"; "&lt;") | gsub(">"; "&gt;") | gsub("[`*]"; "\u0027");
 
           def issues:
             ($cuerpo // "")
@@ -75,56 +75,28 @@ jobs:
             and ($url | test("^https://github\\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/pull/[0-9]+$"))
             and ($url | endswith("/" + $numero));
 
-          (texto($titulo; "Sin título")) as $titulo_visible
-          | (texto($autor; "desconocido")) as $autor_visible
-          | (texto($rama; "desconocida")) as $rama_visible
+          (texto($titulo; "Sin título") | escapar_mrkdwn) as $titulo_visible
+          | (texto($autor; "desconocido") | escapar_mrkdwn) as $autor_visible
+          | (texto($rama; "desconocida") | escapar_mrkdwn) as $rama_visible
+          | (texto($numero; "?") | escapar_mrkdwn) as $numero_visible
           | (issues) as $issues
           | (if ($issues | length) > 20 then $issues[0:20] else $issues end) as $issues_visibles
-          | (if url_valida then
-              {
-                type: "section",
-                text: { type: "mrkdwn", text: "<\($url)|#\($numero)>" }
-              }
-            else
-              {
-                type: "section",
-                text: {
-                  type: "plain_text",
-                  text: ("Pull request " + texto($numero; "sin número")),
-                  emoji: false
-                }
-              }
-            end) as $bloque_enlace
+          | (if url_valida then "<\($url)|#\($numero)>" else "#" + $numero_visible end) as $enlace_pr
           | (if ($issues | length) == 0 then []
-             elif repo_valido then
-               [{
-                 type: "section",
-                 text: {
-                   type: "mrkdwn",
-                   text: (
-                     "*Cierra:* "
-                     + (
-                       $issues_visibles
-                       | map("<https://github.com/\($repo)/issues/\(.)|#\(.)>")
-                       | join(", ")
-                     )
-                     + (if ($issues | length) > 20 then " y otros" else "" end)
-                   )
-                 }
-               }]
              else
-               [{
-                 type: "section",
-                 text: {
-                   type: "plain_text",
-                   text: ("Cierra: " + ($issues_visibles | map("#" + .) | join(", "))),
-                   emoji: false
-                 }
-               }]
-             end) as $bloque_issues
+               [
+                 "Cierra "
+                 + (
+                   $issues_visibles
+                   | map(if repo_valido then "<https://github.com/\($repo)/issues/\(.)|#\(.)>" else "#" + . end)
+                   | join(", ")
+                 )
+                 + (if ($issues | length) > 20 then " y otros" else "" end)
+               ]
+             end) as $cierra
           | {
-              text: ("Se mergeó un pull request: " + ($titulo_visible | escapar_mrkdwn)),
-              blocks: ([
+              text: ("Se mergeó el pull request #" + $numero_visible + ": " + $titulo_visible),
+              blocks: [
                 {
                   type: "header",
                   text: {
@@ -133,16 +105,24 @@ jobs:
                     emoji: false
                   }
                 },
-                $bloque_enlace,
                 {
                   type: "section",
-                  fields: [
-                    { type: "plain_text", text: ("Título\n" + $titulo_visible), emoji: false },
-                    { type: "plain_text", text: ("Autor\n" + $autor_visible), emoji: false },
-                    { type: "plain_text", text: ("Rama de origen\n" + $rama_visible), emoji: false }
+                  text: { type: "mrkdwn", text: ("*" + $titulo_visible + "*") }
+                },
+                {
+                  type: "context",
+                  elements: [
+                    {
+                      type: "mrkdwn",
+                      text: (
+                        [$enlace_pr, ("por *" + $autor_visible + "*"), ("desde `" + $rama_visible + "`")]
+                        + $cierra
+                        | join("  ·  ")
+                      )
+                    }
                   ]
                 }
-              ] + $bloque_issues)
+              ]
             }
           '
           )"

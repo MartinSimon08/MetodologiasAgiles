@@ -41,6 +41,8 @@ Rails.application.routes.draw do
       resources :ajustes, only: :create, controller: "ajustes_repuesto"
       member do
         patch :valorizar
+        patch :aprobar
+        patch :rechazar
         get :comprobante
         post :adjuntar_comprobante, path: :comprobante
       end

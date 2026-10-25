@@ -2,9 +2,9 @@ class RepuestosController < ApplicationController
   include Paginable
   include SerializaAjusteRepuesto
 
-  before_action :require_administrador!, only: %i[valorizar vista_previa update destroy]
-  before_action :set_orden, only: %i[index create valorizar vista_previa update destroy comprobante adjuntar_comprobante]
-  before_action :set_repuesto, only: %i[valorizar update destroy comprobante adjuntar_comprobante]
+  before_action :require_administrador!, only: %i[valorizar vista_previa update destroy aprobar rechazar]
+  before_action :set_orden, only: %i[index create valorizar vista_previa update destroy comprobante adjuntar_comprobante aprobar rechazar]
+  before_action :set_repuesto, only: %i[valorizar update destroy comprobante adjuntar_comprobante aprobar rechazar]
 
   def index
     incluye = [ :registrado_por, :quitado_por, { ajustes: :registrado_por } ]
@@ -41,6 +41,14 @@ class RepuestosController < ApplicationController
   def valorizar
     repuesto = RepuestoValorizar.call(repuesto: @repuesto, **valorizar_params.to_h.symbolize_keys)
     render json: serialize(repuesto)
+  end
+
+  def aprobar
+    render json: serialize(RepuestoRegistrarAprobacion.call(repuesto: @repuesto, aprobacion: "aprobado"))
+  end
+
+  def rechazar
+    render json: serialize(RepuestoRegistrarAprobacion.call(repuesto: @repuesto, aprobacion: "rechazado"))
   end
 
   def comprobante
@@ -92,7 +100,9 @@ class RepuestosController < ApplicationController
   end
 
   def serialize(repuesto)
-    datos = repuesto.as_json(only: %i[id orden_id repuesto_catalogo_id descripcion cantidad registrado_por_id estado created_at])
+    datos = repuesto.as_json(
+      only: %i[id orden_id repuesto_catalogo_id descripcion cantidad registrado_por_id estado aprobacion created_at]
+    )
     if current_usuario.administrador?
       datos.merge!(repuesto.as_json(only: %i[costo_unitario margen precio_cliente proveedor quitado_en]))
       datos["ganancia"] = repuesto.valorizado? ? ganancia(repuesto) : nil

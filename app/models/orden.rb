@@ -7,6 +7,7 @@ class Orden < ApplicationRecord
   has_many :tareas, dependent: :restrict_with_error
   has_many :repuestos, dependent: :restrict_with_error
   has_many :adelantos, dependent: :restrict_with_error
+  has_many :ajustes_repuesto, through: :repuestos, source: :ajustes
 
   enum :estado, { abierta: "abierta", cerrada: "cerrada", cancelada: "cancelada" }, validate: true
 
@@ -35,7 +36,7 @@ class Orden < ApplicationRecord
   end
 
   def total_repuestos
-    repuestos.vigentes.valorizado.sum(:precio_cliente).to_d
+    repuestos.vigentes.valorizado.sum(:precio_cliente).to_d + total_ajustes_repuestos
   end
 
   def total_a_cobrar
@@ -46,17 +47,26 @@ class Orden < ApplicationRecord
     total - adelantos.sum(:importe).to_d
   end
 
-  def total_reemplazando(repuesto, precio:)
+  def total_reemplazando(repuesto, precio:, incluir_ajustes_del_repuesto: true)
+    vigentes = repuestos.vigentes
+    vigentes = vigentes.where.not(id: repuesto.id) unless incluir_ajustes_del_repuesto
     mano_de_obra_cargada +
       repuestos.vigentes.where.not(id: repuesto.id).sum(:precio_cliente).to_d +
-      precio.to_d
+      precio.to_d +
+      AjusteRepuesto.where(repuesto_id: vigentes.select(:id)).sum(:ajuste_precio_cliente).to_d
   end
 
-  def alcanza_para_adelantos?(repuesto, precio:)
-    total_reemplazando(repuesto, precio: precio) >= adelantos.sum(:importe).to_d
+  def alcanza_para_adelantos?(repuesto, precio:, incluir_ajustes_del_repuesto: true)
+    total_reemplazando(
+      repuesto, precio: precio, incluir_ajustes_del_repuesto: incluir_ajustes_del_repuesto
+    ) >= adelantos.sum(:importe).to_d
   end
 
   private
+
+  def total_ajustes_repuestos
+    AjusteRepuesto.where(repuesto_id: repuestos.vigentes.select(:id)).sum(:ajuste_precio_cliente).to_d
+  end
 
   def sin_repuestos_pendientes_de_valorizar
     errors.add(:base, :repuestos_pendientes) if repuestos.vigentes.pendiente_de_valorizar.exists?

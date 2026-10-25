@@ -6,9 +6,10 @@ import { fechaHora, importe } from '../../lib/formato'
 import { useAuth } from '../auth/AuthContext'
 import { invalidarTotalesOrden } from '../ordenes/totales'
 import { AvisoRepuestoForm } from './AvisoRepuestoForm'
-import { listarRepuestos, quitarRepuesto, ESTADO_REPUESTO_LABELS, type Repuesto } from './api'
+import { listarRepuestos, quitarRepuesto, ESTADO_REPUESTO_LABELS, type AjusteRepuesto, type Repuesto, type TipoAjuste } from './api'
 import { EditarRepuestoForm } from './EditarRepuestoForm'
 import { NuevoRepuestoForm } from './NuevoRepuestoForm'
+import { RegistrarAjusteForm } from './RegistrarAjusteForm'
 import { ValorizarRepuestoForm } from './ValorizarRepuestoForm'
 
 export function RepuestosPanel({ ordenId, ordenAbierta }: { ordenId: number; ordenAbierta: boolean }) {
@@ -21,6 +22,7 @@ export function RepuestosPanel({ ordenId, ordenAbierta }: { ordenId: number; ord
   const [editando, setEditando] = useState<Repuesto | null>(null)
   const [valorizando, setValorizando] = useState<Repuesto | null>(null)
   const [quitandoId, setQuitandoId] = useState<number | null>(null)
+  const [ajustando, setAjustando] = useState<Repuesto | null>(null)
 
   const repuestos = useQuery({
     queryKey: ['repuestos', ordenId, pagina],
@@ -41,6 +43,7 @@ export function RepuestosPanel({ ordenId, ordenAbierta }: { ordenId: number; ord
     setEditando(null)
     setValorizando(null)
     setQuitandoId(null)
+    setAjustando(null)
     setAviso(null)
     setCreando(true)
   }
@@ -50,6 +53,7 @@ export function RepuestosPanel({ ordenId, ordenAbierta }: { ordenId: number; ord
     setCreando(false)
     setValorizando(null)
     setQuitandoId(null)
+    setAjustando(null)
     setAviso(null)
     setEditando(repuesto)
   }
@@ -59,6 +63,7 @@ export function RepuestosPanel({ ordenId, ordenAbierta }: { ordenId: number; ord
     setCreando(false)
     setEditando(null)
     setQuitandoId(null)
+    setAjustando(null)
     setAviso(null)
     setValorizando(repuesto)
   }
@@ -68,8 +73,19 @@ export function RepuestosPanel({ ordenId, ordenAbierta }: { ordenId: number; ord
     setCreando(false)
     setEditando(null)
     setValorizando(null)
+    setAjustando(null)
     setAviso(null)
     setQuitandoId(repuesto.id)
+  }
+
+  function empezarAjuste(repuesto: Repuesto) {
+    quitar.reset()
+    setCreando(false)
+    setEditando(null)
+    setValorizando(null)
+    setQuitandoId(null)
+    setAviso(null)
+    setAjustando(repuesto)
   }
 
   function guardado() {
@@ -139,7 +155,16 @@ export function RepuestosPanel({ ordenId, ordenAbierta }: { ordenId: number; ord
                 <span>{repuesto.cantidad} × $ {importe(repuesto.costo_unitario!)} · Margen: {importe(repuesto.margen!)}%</span>
                 {repuesto.proveedor && <span>Proveedor: {repuesto.proveedor}</span>}
                 <span>Precio al cliente: $ {importe(repuesto.precio_cliente!)} · Ganancia: $ {importe(repuesto.ganancia!)}</span>
+                {(repuesto.ajustes?.length ?? 0) > 0 && (
+                  <span>
+                    Precio vigente: $ {importe(repuesto.precio_vigente!)} · Costo vigente: $ {importe(repuesto.costo_vigente!)} · Ganancia vigente: $ {importe(repuesto.ganancia_vigente!)}
+                  </span>
+                )}
                 <span>Cargado por {repuesto.registrado_por.nombre} · {fechaHora(repuesto.created_at)}</span>
+                <HistorialAjustes ajustes={repuesto.ajustes ?? []} />
+                {ordenAbierta && (repuesto.cantidad_disponible ?? 0) === 0 && (
+                  <span>Todas las unidades fueron devueltas o cambiadas.</span>
+                )}
               </>
             )}
             {esAdministrador && ordenAbierta && quitandoId === repuesto.id ? (
@@ -151,13 +176,34 @@ export function RepuestosPanel({ ordenId, ordenAbierta }: { ordenId: number; ord
                 }}
                 onConfirmar={() => quitar.mutate(repuesto.id)} />
             ) : esAdministrador && ordenAbierta && (
-              <div className="acciones item-acciones">
-                <button type="button" className="secundario" onClick={() => empezarEdicion(repuesto)}>Corregir</button>
-                {repuesto.estado === 'pendiente_de_valorizar' && (
-                  <button type="button" className="secundario" onClick={() => empezarValorizar(repuesto)}>Cargar costo</button>
+              <>
+                <div className="acciones item-acciones">
+                  <button type="button" className="secundario" onClick={() => empezarEdicion(repuesto)}>Corregir</button>
+                  {repuesto.estado === 'pendiente_de_valorizar' && (
+                    <button type="button" className="secundario" onClick={() => empezarValorizar(repuesto)}>Cargar costo</button>
+                  )}
+                  {repuesto.estado === 'valorizado' && (repuesto.cantidad_disponible ?? 0) > 0 && (
+                    <button type="button" className="secundario" onClick={() => empezarAjuste(repuesto)}>
+                      Registrar devolución o cambio
+                    </button>
+                  )}
+                  <button type="button" className="secundario peligro" onClick={() => empezarQuitar(repuesto)}>Quitar</button>
+                </div>
+                {ajustando?.id === repuesto.id && (
+                  <RegistrarAjusteForm
+                    key={repuesto.id}
+                    ordenId={ordenId}
+                    repuesto={repuesto}
+                    onCancelar={() => setAjustando(null)}
+                    onGuardado={(tipo: TipoAjuste) => {
+                      setAjustando(null)
+                      setAviso(tipo === 'devolucion'
+                        ? 'Devolución registrada. El repuesto original queda en el historial.'
+                        : 'Cambio registrado. El repuesto original queda en el historial.')
+                    }}
+                  />
                 )}
-                <button type="button" className="secundario peligro" onClick={() => empezarQuitar(repuesto)}>Quitar</button>
-              </div>
+              </>
             )}
           </li>)}
         </ul>
@@ -211,4 +257,28 @@ function ConfirmacionQuitar({ repuesto, pendiente, error, onCancelar, onConfirma
       </div>
     </div>
   )
+}
+
+function HistorialAjustes({ ajustes }: { ajustes: AjusteRepuesto[] }) {
+  if (ajustes.length === 0) return null
+
+  return (
+    <ul className="historial-ajustes">
+      {ajustes.map((ajuste) => (
+        <li key={ajuste.id}>
+          <span>{describirAjuste(ajuste)}</span>
+          <span>{ajuste.motivo}</span>
+          <span>{ajuste.registrado_por.nombre} · {fechaHora(ajuste.registrado_en)}</span>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+function describirAjuste(ajuste: AjusteRepuesto) {
+  const efecto = `ajuste al cliente $ ${importe(ajuste.ajuste_precio_cliente)}`
+  if (ajuste.tipo === 'devolucion') {
+    return `Devolución de ${ajuste.cantidad} u. · costo acreditado $ ${importe(ajuste.costo_unitario)} · ${efecto}`
+  }
+  return `Cambio de ${ajuste.cantidad} u. · costo del reemplazo $ ${importe(ajuste.costo_unitario)} · ${efecto}`
 }

@@ -26,6 +26,20 @@ RSpec.describe RepuestoQuitar do
     expect(orden.repuestos.quitados).to contain_exactly(repuesto)
   end
 
+  it "al quitar un repuesto deja fuera también sus devoluciones" do
+    otro = agregar(descripcion: "Bujía", costo_unitario: "50", cantidad: 1, margen: "0")
+    repuesto = agregar(costo_unitario: "100", cantidad: 2, margen: "0")
+    RepuestoRegistrarAjuste.call(
+      repuesto: repuesto, registrado_por: admin, tipo: "devolucion", cantidad: 1,
+      costo_unitario: "100", motivo: "Falla"
+    )
+
+    described_class.call(repuesto: repuesto, quitado_por: admin)
+
+    expect(orden.reload.total).to eq(otro.precio_cliente)
+    expect(repuesto.reload.ajustes.count).to eq(1)
+  end
+
   it "permite quitar un aviso pendiente y después cerrar la orden" do
     pendiente = RepuestoAvisar.call(orden: orden, registrado_por: create(:usuario), descripcion: "Filtro", cantidad: 1)
 

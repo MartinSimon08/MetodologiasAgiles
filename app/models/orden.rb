@@ -35,7 +35,7 @@ class Orden < ApplicationRecord
   end
 
   def total_repuestos
-    repuestos.valorizado.sum(:precio_cliente).to_d
+    repuestos.vigentes.valorizado.sum(:precio_cliente).to_d
   end
 
   def total_a_cobrar
@@ -46,9 +46,19 @@ class Orden < ApplicationRecord
     total - adelantos.sum(:importe).to_d
   end
 
+  def total_reemplazando(repuesto, precio:)
+    mano_de_obra_cargada +
+      repuestos.vigentes.where.not(id: repuesto.id).sum(:precio_cliente).to_d +
+      precio.to_d
+  end
+
+  def alcanza_para_adelantos?(repuesto, precio:)
+    total_reemplazando(repuesto, precio: precio) >= adelantos.sum(:importe).to_d
+  end
+
   private
 
   def sin_repuestos_pendientes_de_valorizar
-    errors.add(:base, :repuestos_pendientes) if repuestos.pendiente_de_valorizar.exists?
+    errors.add(:base, :repuestos_pendientes) if repuestos.vigentes.pendiente_de_valorizar.exists?
   end
 end

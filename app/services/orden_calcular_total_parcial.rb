@@ -10,7 +10,7 @@ class OrdenCalcularTotalParcial
     TotalParcial.new(
       orden: orden,
       tareas: orden.tareas.not_cancelada.includes(:mecanico).order(:created_at, :id).to_a,
-      repuestos: orden.repuestos.order(:created_at, :id).to_a,
+      repuestos: orden.repuestos.vigentes.order(:created_at, :id).to_a,
       mano_de_obra: orden.mano_de_obra_cargada,
       total_repuestos: orden.total_repuestos,
       total: orden.total,

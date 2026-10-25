@@ -4,7 +4,9 @@ class RepuestosPorProveedorController < ApplicationController
   before_action :require_administrador!
 
   def index
-    consulta = RepuestosPorProveedor.call(proveedor: params[:proveedor], desde: params[:desde], hasta: params[:hasta])
+    consulta = RepuestoResumirPorProveedor.call(
+      proveedor: params[:proveedor], desde: params[:desde], hasta: params[:hasta]
+    )
     if consulta.invalid?
       return render json: { errors: consulta.errors }, status: :unprocessable_content
     end
@@ -22,7 +24,7 @@ class RepuestosPorProveedorController < ApplicationController
 
   def serialize(repuesto)
     datos = repuesto.as_json(only: %i[id descripcion cantidad costo_unitario proveedor created_at orden_id])
-    datos[:total_costo] = (repuesto.costo_unitario * repuesto.cantidad).to_s("F")
+    datos[:total_costo] = RepuestoResumirPorProveedor.total_linea(repuesto)
     datos[:orden] = {
       id: repuesto.orden.id,
       cliente: repuesto.orden.cliente.nombre,

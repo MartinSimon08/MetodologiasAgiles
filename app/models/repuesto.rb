@@ -11,6 +11,7 @@ class Repuesto < ApplicationRecord
   scope :quitados, -> { where.not(quitado_en: nil) }
 
   normalizes :descripcion, with: ->(descripcion) { descripcion.squish }
+  normalizes :proveedor, with: ->(proveedor) { proveedor.squish.presence }
 
   validates :descripcion, presence: true, length: { maximum: 200 }
   validates :cantidad, numericality: { only_integer: true, greater_than: 0, less_than_or_equal_to: 2_147_483_647 }

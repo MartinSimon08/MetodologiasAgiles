@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe RepuestosPorProveedor do
+RSpec.describe RepuestoResumirPorProveedor do
   let(:admin) { create(:usuario, :administrador) }
 
   def agregar(fecha: nil, **atributos)
@@ -30,6 +30,42 @@ RSpec.describe RepuestosPorProveedor do
       { proveedor: nil, total_comprado: "10.0", cantidad_compras: 1 }
     ])
     expect(consulta.total_comprado).to eq("386.9")
+  end
+
+  it "no cuenta las compras quitadas" do
+    vigente = agregar(proveedor: "Casa Central", costo_unitario: "40")
+    quitada = agregar(proveedor: "Casa Central", costo_unitario: "70")
+    RepuestoQuitar.call(repuesto: quitada, quitado_por: admin)
+
+    consulta = consultar
+
+    expect(consulta.resumen).to eq([
+      { proveedor: "Casa Central", total_comprado: "40.0", cantidad_compras: 1 }
+    ])
+    expect(consulta.total_comprado).to eq("40.0")
+    expect(consulta.repuestos).to contain_exactly(vigente)
+  end
+
+  it "agrupa el mismo proveedor sin distinguir mayúsculas ni espacios" do
+    agregar(proveedor: "Casa Central", costo_unitario: "10")
+    agregar(proveedor: "casa central", costo_unitario: "20")
+    con_espacios = agregar(proveedor: "Casa Central", costo_unitario: "30")
+    con_espacios.update_column(:proveedor, "Casa Central ")
+    en_blanco = agregar(proveedor: "x", costo_unitario: "5")
+    en_blanco.update_column(:proveedor, "")
+    agregar(costo_unitario: "7")
+
+    resumen = consultar.resumen
+    casa = resumen.find { |fila| fila[:proveedor].to_s.casecmp("casa central").zero? }
+
+    expect(casa).to include(cantidad_compras: 3, total_comprado: "60.0")
+    expect(resumen).to include(proveedor: nil, cantidad_compras: 2, total_comprado: "12.0")
+    expect(resumen.size).to eq(2)
+  end
+
+  it "guarda el proveedor sin espacios de más y convierte el vacío en nulo" do
+    expect(agregar(proveedor: "  Casa   Central ").proveedor).to eq("Casa Central")
+    expect(agregar(proveedor: "   ").proveedor).to be_nil
   end
 
   it "filtra por proveedor sin importar mayúsculas y trata los comodines como texto" do

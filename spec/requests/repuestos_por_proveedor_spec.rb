@@ -32,6 +32,23 @@ RSpec.describe "Repuestos por proveedor", type: :request do
       expect(response.parsed_body["meta"]).to include("total" => 3, "total_paginas" => 3, "pagina" => 1)
     end
 
+    it "excluye las compras quitadas y junta el mismo proveedor" do
+      agregar(proveedor: "Casa Central", descripcion: "Filtro", cantidad: 1, costo_unitario: "10")
+      quitada = agregar(proveedor: "Casa Central", descripcion: "Baja", cantidad: 1, costo_unitario: "99")
+      RepuestoQuitar.call(repuesto: quitada, quitado_por: admin)
+      agregar(proveedor: "casa central", descripcion: "Otra", cantidad: 1, costo_unitario: "15")
+
+      get "/repuestos_por_proveedor", headers: auth_headers(admin)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body["proveedores"].size).to eq(1)
+      expect(response.parsed_body["proveedores"].first["proveedor"].downcase).to eq("casa central")
+      expect(response.parsed_body["proveedores"].first).to include("cantidad_compras" => 2, "total_comprado" => "25.0")
+      expect(response.parsed_body["total_comprado"]).to eq("25.0")
+      expect(response.parsed_body["repuestos"].pluck("descripcion")).to eq([ "Otra", "Filtro" ])
+      expect(response.parsed_body["repuestos"].first["total_costo"]).to eq("15.0")
+    end
+
     it "filtra por proveedor y período" do
       travel_to(Time.utc(2026, 4, 10, 12)) { agregar(proveedor: "Casa Central") }
       travel_to(Time.utc(2026, 5, 10, 12)) { agregar(proveedor: "Casa Central", descripcion: "Fuera de período") }

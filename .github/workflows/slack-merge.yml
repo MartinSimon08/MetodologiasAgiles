@@ -1,0 +1,157 @@
+name: Avisar en Slack al mergear
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+permissions: {}
+
+concurrency:
+  group: slack-merge-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  avisar:
+    name: Publicar aviso
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Enviar mensaje a Slack
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          PR_TITULO: ${{ github.event.pull_request.title }}
+          PR_CUERPO: ${{ github.event.pull_request.body }}
+          PR_NUMERO: ${{ github.event.pull_request.number }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_AUTOR: ${{ github.event.pull_request.user.login }}
+          PR_RAMA: ${{ github.event.pull_request.head.ref }}
+          REPOSITORIO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${SLACK_WEBHOOK_URL}" ]; then
+            echo "::notice::Falta el secret SLACK_WEBHOOK_URL. Se omite el aviso en Slack."
+            exit 0
+          fi
+
+          payload="$(
+            jq -n \
+              --arg titulo "${PR_TITULO}" \
+              --arg cuerpo "${PR_CUERPO}" \
+              --arg numero "${PR_NUMERO}" \
+              --arg url "${PR_URL}" \
+              --arg autor "${PR_AUTOR}" \
+              --arg rama "${PR_RAMA}" \
+              --arg repo "${REPOSITORIO}" \
+              '
+          def una_linea:
+            gsub("[\r\n\t]+"; " ") | gsub("^ +| +$"; "");
+
+          def recortar:
+            if length > 300 then .[0:297] + "..." else . end;
+
+          def texto($valor; $vacio):
+            ($valor | una_linea) as $limpio
+            | (if $limpio == "" then $vacio else $limpio end)
+            | recortar;
+
+          def escapar_mrkdwn:
+            gsub("&"; "&amp;") | gsub("<"; "&lt;") | gsub(">"; "&gt;") | gsub("`"; "\u0027");
+
+          def issues:
+            ($cuerpo // "")
+            | split("\n")
+            | map(capture("^Closes #(?<n>[0-9]+)\\s*$")? | .n | tonumber)
+            | unique
+            | map(tostring);
+
+          def repo_valido:
+            $repo | test("^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$");
+
+          def url_valida:
+            ($numero | test("^[0-9]+$"))
+            and ($url | test("^https://github\\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/pull/[0-9]+$"))
+            and ($url | endswith("/" + $numero));
+
+          (texto($titulo; "Sin título")) as $titulo_visible
+          | (texto($autor; "desconocido")) as $autor_visible
+          | (texto($rama; "desconocida")) as $rama_visible
+          | (issues) as $issues
+          | (if ($issues | length) > 20 then $issues[0:20] else $issues end) as $issues_visibles
+          | (if url_valida then
+              {
+                type: "section",
+                text: { type: "mrkdwn", text: "<\($url)|#\($numero)>" }
+              }
+            else
+              {
+                type: "section",
+                text: {
+                  type: "plain_text",
+                  text: ("Pull request " + texto($numero; "sin número")),
+                  emoji: false
+                }
+              }
+            end) as $bloque_enlace
+          | (if ($issues | length) == 0 then []
+             elif repo_valido then
+               [{
+                 type: "section",
+                 text: {
+                   type: "mrkdwn",
+                   text: (
+                     "*Cierra:* "
+                     + (
+                       $issues_visibles
+                       | map("<https://github.com/\($repo)/issues/\(.)|#\(.)>")
+                       | join(", ")
+                     )
+                     + (if ($issues | length) > 20 then " y otros" else "" end)
+                   )
+                 }
+               }]
+             else
+               [{
+                 type: "section",
+                 text: {
+                   type: "plain_text",
+                   text: ("Cierra: " + ($issues_visibles | map("#" + .) | join(", "))),
+                   emoji: false
+                 }
+               }]
+             end) as $bloque_issues
+          | {
+              text: ("Se mergeó un pull request: " + ($titulo_visible | escapar_mrkdwn)),
+              blocks: ([
+                {
+                  type: "header",
+                  text: {
+                    type: "plain_text",
+                    text: "Se mergeó un pull request",
+                    emoji: false
+                  }
+                },
+                $bloque_enlace,
+                {
+                  type: "section",
+                  fields: [
+                    { type: "plain_text", text: ("Título\n" + $titulo_visible), emoji: false },
+                    { type: "plain_text", text: ("Autor\n" + $autor_visible), emoji: false },
+                    { type: "plain_text", text: ("Rama de origen\n" + $rama_visible), emoji: false }
+                  ]
+                }
+              ] + $bloque_issues)
+            }
+          '
+          )"
+
+          if ! curl --fail --silent --proto '=https' --max-time 20 --output /dev/null \
+            --request POST \
+            --header "Content-Type: application/json; charset=utf-8" \
+            --data "${payload}" \
+            --url "${SLACK_WEBHOOK_URL}"; then
+            echo "::error::No se pudo publicar el aviso en Slack."
+            exit 1
+          fi

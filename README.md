@@ -93,3 +93,13 @@ docker compose exec -e RAILS_ENV=test api sh -c "bin/rails db:test:prepare && bu
   - Ejemplos de servicios: `TareaTomar`, `TareaLiberar`, `OrdenAbrir`, `RepuestoAgregar`.
 - **Concurrencia de tareas**: tomar una tarea usa lock optimista (`lock_version`) o `with_lock` explícito, para evitar que dos mecánicos tomen la misma tarea al mismo tiempo.
 - **Tiempo real**: Action Cable (Solid Cable) queda para avisar cambios de tareas y órdenes. En development el adapter es `async`. El cliente de Action Cable en el frontend queda pendiente.
+
+## Aviso en Slack
+
+Cada vez que un pull request se mergea a `main`, el workflow [Avisar en Slack al mergear](.github/workflows/slack-merge.yml) publica un mensaje en el canal del equipo. Usa la app de Slack Gato Hidraulico y su Incoming Webhook.
+
+El mensaje incluye el título, el número con enlace al PR, el autor, la rama de origen y, si la descripción tiene líneas `Closes #N`, los issues que cierra.
+
+Hace falta el secret de Actions `SLACK_WEBHOOK_URL` con la URL del webhook. No va en el código ni en el repositorio. Si el secret no está cargado, el job no falla: lo saltea y deja un aviso en el log.
+
+Para cargarlo: en el repositorio de GitHub, Settings → Secrets and variables → Actions → New repository secret. Nombre: `SLACK_WEBHOOK_URL`. Valor: la URL del Incoming Webhook.

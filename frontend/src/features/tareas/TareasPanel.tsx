@@ -6,10 +6,18 @@ import { Paginacion } from '../../components/Paginacion'
 import { errorMessage } from '../../lib/api'
 import { importe } from '../../lib/formato'
 import { useAuth } from '../auth/AuthContext'
-import { actualizarPrecioTarea, completarTarea, liberarTarea, listarTareas, tomarTarea } from './api'
+import {
+  actualizarPrecioTarea,
+  aprobarTarea,
+  completarTarea,
+  liberarTarea,
+  listarTareas,
+  rechazarTarea,
+  tomarTarea,
+} from './api'
 import { NotasTarea } from './NotasTarea'
 import { NuevaTareaForm } from './NuevaTareaForm'
-import { ESTADO_TAREA_LABELS } from './types'
+import { APROBACION_TAREA_LABELS, ESTADO_TAREA_LABELS } from './types'
 
 interface Props {
   ordenId: number
@@ -35,7 +43,10 @@ export function TareasPanel({ ordenId, ordenAbierta }: Props) {
     placeholderData: keepPreviousData,
   })
 
-  const invalidar = () => queryClient.invalidateQueries({ queryKey: ['tareas', ordenId] })
+  const invalidar = () => {
+    queryClient.invalidateQueries({ queryKey: ['tareas', ordenId] })
+    queryClient.invalidateQueries({ queryKey: ['total-parcial', ordenId] })
+  }
 
   const tomar = useMutation({
     mutationFn: tomarTarea,
@@ -60,6 +71,16 @@ export function TareasPanel({ ordenId, ordenAbierta }: Props) {
     },
     onSettled: invalidar,
     onError: (err: unknown) => setError(errorMessage(err, 'No se pudo actualizar el precio.')),
+  })
+  const aprobar = useMutation({
+    mutationFn: aprobarTarea,
+    onSettled: invalidar,
+    onError: (err: unknown) => setError(errorMessage(err, 'No se pudo aprobar la tarea.')),
+  })
+  const rechazar = useMutation({
+    mutationFn: rechazarTarea,
+    onSettled: invalidar,
+    onError: (err: unknown) => setError(errorMessage(err, 'No se pudo rechazar la tarea.')),
   })
 
   function irAPagina(nueva: number) {
@@ -170,7 +191,38 @@ export function TareasPanel({ ordenId, ordenAbierta }: Props) {
               <span className={`insignia insignia-${tarea.estado}`}>
                 {ESTADO_TAREA_LABELS[tarea.estado]}
               </span>
-              {esMecanico && ordenAbierta && tarea.estado === 'pendiente' && (
+              <span className={`insignia insignia-${tarea.aprobacion}`}>
+                {APROBACION_TAREA_LABELS[tarea.aprobacion]}
+              </span>
+              {esAdministrador && ordenAbierta && (
+                <span className="acciones">
+                  {tarea.aprobacion !== 'aprobada' && (
+                    <button
+                      className="secundario"
+                      disabled={aprobar.isPending}
+                      onClick={() => {
+                        setError(null)
+                        aprobar.mutate(tarea.id)
+                      }}
+                    >
+                      Aprobar
+                    </button>
+                  )}
+                  {tarea.aprobacion !== 'rechazada' && (
+                    <button
+                      className="secundario"
+                      disabled={rechazar.isPending}
+                      onClick={() => {
+                        setError(null)
+                        rechazar.mutate(tarea.id)
+                      }}
+                    >
+                      Rechazar
+                    </button>
+                  )}
+                </span>
+              )}
+              {esMecanico && ordenAbierta && tarea.estado === 'pendiente' && tarea.aprobacion !== 'rechazada' && (
                 <button
                   className="secundario"
                   disabled={tomar.isPending}

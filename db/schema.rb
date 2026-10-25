@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_25_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_25_230000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "unaccent"
@@ -141,6 +141,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_25_120000) do
     t.datetime "terminada_en"
     t.datetime "tomada_en"
     t.datetime "updated_at", null: false
+    t.string "aprobacion", default: "pendiente", null: false
     t.index ["mecanico_id"], name: "index_tareas_on_mecanico_id"
     t.index ["orden_id", "estado"], name: "index_tareas_on_orden_id_and_estado"
     t.index ["orden_id"], name: "index_tareas_on_orden_id"

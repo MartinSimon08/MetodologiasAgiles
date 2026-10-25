@@ -900,11 +900,13 @@ button.peligro:focus-visible {
 .insignia-cerrada,
 .insignia-terminada,
 .insignia-valorizado,
-.insignia-desactivado {
+.insignia-desactivado,
+.insignia-aprobada {
   color: var(--tinta-suave);
 }
 
-.insignia-cancelada {
+.insignia-cancelada,
+.insignia-rechazada {
   color: var(--peligro);
   border-color: var(--peligro);
 }

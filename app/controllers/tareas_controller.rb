@@ -1,10 +1,10 @@
 class TareasController < ApplicationController
   include Paginable
 
-  before_action :require_administrador!, only: %i[create actualizar_precio]
+  before_action :require_administrador!, only: %i[create actualizar_precio aprobar rechazar]
   before_action :require_mecanico!, only: %i[tomar completar liberar]
   before_action :set_orden, only: %i[index create]
-  before_action :set_tarea, only: %i[tomar completar liberar actualizar_precio]
+  before_action :set_tarea, only: %i[tomar completar liberar actualizar_precio aprobar rechazar]
   before_action :require_responsable!, only: %i[completar liberar]
 
   def index
@@ -37,6 +37,16 @@ class TareasController < ApplicationController
     render json: serialize(tarea)
   end
 
+  def aprobar
+    tarea = TareaAprobar.call(tarea: @tarea)
+    render json: serialize(tarea)
+  end
+
+  def rechazar
+    tarea = TareaRechazar.call(tarea: @tarea)
+    render json: serialize(tarea)
+  end
+
   private
 
   def set_orden
@@ -60,7 +70,9 @@ class TareasController < ApplicationController
   end
 
   def serialize(tarea)
-    datos = tarea.as_json(only: %i[id orden_id descripcion estado mecanico_id tomada_en terminada_en created_at])
+    datos = tarea.as_json(
+      only: %i[id orden_id descripcion estado aprobacion mecanico_id tomada_en terminada_en created_at]
+    )
     datos["precio"] = tarea.precio&.to_f if current_usuario.administrador?
     datos[:mecanico] = tarea.mecanico&.as_json(only: %i[id nombre])
     datos[:notas] = tarea.notas.sort_by(&:created_at).map { |nota| serialize_nota(nota) }

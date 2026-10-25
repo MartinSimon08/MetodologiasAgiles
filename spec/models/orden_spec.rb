@@ -114,6 +114,14 @@ RSpec.describe Orden, type: :model do
       expect(orden.total_repuestos).to eq(3_000)
       expect(orden.total_a_cobrar).to eq(23_000)
     end
+
+    it "no suma una tarea terminada y rechazada" do
+      create(:tarea, :terminada, orden: orden, precio: 15_000)
+      create(:tarea, :terminada, :rechazada, orden: orden, precio: 5_000)
+
+      expect(orden.mano_de_obra).to eq(15_000)
+      expect(orden.total_a_cobrar).to eq(15_000)
+    end
   end
 
   describe "#total" do
@@ -128,6 +136,14 @@ RSpec.describe Orden, type: :model do
 
       expect(orden.mano_de_obra_cargada).to eq(18_000)
       expect(orden.total).to eq(19_500)
+    end
+
+    it "no suma una tarea rechazada aunque todavía esté pendiente de tomar" do
+      orden = create(:orden)
+      create(:tarea, orden: orden, precio: 3_000)
+      create(:tarea, :rechazada, orden: orden, precio: 9_000)
+
+      expect(orden.mano_de_obra_cargada).to eq(3_000)
     end
   end
 

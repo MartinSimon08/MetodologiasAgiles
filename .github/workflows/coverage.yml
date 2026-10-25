@@ -1,0 +1,76 @@
+name: Coverage
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: --health-cmd="pg_isready" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Install packages
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y libpq-dev libvips
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+
+      - name: Run tests with coverage
+        env:
+          RAILS_ENV: test
+          COVERAGE: "true"
+          DB_HOST: localhost
+          DB_USER: postgres
+        run: bin/rails db:test:prepare && bundle exec rspec
+
+      - name: Build coverage badge
+        run: |
+          ruby <<'RUBY'
+          require "json"
+          pct = JSON.parse(File.read("coverage/.last_run.json")).dig("result", "line").round
+          color = if pct >= 90
+            "brightgreen"
+          elsif pct >= 75
+            "yellow"
+          else
+            "red"
+          end
+          File.write("/tmp/coverage.json", JSON.pretty_generate({
+            schemaVersion: 1,
+            label: "coverage",
+            message: "#{pct}%",
+            color: color
+          }) + "\n")
+          RUBY
+
+      - name: Publish coverage badge
+        run: |
+          git fetch origin badges
+          git checkout --force -B badges origin/badges
+          cp /tmp/coverage.json coverage.json
+          git add coverage.json
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "ci: actualizar el escudo de coverage"
+          git push origin badges

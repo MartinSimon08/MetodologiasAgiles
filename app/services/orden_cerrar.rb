@@ -10,7 +10,8 @@ class OrdenCerrar
       pendientes = tareas.select(&:pendiente?)
       orden.errors.add(:base, :tareas_en_curso) if tareas.any?(&:en_curso?)
       orden.errors.add(:base, :tareas_pendientes) if pendientes.any? && !descartar_pendientes
-      orden.errors.add(:base, :repuestos_pendientes) if orden.repuestos.vigentes.pendiente_de_valorizar.exists?
+      pendientes_de_valorizar = orden.repuestos.vigentes.where.not(aprobacion: :rechazado).pendiente_de_valorizar
+      orden.errors.add(:base, :repuestos_pendientes) if pendientes_de_valorizar.exists?
       raise ActiveRecord::RecordInvalid, orden if orden.errors.any?
 
       pendientes.each { |tarea| tarea.update!(estado: :cancelada) }

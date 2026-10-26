@@ -123,6 +123,8 @@ es:
             base:
               costo_en_pendiente: El costo y el margen de un repuesto pendiente se cargan con valorizar
               supera_adelantos: El nuevo total quedaría por debajo de los adelantos ya registrados
+              no_editable_rechazado: No se puede corregir un repuesto rechazado
+              no_valorizable_rechazado: No se puede cargar el costo de un repuesto rechazado
         ajuste_repuesto:
           attributes:
             orden:

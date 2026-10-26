@@ -27,26 +27,26 @@ export function CatalogoRepuestosPage() {
     eliminar.mutate(repuesto.id)
   }
 
+  const nuevo = editando === undefined && (
+    <BotonNuevo
+      onClick={() => {
+        setAviso('')
+        eliminar.reset()
+        setEditando(null)
+      }}
+      disabled={!puedeGestionar}
+    >
+      Nuevo repuesto
+    </BotonNuevo>
+  )
+
   return (
     <section className="repuestos">
       <RepuestosNav />
       <EncabezadoPagina
         titulo="Catálogo de repuestos"
         bajada="Cargá repuestos y sus precios para autocompletar las órdenes."
-      >
-        {editando === undefined && (
-          <BotonNuevo
-            onClick={() => {
-              setAviso('')
-              eliminar.reset()
-              setEditando(null)
-            }}
-            disabled={!puedeGestionar}
-          >
-            Nuevo repuesto
-          </BotonNuevo>
-        )}
-      </EncabezadoPagina>
+      />
       {aviso && <p className="aviso" role="status">{aviso}</p>}
       {eliminar.isPending && <p className="estado" role="status">Eliminando repuesto…</p>}
       {eliminar.isError && <p className="error" role="alert">
@@ -57,7 +57,7 @@ export function CatalogoRepuestosPage() {
           setEditando(undefined)
           setAviso('Repuesto guardado en el catálogo.')
         }} />}
-      <CatalogoRepuestos onEditar={puedeGestionar ? (repuesto) => {
+      <CatalogoRepuestos accionNuevo={nuevo || undefined} onEditar={puedeGestionar ? (repuesto) => {
         setAviso('')
         eliminar.reset()
         setEditando(repuesto)

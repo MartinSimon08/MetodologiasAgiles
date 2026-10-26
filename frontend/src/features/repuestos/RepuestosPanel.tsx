@@ -185,8 +185,10 @@ export function RepuestosPanel({ ordenId, ordenAbierta }: { ordenId: number; ord
             ) : esAdministrador && ordenAbierta && (
               <>
                 <div className="acciones item-acciones">
-                  <button type="button" className="secundario" onClick={() => empezarEdicion(repuesto)}>Corregir</button>
-                  {repuesto.estado === 'pendiente_de_valorizar' && (
+                  {repuesto.aprobacion !== 'rechazado' && (
+                    <button type="button" className="secundario" onClick={() => empezarEdicion(repuesto)}>Corregir</button>
+                  )}
+                  {repuesto.aprobacion !== 'rechazado' && repuesto.estado === 'pendiente_de_valorizar' && (
                     <button type="button" className="secundario" onClick={() => empezarValorizar(repuesto)}>Cargar costo</button>
                   )}
                   {repuesto.estado === 'valorizado' && (repuesto.cantidad_disponible ?? 0) > 0 && (

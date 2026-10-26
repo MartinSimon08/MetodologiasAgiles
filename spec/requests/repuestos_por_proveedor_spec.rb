@@ -64,6 +64,23 @@ RSpec.describe "Repuestos por proveedor", type: :request do
       expect(response.parsed_body["repuestos"].pluck("descripcion")).to eq([ "Filtro" ])
     end
 
+    it "informa el costo de cada línea con sus devoluciones" do
+      repuesto = agregar(proveedor: "Casa Central", cantidad: 2, costo_unitario: "100", margen: "20")
+      RepuestoRegistrarAjuste.call(repuesto: repuesto, registrado_por: admin, tipo: "devolucion",
+                                   cantidad: 1, costo_unitario: "100", motivo: "Sobró uno")
+      agregar(proveedor: "Casa Central", descripcion: "Bujía", cantidad: 1, costo_unitario: "30")
+
+      get "/repuestos_por_proveedor", headers: auth_headers(admin)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body["total_comprado"]).to eq("130.0")
+      expect(response.parsed_body["repuestos"].map { |linea| linea.slice("descripcion", "total_costo", "con_ajustes") })
+        .to eq([
+          { "descripcion" => "Bujía", "total_costo" => "30.0", "con_ajustes" => false },
+          { "descripcion" => "Filtro", "total_costo" => "100.0", "con_ajustes" => true }
+        ])
+    end
+
     it "devuelve errores de campo para un período inválido" do
       get "/repuestos_por_proveedor", params: { desde: "ayer", hasta: "2026-01-01" }, headers: auth_headers(admin)
 

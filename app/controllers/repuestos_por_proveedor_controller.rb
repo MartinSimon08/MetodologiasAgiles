@@ -25,6 +25,7 @@ class RepuestosPorProveedorController < ApplicationController
   def serialize(repuesto)
     datos = repuesto.as_json(only: %i[id descripcion cantidad costo_unitario proveedor created_at orden_id])
     datos[:total_costo] = RepuestoResumirPorProveedor.total_linea(repuesto)
+    datos[:con_ajustes] = repuesto.ajustes.any?
     datos[:orden] = {
       id: repuesto.orden.id,
       cliente: repuesto.orden.cliente.nombre,

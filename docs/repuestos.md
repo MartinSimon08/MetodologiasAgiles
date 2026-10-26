@@ -99,15 +99,18 @@ se sigue pudiendo ver.
 
 El administrador consulta las compras valorizadas desde **Repuestos → Por
 proveedor**. Puede filtrar por nombre de proveedor (coincidencias parciales, sin
-distinguir mayúsculas) y por el período de carga (`desde` y `hasta`, inclusive).
+distinguir mayúsculas ni tildes) y por el período de carga (`desde` y `hasta`,
+inclusive).
 
-El listado muestra cuánto se le compró a cada proveedor: la suma de
-`costo_unitario × cantidad` de las compras valorizadas que siguen vigentes.
-Una compra quitada no entra. Los avisos pendientes de valorizar tampoco,
-porque todavía no tienen costo. El mismo proveedor se agrupa aunque el nombre
-cambie en mayúsculas o espacios. Un nombre vacío y uno nulo forman un solo
-grupo, que la pantalla muestra como sin proveedor. El detalle de cada compra
-incluye el total de esa línea y un enlace a la orden.
+El listado muestra cuánto se le compró a cada proveedor: la suma del costo
+vigente de las compras valorizadas que siguen en la orden, es decir
+`costo_unitario × cantidad` más los ajustes de costo de sus devoluciones y
+cambios. Una compra quitada no entra, ni las compras de órdenes canceladas.
+Los avisos pendientes de valorizar tampoco, porque todavía no tienen costo. El
+mismo proveedor se agrupa aunque el nombre cambie en mayúsculas o tildes. El
+proveedor se guarda sin espacios de más y un nombre vacío queda nulo, que la
+pantalla muestra como sin proveedor. El detalle de cada compra incluye el total
+de esa línea, si tuvo devoluciones o cambios y un enlace a la orden.
 
 ## API
 
@@ -122,7 +125,7 @@ como cadenas decimales.
 | `PATCH /repuestos_catalogo/:id` | Editar nombre y/o precio del catálogo |
 | `DELETE /repuestos_catalogo/:id` | Eliminar del catálogo conservando las líneas de las órdenes; devuelve 204 |
 | `GET /ordenes/:orden_id/repuestos?pagina=1` | Administrador y mecánico. Vigentes de la orden, con `comprobante` en `null` o con `nombre`, `content_type` y `byte_size`. El administrador recibe precio, ganancia y `quitados`. El mecánico no recibe costo, margen, precio, ganancia ni proveedor |
-| `GET /repuestos_por_proveedor?proveedor=filtro&desde=2026-04-01&hasta=2026-04-30&pagina=1` | Compras valorizadas vigentes, agrupadas por proveedor sin distinguir mayúsculas ni espacios, con total comprado y detalle paginado |
+| `GET /repuestos_por_proveedor?proveedor=filtro&desde=2026-04-01&hasta=2026-04-30&pagina=1` | Compras valorizadas vigentes de órdenes no canceladas, agrupadas por proveedor sin distinguir mayúsculas ni tildes, con el costo neto de devoluciones y cambios, total comprado y detalle paginado |
 | `POST /ordenes/:orden_id/repuestos` | Administrador: registra una compra valorizada. Mecánico: avisa un repuesto pendiente de valorizar (solo `descripcion` y `cantidad`) |
 | `PATCH /ordenes/:orden_id/repuestos/:id` | Administrador: corrige cantidad, costo, margen o proveedor de una compra en una orden abierta y recalcula el precio |
 | `DELETE /ordenes/:orden_id/repuestos/:id` | Administrador: quita la compra del total y registra la baja. Responde el repuesto con `quitado_en` y `quitado_por` |
@@ -295,9 +298,11 @@ API deben usar el nuevo campo `precio` del catálogo.
     disponibles, ni hacerlo en una orden cerrada, cancelada o sobre un repuesto
     ya quitado. El total congelado no se modifica.
 23. Desde **Repuestos → Por proveedor**, filtrar por el proveedor de una compra
-    y un período que la incluya: el total del grupo debe ser costo × cantidad.
-    Un aviso pendiente no debe aparecer. Una compra quitada no suma. El mismo
-    proveedor escrito con otras mayúsculas o espacios entra en el mismo grupo.
+    y un período que la incluya: el total del grupo debe ser costo × cantidad,
+    menos las devoluciones y más la diferencia de los cambios. Un aviso
+    pendiente no debe aparecer. Una compra quitada o de una orden cancelada no
+    suma. El mismo proveedor escrito con otras mayúsculas o tildes entra en el
+    mismo grupo.
     Un mecánico no accede a esta pantalla.
 
 Pruebas automatizadas:
@@ -315,7 +320,7 @@ bundle exec rspec spec/services/repuesto_agregar_spec.rb spec/services/repuesto_
   spec/services/repuesto_resumir_por_proveedor_spec.rb \
   spec/requests/repuestos_spec.rb spec/requests/ajustes_repuesto_spec.rb \
   spec/requests/repuestos_catalogo_spec.rb spec/requests/repuestos_por_proveedor_spec.rb \
-  spec/requests/autorizacion_por_rol_spec.rb \
+  spec/requests/autorizacion_por_rol_spec.rb spec/migrations/normalizar_proveedor_de_repuestos_spec.rb \
   spec/models/orden_spec.rb
 bin/rubocop
 cd frontend

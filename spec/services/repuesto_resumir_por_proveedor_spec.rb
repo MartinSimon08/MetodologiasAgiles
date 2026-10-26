@@ -46,21 +46,51 @@ RSpec.describe RepuestoResumirPorProveedor do
     expect(consulta.repuestos).to contain_exactly(vigente)
   end
 
-  it "agrupa el mismo proveedor sin distinguir mayúsculas ni espacios" do
+  it "agrupa el mismo proveedor sin distinguir mayúsculas, espacios ni tildes" do
     agregar(proveedor: "Casa Central", costo_unitario: "10")
     agregar(proveedor: "casa central", costo_unitario: "20")
-    con_espacios = agregar(proveedor: "Casa Central", costo_unitario: "30")
-    con_espacios.update_column(:proveedor, "Casa Central ")
-    en_blanco = agregar(proveedor: "x", costo_unitario: "5")
-    en_blanco.update_column(:proveedor, "")
+    agregar(proveedor: " Casa  Central ", costo_unitario: "30")
+    agregar(proveedor: "Rodríguez", costo_unitario: "40")
+    agregar(proveedor: "Rodriguez", costo_unitario: "50")
+    agregar(proveedor: "   ", costo_unitario: "5")
     agregar(costo_unitario: "7")
 
-    resumen = consultar.resumen
-    casa = resumen.find { |fila| fila[:proveedor].to_s.casecmp("casa central").zero? }
+    expect(consultar.resumen).to contain_exactly(
+      { proveedor: "Rodriguez", cantidad_compras: 2, total_comprado: "90.0" },
+      { proveedor: "Casa Central", cantidad_compras: 3, total_comprado: "60.0" },
+      { proveedor: nil, cantidad_compras: 2, total_comprado: "12.0" }
+    )
+  end
 
-    expect(casa).to include(cantidad_compras: 3, total_comprado: "60.0")
-    expect(resumen).to include(proveedor: nil, cantidad_compras: 2, total_comprado: "12.0")
-    expect(resumen.size).to eq(2)
+  it "descuenta las devoluciones y suma la diferencia de los cambios" do
+    devuelto = agregar(proveedor: "Casa Central", cantidad: 2, costo_unitario: "100", margen: "20")
+    RepuestoRegistrarAjuste.call(repuesto: devuelto, registrado_por: admin, tipo: "devolucion",
+                                 cantidad: 1, costo_unitario: "100", motivo: "Sobró uno")
+    cambiado = agregar(proveedor: "Casa Central", cantidad: 1, costo_unitario: "50", margen: "20")
+    RepuestoRegistrarAjuste.call(repuesto: cambiado, registrado_por: admin, tipo: "cambio",
+                                 cantidad: 1, costo_unitario: "80", motivo: "Otra marca")
+
+    consulta = consultar
+
+    expect(consulta.resumen).to eq([
+      { proveedor: "Casa Central", total_comprado: "180.0", cantidad_compras: 2 }
+    ])
+    expect(consulta.total_comprado).to eq("180.0")
+    expect(consulta.repuestos.map { |repuesto| described_class.total_linea(repuesto) }).to eq([ "80.0", "100.0" ])
+  end
+
+  it "no cuenta las compras de órdenes canceladas" do
+    agregar(proveedor: "Casa Central", costo_unitario: "40")
+    cancelada = agregar(proveedor: "Casa Central", costo_unitario: "70")
+    OrdenCancelar.call(orden: cancelada.orden)
+
+    consulta = consultar
+
+    expect(consulta.resumen).to eq([
+      { proveedor: "Casa Central", total_comprado: "40.0", cantidad_compras: 1 }
+    ])
+    expect(consulta.total_comprado).to eq("40.0")
+    expect(consulta.repuestos).not_to include(cancelada)
   end
 
   it "guarda el proveedor sin espacios de más y convierte el vacío en nulo" do
@@ -68,13 +98,20 @@ RSpec.describe RepuestoResumirPorProveedor do
     expect(agregar(proveedor: "   ").proveedor).to be_nil
   end
 
-  it "filtra por proveedor sin importar mayúsculas y trata los comodines como texto" do
+  it "filtra por proveedor sin importar mayúsculas ni tildes y trata los comodines como texto" do
     agregar(proveedor: "Casa Central")
     agregar(proveedor: "Repuestos Centro")
     agregar(proveedor: "Filtro % especial")
+    agregar(proveedor: "Rodríguez")
 
     expect(consultar(proveedor: "  CASA ").resumen).to contain_exactly(
       include(proveedor: "Casa Central")
+    )
+    expect(consultar(proveedor: "rodriguez").resumen).to contain_exactly(
+      include(proveedor: "Rodríguez")
+    )
+    expect(consultar(proveedor: "RODRÍ").resumen).to contain_exactly(
+      include(proveedor: "Rodríguez")
     )
     expect(consultar(proveedor: "%").resumen).to contain_exactly(
       include(proveedor: "Filtro % especial")

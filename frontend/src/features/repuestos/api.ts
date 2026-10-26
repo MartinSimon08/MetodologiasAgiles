@@ -165,6 +165,7 @@ export interface RepuestoPorProveedor {
   cantidad: number
   costo_unitario: string
   total_costo: string
+  con_ajustes: boolean
   proveedor: string | null
   created_at: string
   orden_id: number

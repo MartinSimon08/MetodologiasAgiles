@@ -137,6 +137,7 @@ export function RepuestosPorProveedorPage() {
                 <span>Proveedor: {nombreProveedor(repuesto.proveedor)}</span>
                 <span>
                   {repuesto.cantidad} × $ {importe(repuesto.costo_unitario)} · Total: $ {importe(repuesto.total_costo)}
+                  {repuesto.con_ajustes && ' (con devoluciones o cambios)'}
                 </span>
                 <span>
                   {repuesto.orden.cliente} · {describirVehiculo(repuesto.orden.vehiculo)} · {fechaHora(repuesto.created_at)}

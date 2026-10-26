@@ -9,8 +9,10 @@ class RepuestoResumirPorProveedor
     end
   end
 
-  PROVEEDOR_LIMPIO = "NULLIF(BTRIM(REGEXP_REPLACE(proveedor, '\\s+', ' ', 'g')), '')"
-  COSTO_LINEA = "costo_unitario * cantidad"
+  PROVEEDOR_CLAVE = "LOWER(unaccent(repuestos.proveedor))"
+  COSTO_LINEA = "repuestos.costo_unitario * repuestos.cantidad + COALESCE((" \
+                "SELECT SUM(ajustes_repuesto.ajuste_costo) FROM ajustes_repuesto " \
+                "WHERE ajustes_repuesto.repuesto_id = repuestos.id), 0)"
 
   def self.call(proveedor: nil, desde: nil, hasta: nil)
     new(proveedor:, desde:, hasta:).resultado
@@ -21,7 +23,7 @@ class RepuestoResumirPorProveedor
   end
 
   def self.total_linea(repuesto)
-    importe(repuesto.costo_unitario * repuesto.cantidad)
+    importe(repuesto.costo_vigente)
   end
 
   def initialize(proveedor:, desde:, hasta:)
@@ -50,14 +52,14 @@ class RepuestoResumirPorProveedor
   private
 
   def compras
-    filtrados.preload(orden: %i[cliente vehiculo]).order(created_at: :desc, id: :desc)
+    filtrados.preload(:ajustes, orden: %i[cliente vehiculo]).order(created_at: :desc, id: :desc)
   end
 
   def resumen_proveedores
     filtrados
-      .group(Arel.sql("LOWER(#{PROVEEDOR_LIMPIO})"))
+      .group(Arel.sql(PROVEEDOR_CLAVE))
       .select(
-        Arel.sql("(ARRAY_AGG(#{PROVEEDOR_LIMPIO} ORDER BY created_at DESC, id DESC))[1] AS nombre"),
+        Arel.sql("(ARRAY_AGG(repuestos.proveedor ORDER BY repuestos.created_at DESC, repuestos.id DESC))[1] AS nombre"),
         Arel.sql("SUM(#{COSTO_LINEA}) AS total_comprado"),
         Arel.sql("COUNT(*) AS cantidad_compras")
       )
@@ -66,9 +68,9 @@ class RepuestoResumirPorProveedor
   end
 
   def filtrados
-    scope = Repuesto.valorizado.vigentes
+    scope = Repuesto.valorizado.vigentes.where.not(orden: Orden.cancelada)
     if @proveedor
-      scope = scope.where("#{PROVEEDOR_LIMPIO} ILIKE ?", "%#{Repuesto.sanitize_sql_like(@proveedor)}%")
+      scope = scope.where("unaccent(repuestos.proveedor) ILIKE unaccent(?)", "%#{Repuesto.sanitize_sql_like(@proveedor)}%")
     end
     scope = scope.where(created_at: @desde.beginning_of_day..) if @desde
     scope = scope.where(created_at: ..@hasta.end_of_day) if @hasta

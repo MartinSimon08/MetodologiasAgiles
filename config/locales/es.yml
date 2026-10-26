@@ -51,6 +51,7 @@ es:
         cantidad: Cantidad
         costo_unitario: Costo unitario real
         margen: Margen
+        proveedor: Proveedor
         estado: Estado
         aprobacion: Aprobación
         comprobante: Foto del comprobante

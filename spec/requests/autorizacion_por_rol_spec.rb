@@ -19,6 +19,7 @@ RSpec.describe "Autorización por rol", type: :request do
     "GET /vehiculos/verificar_patente" => :administrador,
     "PATCH /vehiculos/:id/cambiar_duenio" => :administrador,
     "GET /repuestos_catalogo" => :administrador,
+    "GET /repuestos_por_proveedor" => :administrador,
     "POST /repuestos_catalogo" => :administrador,
     "PATCH /repuestos_catalogo/:id" => :administrador,
     "PUT /repuestos_catalogo/:id" => :administrador,

@@ -24,7 +24,7 @@ export function CatalogoRepuestos({ onSeleccionar, onEditar, onEliminar, filtro,
 
   return (
     <section className="repuestos">
-      <h2>{onSeleccionar ? 'Sugerencias del catálogo' : 'Repuestos del catálogo'}</h2>
+      {onSeleccionar && <h2>Sugerencias del catálogo</h2>}
       {filtro === undefined && <div className="buscador-con-accion">
         <label className="buscador">
           <span>Buscar en el catálogo</span>

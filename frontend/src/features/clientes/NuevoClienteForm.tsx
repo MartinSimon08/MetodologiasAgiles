@@ -2,12 +2,12 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
 import { ErroresCampo } from '../../components/ErroresCampo'
 import { errorMessage, fieldErrors } from '../../lib/api'
-import { registrarCliente, type NuevoCliente } from './api'
+import { registrarCliente, type Cliente, type NuevoCliente } from './api'
 
 const VACIO: NuevoCliente = { nombre: '', telefono: '', email: '' }
 
 interface Props {
-  onRegistrado: (nombre: string) => void
+  onRegistrado: (cliente: Cliente) => void
   onCancelar: () => void
 }
 
@@ -20,7 +20,7 @@ export function NuevoClienteForm({ onRegistrado, onCancelar }: Props) {
     onSuccess: (cliente) => {
       queryClient.invalidateQueries({ queryKey: ['clientes'] })
       setDatos(VACIO)
-      onRegistrado(cliente.nombre)
+      onRegistrado(cliente)
     },
   })
 

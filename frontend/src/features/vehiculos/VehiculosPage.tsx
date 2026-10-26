@@ -44,20 +44,20 @@ export function VehiculosPage() {
     window.scrollTo({ top: 0 })
   }
 
+  const nuevo = !registrando && (
+    <BotonNuevo
+      onClick={() => {
+        setAviso(null)
+        setRegistrando(true)
+      }}
+    >
+      Nuevo vehículo
+    </BotonNuevo>
+  )
+
   return (
     <section className="vehiculos">
-      <EncabezadoPagina titulo="Vehículos" bajada="Vehículos registrados y su dueño actual.">
-        {!registrando && (
-          <BotonNuevo
-            onClick={() => {
-              setAviso(null)
-              setRegistrando(true)
-            }}
-          >
-            Nuevo vehículo
-          </BotonNuevo>
-        )}
-      </EncabezadoPagina>
+      <EncabezadoPagina titulo="Vehículos" bajada="Vehículos registrados y su dueño actual." />
 
       {aviso && (
         <p className="aviso" role="status">
@@ -84,6 +84,7 @@ export function VehiculosPage() {
         placeholder="Patente, nombre o teléfono del dueño"
         valor={busqueda}
         onCambiar={(valor) => actualizarFiltros(1, valor)}
+        accion={nuevo || undefined}
       />
 
       {vehiculos.isPending && <p className="estado">Cargando vehículos…</p>}

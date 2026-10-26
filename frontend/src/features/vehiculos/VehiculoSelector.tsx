@@ -1,5 +1,6 @@
-import { SelectorBuscable } from '../../components/SelectorBuscable'
+import { SelectorBuscable, type FormularioCreacion } from '../../components/SelectorBuscable'
 import { listarVehiculos, type Vehiculo } from './api'
+import { NuevoVehiculoForm } from './NuevoVehiculoForm'
 
 interface Props {
   etiqueta: string
@@ -18,6 +19,10 @@ function detalle(vehiculo: Vehiculo) {
   return [vehiculo.marca, vehiculo.modelo].filter(Boolean).join(' ')
 }
 
+function FormularioNuevoVehiculo({ onCreado, onCancelar, onBuscar }: FormularioCreacion<Vehiculo>) {
+  return <NuevoVehiculoForm onRegistrado={onCreado} onVerExistente={onBuscar} onCancelar={onCancelar} />
+}
+
 export function VehiculoSelector(props: Props) {
   return (
     <SelectorBuscable<Vehiculo>
@@ -34,6 +39,10 @@ export function VehiculoSelector(props: Props) {
           <span>{vehiculo.cliente.nombre}</span>
         </>
       )}
+      crear={{
+        etiqueta: 'Nuevo vehículo',
+        Formulario: FormularioNuevoVehiculo,
+      }}
       textos={{
         cargando: 'Cargando vehículos…',
         sinResultados: 'Ningún vehículo coincide con la búsqueda.',

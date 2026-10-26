@@ -1,4 +1,4 @@
-import type { KeyboardEvent, Ref } from 'react'
+import type { KeyboardEvent, ReactNode, Ref } from 'react'
 
 interface Props {
   etiqueta: string
@@ -8,10 +8,11 @@ interface Props {
   autoFocus?: boolean
   inputRef?: Ref<HTMLInputElement>
   onKeyDown?: (event: KeyboardEvent<HTMLInputElement>) => void
+  accion?: ReactNode
 }
 
-export function Buscador({ etiqueta, valor, onCambiar, placeholder, autoFocus, inputRef, onKeyDown }: Props) {
-  return (
+export function Buscador({ etiqueta, valor, onCambiar, placeholder, autoFocus, inputRef, onKeyDown, accion }: Props) {
+  const campo = (
     <label className="buscador">
       <span>{etiqueta}</span>
       <input
@@ -26,5 +27,12 @@ export function Buscador({ etiqueta, valor, onCambiar, placeholder, autoFocus, i
         onKeyDown={onKeyDown}
       />
     </label>
+  )
+  if (!accion) return campo
+  return (
+    <div className="buscador-con-accion">
+      {campo}
+      {accion}
+    </div>
   )
 }

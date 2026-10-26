@@ -40,6 +40,21 @@ RSpec.describe "Presupuesto de la aseguradora", type: :request do
     expect(orden.reload.total).to eq(5_000)
   end
 
+  it "no deja rechazar un repuesto cuando el saldo quedaría negativo" do
+    repuesto = RepuestoAgregar.call(orden: orden, registrado_por: administrador, descripcion: "Filtro", cantidad: 1,
+                                    costo_unitario: "1500", margen: 0)
+    create(:adelanto, orden: orden, importe: "1500", registrado_por: administrador)
+
+    patch "/ordenes/#{orden.id}/repuestos/#{repuesto.id}/rechazar", headers: auth_headers(administrador)
+
+    expect(response).to have_http_status(:unprocessable_content)
+    expect(response.parsed_body["errors"]["base"]).to include(
+      "El nuevo total quedaría por debajo de los adelantos ya registrados"
+    )
+    expect(repuesto.reload.aprobacion).to eq("pendiente")
+    expect(orden.reload.saldo).to eq(0)
+  end
+
   it "prohíbe el presupuesto y la decisión a un mecánico" do
     tarea = create(:tarea, orden: orden)
     repuesto = RepuestoAgregar.call(orden: orden, registrado_por: administrador, descripcion: "Filtro", cantidad: 1,

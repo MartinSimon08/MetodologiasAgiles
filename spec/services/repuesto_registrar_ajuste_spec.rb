@@ -175,6 +175,27 @@ RSpec.describe RepuestoRegistrarAjuste do
     expect(orden.reload.saldo).to eq(0)
   end
 
+  it "acepta la devolución de un repuesto rechazado porque el total a cobrar no cambia" do
+    create(:tarea, orden: orden, precio: "1000")
+    rechazado = RepuestoAgregar.call(
+      orden: orden, registrado_por: admin, descripcion: "Pastilla", cantidad: 1,
+      costo_unitario: "300", margen: "0"
+    )
+    RepuestoRegistrarAprobacion.call(repuesto: rechazado, aprobacion: "rechazado")
+    create(:adelanto, orden: orden, importe: "800", registrado_por: admin)
+
+    expect {
+      described_class.call(
+        repuesto: rechazado, registrado_por: admin, tipo: "devolucion", cantidad: 1,
+        costo_unitario: "300", motivo: "Falla"
+      )
+    }.not_to raise_error
+
+    expect(orden.reload.total).to eq(BigDecimal("1000"))
+    expect(orden.saldo).to eq(BigDecimal("200"))
+    expect(rechazado.reload.ajustes.count).to eq(1)
+  end
+
   [ { tipo: nil }, { tipo: "otro" }, { cantidad: 0 }, { cantidad: "1.5" }, { costo_unitario: "-1" },
     { costo_unitario: nil }, { motivo: "  " } ].each do |atributos|
     it "rechaza datos inválidos #{atributos.inspect} sin guardar el ajuste" do

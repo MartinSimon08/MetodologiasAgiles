@@ -7,10 +7,17 @@ export interface RepuestoCatalogo {
 }
 
 export type EstadoRepuesto = 'pendiente_de_valorizar' | 'valorizado'
+export type AprobacionRepuesto = 'pendiente' | 'aprobado' | 'rechazado'
 
 export const ESTADO_REPUESTO_LABELS: Record<EstadoRepuesto, string> = {
   pendiente_de_valorizar: 'Pendiente de valorizar',
   valorizado: 'Valorizado',
+}
+
+export const APROBACION_REPUESTO_LABELS: Record<AprobacionRepuesto, string> = {
+  pendiente: 'Sin definir',
+  aprobado: 'Aprobado',
+  rechazado: 'Rechazado',
 }
 
 export type TipoAjuste = 'devolucion' | 'cambio'
@@ -33,6 +40,7 @@ export interface Repuesto {
   descripcion: string
   cantidad: number
   estado: EstadoRepuesto
+  aprobacion: AprobacionRepuesto
   costo_unitario?: string | null
   margen?: string | null
   precio_cliente?: string | null
@@ -142,6 +150,16 @@ export async function editarRepuesto(ordenId: number, id: number, repuesto: Camb
 
 export async function quitarRepuesto(ordenId: number, id: number) {
   const { data } = await api.delete<Repuesto>(`/ordenes/${ordenId}/repuestos/${id}`)
+  return data
+}
+
+export async function aprobarRepuesto(ordenId: number, id: number) {
+  const { data } = await api.patch<Repuesto>(`/ordenes/${ordenId}/repuestos/${id}/aprobar`)
+  return data
+}
+
+export async function rechazarRepuesto(ordenId: number, id: number) {
+  const { data } = await api.patch<Repuesto>(`/ordenes/${ordenId}/repuestos/${id}/rechazar`)
   return data
 }
 

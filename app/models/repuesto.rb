@@ -8,6 +8,8 @@ class Repuesto < ApplicationRecord
 
   enum :estado, { pendiente_de_valorizar: "pendiente_de_valorizar", valorizado: "valorizado" },
     validate: true, default: :valorizado
+  enum :aprobacion, { pendiente: "pendiente", aprobado: "aprobado", rechazado: "rechazado" },
+    prefix: true, validate: true, default: :pendiente
 
   scope :vigentes, -> { where(quitado_en: nil) }
   scope :quitados, -> { where.not(quitado_en: nil) }

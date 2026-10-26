@@ -41,6 +41,7 @@ es:
         descripcion: Descripción
         estado: Estado
         precio: Precio
+        aprobacion: Aprobación
       tarea_frecuente:
         descripcion: Descripción
         precio_sugerido: Precio sugerido
@@ -51,6 +52,7 @@ es:
         costo_unitario: Costo unitario real
         margen: Margen
         estado: Estado
+        aprobacion: Aprobación
         comprobante: Foto del comprobante
         repuesto_catalogo: Repuesto del catálogo
         registrado_por: Administrador
@@ -104,6 +106,7 @@ es:
               tareas_en_curso: No se puede cerrar la orden porque tiene tareas tomadas o en curso
               tareas_pendientes: Hay tareas pendientes sin tomar. Confirmá que se descartan para cerrar la orden
               total_parcial_no_disponible: El total parcial solo se calcula en órdenes abiertas
+              presupuesto_no_disponible: El presupuesto solo se calcula en órdenes abiertas
         repuesto:
           attributes:
             estado:

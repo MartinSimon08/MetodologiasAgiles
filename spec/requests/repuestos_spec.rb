@@ -165,7 +165,7 @@ RSpec.describe "Repuestos", type: :request do
       response.parsed_body["repuestos"].each do |repuesto|
         expect(repuesto["comprobante"]).to be_nil
         expect(repuesto.keys).to contain_exactly(
-          "id", "orden_id", "repuesto_catalogo_id", "descripcion", "cantidad", "estado",
+          "id", "orden_id", "repuesto_catalogo_id", "descripcion", "cantidad", "estado", "aprobacion",
           "registrado_por_id", "registrado_por", "created_at", "comprobante"
         )
       end

@@ -1,5 +1,5 @@
 import { api, type MetaPaginacion } from '../../lib/api'
-import type { EstadoOrden, Orden, OrdenCancelada, ResumenCierre, TotalParcial } from './types'
+import type { EstadoOrden, Orden, OrdenCancelada, Presupuesto, ResumenCierre, TotalParcial } from './types'
 
 export interface PaginaOrdenes {
   ordenes: Orden[]
@@ -33,6 +33,11 @@ export async function obtenerResumenCierre(id: number) {
 
 export async function obtenerTotalParcial(id: number) {
   const { data } = await api.get<TotalParcial>(`/ordenes/${id}/total_parcial`)
+  return data
+}
+
+export async function obtenerPresupuesto(id: number) {
+  const { data } = await api.get<Presupuesto>(`/ordenes/${id}/presupuesto`)
   return data
 }
 

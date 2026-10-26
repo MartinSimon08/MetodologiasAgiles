@@ -33,13 +33,6 @@ export async function liberarTarea(id: number) {
   return data
 }
 
-export async function actualizarPrecioTarea(id: number, precio: string) {
-  const { data } = await api.patch<Tarea>(`/tareas/${id}/actualizar_precio`, {
-    tarea: { precio: precio ? Number(precio) : null },
-  })
-  return data
-}
-
 export async function aprobarTarea(id: number) {
   const { data } = await api.patch<Tarea>(`/tareas/${id}/aprobar`)
   return data
@@ -47,6 +40,13 @@ export async function aprobarTarea(id: number) {
 
 export async function rechazarTarea(id: number) {
   const { data } = await api.patch<Tarea>(`/tareas/${id}/rechazar`)
+  return data
+}
+
+export async function actualizarPrecioTarea(id: number, precio: string) {
+  const { data } = await api.patch<Tarea>(`/tareas/${id}/actualizar_precio`, {
+    tarea: { precio: precio ? Number(precio) : null },
+  })
   return data
 }
 

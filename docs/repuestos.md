@@ -56,13 +56,14 @@ listado de la orden y completa el costo real (y opcionalmente el margen, que si
 se omite usa el configurado en el taller) desde **Cargar costo**. Al guardarlo, la
 compra pasa a estado `valorizado` y se calcula el precio al cliente con la misma
 fórmula que una compra directa. Un repuesto ya valorizado no se puede volver a
-valorizar, y no se puede valorizar en una orden cerrada.
+valorizar, y no se puede valorizar en una orden cerrada. Tampoco se puede
+valorizar un repuesto rechazado por la aseguradora.
 
 Una orden con compras pendientes de valorizar no se puede cerrar: la validación
 vive en el modelo `Orden`, de modo que cualquier camino que intente cerrarla
 (incluido un futuro flujo de cierre y cobro) queda bloqueado mientras existan
-compras sin costo cargado. Un aviso pendiente que se quitó deja de bloquear el
-cierre.
+compras sin costo cargado. Un aviso pendiente que se quitó, o que la aseguradora
+rechazó, deja de bloquear el cierre.
 
 ## Corregir o quitar una compra (HU16)
 
@@ -73,7 +74,9 @@ guardar. La descripción, el vínculo con el catálogo y quién cargó la compra
 cambian. Si no se envía el margen, se conserva el que ya tenía la compra.
 
 Un repuesto pendiente de valorizar admite corrección de cantidad y proveedor. El
-costo y el margen se siguen cargando con valorizar.
+costo y el margen se siguen cargando con valorizar. Un repuesto rechazado por la
+aseguradora no se puede corregir. Si vuelve a aprobarse, la corrección queda
+habilitada otra vez.
 
 Quitar un repuesto pide confirmación en la pantalla. La compra deja de sumar al
 total y queda registrada: se guardan quién la quitó y cuándo, y sigue visible
@@ -109,9 +112,9 @@ como cadenas decimales.
 | `DELETE /repuestos_catalogo/:id` | Eliminar del catálogo conservando las líneas de las órdenes; devuelve 204 |
 | `GET /ordenes/:orden_id/repuestos?pagina=1` | Administrador y mecánico. Vigentes de la orden, con `comprobante` en `null` o con `nombre`, `content_type` y `byte_size`. El administrador recibe precio, ganancia y `quitados`. El mecánico no recibe costo, margen, precio, ganancia ni proveedor |
 | `POST /ordenes/:orden_id/repuestos` | Administrador: registra una compra valorizada. Mecánico: avisa un repuesto pendiente de valorizar (solo `descripcion` y `cantidad`) |
-| `PATCH /ordenes/:orden_id/repuestos/:id` | Administrador: corrige cantidad, costo, margen o proveedor de una compra en una orden abierta y recalcula el precio |
+| `PATCH /ordenes/:orden_id/repuestos/:id` | Administrador: corrige cantidad, costo, margen o proveedor de una compra en una orden abierta y recalcula el precio. Rechaza un repuesto rechazado por la aseguradora |
 | `DELETE /ordenes/:orden_id/repuestos/:id` | Administrador: quita la compra del total y registra la baja. Responde el repuesto con `quitado_en` y `quitado_por` |
-| `PATCH /ordenes/:orden_id/repuestos/:id/valorizar` | Administrador: carga el costo (y opcionalmente el margen) de un aviso pendiente |
+| `PATCH /ordenes/:orden_id/repuestos/:id/valorizar` | Administrador: carga el costo (y opcionalmente el margen) de un aviso pendiente que no esté rechazado |
 | `POST /ordenes/:orden_id/repuestos/:id/comprobante` | Administrador y mecánico. Adjunta o reemplaza la foto (`multipart/form-data`, campo `comprobante`) en una orden abierta. Responde el repuesto |
 | `GET /ordenes/:orden_id/repuestos/:id/comprobante` | Administrador y mecánico. Devuelve la imagen. Responde 404 si ese repuesto no tiene foto |
 | `POST /ordenes/:orden_id/repuestos/:repuesto_id/ajustes` | Administrador: registra una devolución o un cambio sobre el repuesto original |
@@ -279,6 +282,12 @@ API deben usar el nuevo campo `precio` del catálogo.
 22. Confirmar que no se puede devolver o cambiar más unidades que las que siguen
     disponibles, ni hacerlo en una orden cerrada, cancelada o sobre un repuesto
     ya quitado. El total congelado no se modifica.
+23. Rechazar un repuesto desde el presupuesto de la orden. En el listado no
+    aparecen **Corregir** ni **Cargar costo**. **Quitar** y el registro de una
+    devolución siguen disponibles, y el repuesto queda marcado como rechazado.
+24. Aprobarlo de nuevo: **Corregir** vuelve a aparecer.
+25. Rechazar un aviso que sigue sin valorizar. El cierre no queda bloqueado por
+    ese aviso. Se verifica con `spec/services/orden_cerrar_spec.rb`.
 
 Pruebas automatizadas:
 

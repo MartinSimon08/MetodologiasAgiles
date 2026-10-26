@@ -20,6 +20,7 @@ class RepuestoEditar
   def self.asegurar_editable!(repuesto)
     repuesto.errors.add(:orden, repuesto.orden.estado.to_sym) unless repuesto.orden.abierta?
     repuesto.errors.add(:estado, :ya_quitado) if repuesto.quitado_en.present?
+    repuesto.errors.add(:base, :no_editable_rechazado) if repuesto.aprobacion_rechazado?
     raise ActiveRecord::RecordInvalid, repuesto if repuesto.errors.any?
   end
 

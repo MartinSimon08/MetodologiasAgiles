@@ -73,6 +73,7 @@ class Orden < ApplicationRecord
   end
 
   def sin_repuestos_pendientes_de_valorizar
-    errors.add(:base, :repuestos_pendientes) if repuestos.vigentes.pendiente_de_valorizar.exists?
+    pendientes = repuestos.vigentes.where.not(aprobacion: :rechazado).pendiente_de_valorizar
+    errors.add(:base, :repuestos_pendientes) if pendientes.exists?
   end
 end

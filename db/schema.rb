@@ -73,7 +73,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_27_120000) do
     t.check_constraint "cantidad > 0", name: "ajustes_repuesto_cantidad_positiva"
     t.check_constraint "costo_unitario >= 0::numeric", name: "ajustes_repuesto_costo_no_negativo"
     t.check_constraint "precio_original >= 0::numeric", name: "ajustes_repuesto_precio_original_no_negativo"
-    t.check_constraint "tipo::text = ANY (ARRAY['devolucion'::character varying, 'cambio'::character varying]::text[])", name: "ajustes_repuesto_tipo_valido"
+    t.check_constraint "tipo::text = ANY (ARRAY['devolucion'::character varying::text, 'cambio'::character varying::text])", name: "ajustes_repuesto_tipo_valido"
   end
 
   create_table "clientes", force: :cascade do |t|
@@ -131,11 +131,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_27_120000) do
     t.datetime "updated_at", null: false
     t.bigint "quitado_por_id"
     t.datetime "quitado_en"
+    t.string "aprobacion", default: "pendiente", null: false
     t.index ["orden_id"], name: "index_repuestos_on_orden_id"
     t.index ["quitado_por_id"], name: "index_repuestos_on_quitado_por_id"
     t.index ["registrado_por_id"], name: "index_repuestos_on_registrado_por_id"
     t.index ["repuesto_catalogo_id"], name: "index_repuestos_on_repuesto_catalogo_id"
     t.check_constraint "(quitado_en IS NULL) = (quitado_por_id IS NULL)", name: "repuestos_quitado_consistente"
+    t.check_constraint "aprobacion::text = ANY (ARRAY['pendiente'::character varying, 'aprobado'::character varying, 'rechazado'::character varying]::text[])", name: "repuestos_aprobacion_valida"
     t.check_constraint "cantidad > 0", name: "repuestos_cantidad_positiva"
     t.check_constraint "costo_unitario >= 0::numeric", name: "repuestos_costo_no_negativo"
     t.check_constraint "estado::text <> 'valorizado'::text OR costo_unitario IS NOT NULL AND margen IS NOT NULL AND precio_cliente IS NOT NULL", name: "repuestos_valorizado_completo"
@@ -175,6 +177,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_27_120000) do
     t.index ["mecanico_id"], name: "index_tareas_on_mecanico_id"
     t.index ["orden_id", "estado"], name: "index_tareas_on_orden_id_and_estado"
     t.index ["orden_id"], name: "index_tareas_on_orden_id"
+    t.check_constraint "aprobacion::text = ANY (ARRAY['pendiente'::character varying, 'aprobada'::character varying, 'rechazada'::character varying]::text[])", name: "tareas_aprobacion_valida"
   end
 
   create_table "tareas_frecuentes", force: :cascade do |t|

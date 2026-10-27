@@ -74,6 +74,22 @@ RSpec.describe OrdenCerrar do
     expect(orden.reload).to be_abierta
   end
 
+  it "cierra y no cobra un repuesto rechazado, aunque siga sin valorizar" do
+    create(:tarea, :terminada, orden: orden, precio: 10_000)
+    vigente = agregar_repuesto
+    rechazado = RepuestoAgregar.call(orden: orden, registrado_por: administrador, descripcion: "Pastilla",
+                                     cantidad: 1, costo_unitario: "500", margen: 0)
+    aviso = RepuestoAvisar.call(orden: orden, registrado_por: mecanico, descripcion: "Correa", cantidad: 1)
+    RepuestoRegistrarAprobacion.call(repuesto: rechazado, aprobacion: "rechazado")
+    RepuestoRegistrarAprobacion.call(repuesto: aviso, aprobacion: "rechazado")
+
+    described_class.call(orden: orden, cerrada_por: administrador)
+
+    expect(orden.reload).to be_cerrada
+    expect(orden.total_cerrado).to eq(10_000 + vigente.precio_cliente)
+    expect(orden.repuestos.vigentes).to include(rechazado, aviso)
+  end
+
   it "no cobra un repuesto quitado y cierra si el pendiente ya fue quitado" do
     create(:tarea, :terminada, orden: orden, precio: 10_000)
     vigente = agregar_repuesto

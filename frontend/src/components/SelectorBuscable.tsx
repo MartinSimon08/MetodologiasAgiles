@@ -1,10 +1,18 @@
-import { keepPreviousData, useQuery } from '@tanstack/react-query'
-import { useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
+import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useRef, useState, type ComponentType, type KeyboardEvent, type ReactNode } from 'react'
 import { errorMessage, type MetaPaginacion } from '../lib/api'
 import { useDebounce } from '../lib/useDebounce'
+import { BotonNuevo } from './BotonNuevo'
 import { Buscador } from './Buscador'
+import { Dialogo } from './Dialogo'
 import { ErroresCampo } from './ErroresCampo'
 import { Paginacion } from './Paginacion'
+
+export interface FormularioCreacion<T> {
+  onCreado: (item: T) => void
+  onCancelar: () => void
+  onBuscar: (texto: string) => void
+}
 
 interface Props<T extends { id: number }> {
   etiqueta: string
@@ -18,6 +26,7 @@ interface Props<T extends { id: number }> {
   errores?: string[]
   autoFocus?: boolean
   textos: { cargando: string; sinResultados: string; error: string }
+  crear?: { etiqueta: string; Formulario: ComponentType<FormularioCreacion<T>> }
 }
 
 export function SelectorBuscable<T extends { id: number }>({
@@ -32,11 +41,14 @@ export function SelectorBuscable<T extends { id: number }>({
   errores,
   autoFocus,
   textos,
+  crear,
 }: Props<T>) {
+  const queryClient = useQueryClient()
   const buscador = useRef<HTMLInputElement>(null)
   const [pagina, setPagina] = useState(1)
   const [busqueda, setBusqueda] = useState('')
   const [seleccionado, setSeleccionado] = useState<T | null>(null)
+  const [creando, setCreando] = useState(false)
   const q = useDebounce(busqueda.trim())
 
   const consulta = useQuery({
@@ -56,6 +68,18 @@ export function SelectorBuscable<T extends { id: number }>({
     setSeleccionado(item)
     onCambiar(item?.id ?? null)
     if (item === null) queueMicrotask(() => buscador.current?.focus())
+  }
+
+  function alCrear(item: T) {
+    setCreando(false)
+    queryClient.invalidateQueries({ queryKey: ['selector', queryKey] })
+    elegir(item)
+  }
+
+  function alBuscar(texto: string) {
+    setCreando(false)
+    setPagina(1)
+    setBusqueda(texto)
   }
 
   function alTecla(event: KeyboardEvent<HTMLInputElement>) {
@@ -93,6 +117,16 @@ export function SelectorBuscable<T extends { id: number }>({
           setBusqueda(texto)
         }}
       />
+      {crear && (
+        <div className="selector-crear">
+          <BotonNuevo onClick={() => setCreando(true)}>{crear.etiqueta}</BotonNuevo>
+        </div>
+      )}
+      {crear && creando && (
+        <Dialogo onCerrar={() => setCreando(false)}>
+          <crear.Formulario onCreado={alCrear} onCancelar={() => setCreando(false)} onBuscar={alBuscar} />
+        </Dialogo>
+      )}
       <ErroresCampo errores={errores} />
       {buscando && consulta.isPending && <p className="estado">{textos.cargando}</p>}
       {buscando && consulta.isError && (

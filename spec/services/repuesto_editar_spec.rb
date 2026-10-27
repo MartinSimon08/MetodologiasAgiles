@@ -130,6 +130,29 @@ RSpec.describe RepuestoEditar do
       .to raise_error(ActiveRecord::RecordInvalid) { |error| expect(error.record.errors[:orden]).to include("está cancelada") }
   end
 
+  it "rechaza corregir un repuesto rechazado" do
+    repuesto = agregar
+    RepuestoRegistrarAprobacion.call(repuesto: repuesto, aprobacion: "rechazado")
+
+    expect { editar(repuesto, cantidad: 4) }
+      .to raise_error(ActiveRecord::RecordInvalid) { |error|
+        expect(error.record.errors[:base]).to include("No se puede corregir un repuesto rechazado")
+      }
+
+    expect(repuesto.reload.cantidad).to eq(2)
+  end
+
+  it "permite corregir el repuesto si vuelve a aprobarse" do
+    repuesto = agregar
+    RepuestoRegistrarAprobacion.call(repuesto: repuesto, aprobacion: "rechazado")
+    RepuestoRegistrarAprobacion.call(repuesto: repuesto, aprobacion: "aprobado")
+
+    corregido = editar(repuesto, cantidad: 1)
+
+    expect(corregido.cantidad).to eq(1)
+    expect(corregido.precio_cliente).to eq(BigDecimal("120.60"))
+  end
+
   it "rechaza corregir un repuesto ya quitado, también si otro request lo quitó antes" do
     repuesto = agregar
     copia = Repuesto.find(repuesto.id)

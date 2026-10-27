@@ -4,6 +4,7 @@ class RepuestoValorizar
       repuesto.lock!
       repuesto.errors.add(:estado, :ya_valorizado) if repuesto.valorizado?
       repuesto.errors.add(:orden, repuesto.orden.estado.to_sym) unless repuesto.orden.abierta?
+      repuesto.errors.add(:base, :no_valorizable_rechazado) if repuesto.aprobacion_rechazado?
       raise ActiveRecord::RecordInvalid, repuesto if repuesto.errors.any?
 
       repuesto.assign_attributes(

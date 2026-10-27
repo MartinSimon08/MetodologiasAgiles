@@ -1,7 +1,7 @@
 class OrdenesController < ApplicationController
   include Paginable
 
-  before_action :require_administrador!, only: %i[create cancelar cerrar resumen_cierre total_parcial]
+  before_action :require_administrador!, only: %i[create cancelar cerrar resumen_cierre total_parcial presupuesto]
 
   def index
     ordenes = Orden.includes(:cliente, :vehiculo, :cerrada_por).order(created_at: :desc, id: :desc)
@@ -42,6 +42,10 @@ class OrdenesController < ApplicationController
     render json: serialize_total_parcial(OrdenCalcularTotalParcial.call(orden: Orden.find(params[:id])))
   end
 
+  def presupuesto
+    render json: serialize_presupuesto(OrdenCalcularPresupuesto.call(orden: Orden.find(params[:id])))
+  end
+
   private
 
   def orden_params
@@ -63,7 +67,9 @@ class OrdenesController < ApplicationController
       estado: resumen.orden.estado,
       tareas: resumen.tareas.map { |tarea| serialize_linea_tarea(tarea) },
       repuestos: resumen.repuestos.map do |repuesto|
-        repuesto.as_json(only: %i[id descripcion cantidad estado]).merge("precio_cliente" => precio_de_linea(repuesto))
+        repuesto.as_json(only: %i[id descripcion cantidad estado aprobacion]).merge(
+          "precio_cliente" => precio_de_linea(repuesto)
+        )
       end,
       mano_de_obra: resumen.mano_de_obra.to_s("F"),
       total_repuestos: resumen.total_repuestos.to_s("F"),
@@ -78,7 +84,7 @@ class OrdenesController < ApplicationController
       orden_id: parcial.orden.id,
       tareas: parcial.tareas.map { |tarea| serialize_linea_tarea(tarea) },
       repuestos: parcial.repuestos.map do |repuesto|
-        repuesto.as_json(only: %i[id descripcion cantidad estado]).merge(
+        repuesto.as_json(only: %i[id descripcion cantidad estado aprobacion]).merge(
           "costo_unitario" => repuesto.costo_unitario&.to_s("F"), "margen" => repuesto.margen&.to_s("F"),
           "precio_cliente" => precio_de_linea(repuesto)
         )
@@ -90,13 +96,27 @@ class OrdenesController < ApplicationController
     }
   end
 
+  def serialize_presupuesto(presupuesto)
+    {
+      orden_id: presupuesto.orden.id,
+      tareas: presupuesto.tareas.map { |tarea| serialize_linea_tarea(tarea) },
+      repuestos: presupuesto.repuestos.map do |repuesto|
+        repuesto.as_json(only: %i[id descripcion cantidad estado aprobacion]).merge(
+          "precio_cliente" => precio_de_linea(repuesto)
+        )
+      end,
+      presupuesto: presupuesto.presupuesto.to_s("F"),
+      total_aseguradora: presupuesto.total_aseguradora.to_s("F")
+    }
+  end
+
   def precio_de_linea(repuesto)
     monto = repuesto.valorizado? ? repuesto.precio_vigente : repuesto.precio_cliente
     monto&.to_s("F")
   end
 
   def serialize_linea_tarea(tarea)
-    tarea.as_json(only: %i[id descripcion estado terminada_en]).merge(
+    tarea.as_json(only: %i[id descripcion estado aprobacion terminada_en]).merge(
       "precio" => tarea.precio&.to_s("F"), "mecanico" => tarea.mecanico&.as_json(only: %i[id nombre])
     )
   end

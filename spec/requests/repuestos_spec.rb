@@ -165,7 +165,7 @@ RSpec.describe "Repuestos", type: :request do
       response.parsed_body["repuestos"].each do |repuesto|
         expect(repuesto["comprobante"]).to be_nil
         expect(repuesto.keys).to contain_exactly(
-          "id", "orden_id", "repuesto_catalogo_id", "descripcion", "cantidad", "estado",
+          "id", "orden_id", "repuesto_catalogo_id", "descripcion", "cantidad", "estado", "aprobacion",
           "registrado_por_id", "registrado_por", "created_at", "comprobante"
         )
       end
@@ -204,6 +204,17 @@ RSpec.describe "Repuestos", type: :request do
     it "exige autenticación para valorizar" do
       patch "/ordenes/#{orden.id}/repuestos/#{pendiente.id}/valorizar", params: { repuesto: { costo_unitario: "100" } }, as: :json
       expect(response).to have_http_status(:unauthorized)
+    end
+
+    it "rechaza valorizar un repuesto rechazado" do
+      RepuestoRegistrarAprobacion.call(repuesto: pendiente, aprobacion: "rechazado")
+
+      patch "/ordenes/#{orden.id}/repuestos/#{pendiente.id}/valorizar",
+        params: { repuesto: { costo_unitario: "100" } }, headers: auth_headers(admin), as: :json
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body["errors"]["base"]).to include("No se puede cargar el costo de un repuesto rechazado")
+      expect(pendiente.reload).to be_pendiente_de_valorizar
     end
 
     it "rechaza volver a valorizar un repuesto ya valorizado" do
@@ -348,6 +359,17 @@ RSpec.describe "Repuestos", type: :request do
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body).to include("cantidad" => 4, "estado" => "pendiente_de_valorizar",
                                               "costo_unitario" => nil, "precio_cliente" => nil)
+    end
+
+    it "rechaza corregir un repuesto rechazado" do
+      RepuestoRegistrarAprobacion.call(repuesto: repuesto, aprobacion: "rechazado")
+
+      patch "/ordenes/#{orden.id}/repuestos/#{repuesto.id}", params: { repuesto: { cantidad: 3 } },
+        headers: auth_headers(admin), as: :json
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body["errors"]["base"]).to include("No se puede corregir un repuesto rechazado")
+      expect(repuesto.reload.cantidad).to eq(2)
     end
 
     it "rechaza costo y margen en un aviso pendiente" do

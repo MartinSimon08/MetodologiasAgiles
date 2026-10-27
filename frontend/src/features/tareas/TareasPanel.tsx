@@ -6,6 +6,7 @@ import { Paginacion } from '../../components/Paginacion'
 import { errorMessage } from '../../lib/api'
 import { importe } from '../../lib/formato'
 import { useAuth } from '../auth/AuthContext'
+import { invalidarTotalesOrden } from '../ordenes/totales'
 import {
   actualizarPrecioTarea,
   aprobarTarea,
@@ -46,7 +47,7 @@ export function TareasPanel({ ordenId, ordenAbierta }: Props) {
 
   const invalidar = () => {
     queryClient.invalidateQueries({ queryKey: ['tareas', ordenId] })
-    queryClient.invalidateQueries({ queryKey: ['total-parcial', ordenId] })
+    invalidarTotalesOrden(queryClient, ordenId)
   }
 
   const tomar = useMutation({
@@ -67,7 +68,7 @@ export function TareasPanel({ ordenId, ordenAbierta }: Props) {
   const actualizarPrecio = useMutation({
     mutationFn: ({ id, precio }: { id: number; precio: string }) => actualizarPrecioTarea(id, precio),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['adelantos', ordenId] })
+      invalidarTotalesOrden(queryClient, ordenId)
       setEditandoPrecioId(null)
     },
     onSettled: invalidar,

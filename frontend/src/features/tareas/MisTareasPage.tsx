@@ -137,11 +137,11 @@ export function MisTareasPage() {
 
       {tareas.data && (
         <>
-          <h2>En curso</h2>
+          <h2>En curso ({tareas.data.mias.length})</h2>
           {tareas.data.mias.length === 0 ? (
             <p className="estado">No tenés tareas en curso. Tomá una de las disponibles.</p>
           ) : (
-            <ul className="lista">
+            <ul className="lista lista-en-curso">
               {tareas.data.mias.map((tarea) => (
                 <li key={tarea.id} className="tarjeta tarea-movil">
                   {datosTarea(tarea)}
@@ -162,20 +162,7 @@ export function MisTareasPage() {
             </ul>
           )}
 
-          <h2>Terminadas hoy</h2>
-          {tareas.data.terminadas_hoy.length === 0 ? (
-            <p className="estado">Todavía no terminaste ninguna tarea hoy.</p>
-          ) : (
-            <ul className="lista">
-              {tareas.data.terminadas_hoy.map((tarea) => (
-                <li key={tarea.id} className="tarjeta tarea-movil">
-                  {datosTarea(tarea)}
-                </li>
-              ))}
-            </ul>
-          )}
-
-          <h2>Disponibles</h2>
+          <h2>Disponibles ({tareas.data.disponibles.length})</h2>
           {tareas.data.disponibles.length === 0 ? (
             <p className="estado">No hay tareas disponibles por ahora.</p>
           ) : (
@@ -188,6 +175,19 @@ export function MisTareasPage() {
                       Tomar
                     </button>
                   </div>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <h2>Terminadas hoy ({tareas.data.terminadas_hoy.length})</h2>
+          {tareas.data.terminadas_hoy.length === 0 ? (
+            <p className="estado">Todavía no terminaste ninguna tarea hoy.</p>
+          ) : (
+            <ul className="lista">
+              {tareas.data.terminadas_hoy.map((tarea) => (
+                <li key={tarea.id} className="tarjeta tarea-movil">
+                  {datosTarea(tarea)}
                 </li>
               ))}
             </ul>

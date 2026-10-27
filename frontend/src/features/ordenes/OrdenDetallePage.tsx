@@ -9,6 +9,7 @@ import { TareasPanel } from '../tareas/TareasPanel'
 import { obtenerOrden } from './api'
 import { CancelarOrden } from './CancelarOrden'
 import { CerrarOrden } from './CerrarOrden'
+import { PresupuestoAseguradora } from './PresupuestoAseguradora'
 import { TotalParcialOrden } from './TotalParcialOrden'
 import { describirVehiculo, ESTADO_ORDEN_LABELS } from './types'
 import { Cargando } from '../../components/Cargando'
@@ -58,7 +59,10 @@ export function OrdenDetallePage() {
           </section>
 
           {usuario?.rol === 'administrador' && orden.data.estado === 'abierta' && (
-            <TotalParcialOrden ordenId={ordenId} />
+            <>
+              <PresupuestoAseguradora ordenId={ordenId} />
+              <TotalParcialOrden ordenId={ordenId} />
+            </>
           )}
 
           <TareasPanel ordenId={ordenId} ordenAbierta={orden.data.estado === 'abierta'} />

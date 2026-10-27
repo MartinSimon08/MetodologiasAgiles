@@ -38,6 +38,7 @@ La orden de trabajo es la entidad central. Agrupa cliente, vehículo, tareas, re
 - Estilo Ruby: RuboCop Rails Omakase (`bin/rubocop`).
 - No escribir comentarios inline en el código salvo que el developer lo pida explícitamente.
 - El backend (Rails API) vive en la raíz. El frontend React queda en `frontend/`; no mezclar código de uno en el árbol del otro.
+- Antes de crear o cambiar estilos o componentes visuales en `frontend/`, leer `DESIGN.md` (formato [DESIGN.md](https://github.com/google-labs-code/design.md) de Google Labs) y respetar sus tokens y reglas. Si cambia un token en `frontend/src/index.css`, actualizar `DESIGN.md` en el mismo PR.
 
 ## Commits y pull requests
 

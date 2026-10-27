@@ -25,12 +25,21 @@ function Resumen({ resumen }: { resumen: ResumenCierre }) {
         {terminadas.length === 0 && <p className="estado">No hay tareas terminadas.</p>}
         <ul className="lineas-cierre">
           {terminadas.map((tarea) => (
-            <li key={tarea.id}>
+            <li key={tarea.id} className={tarea.aprobacion === 'rechazada' ? 'linea-rechazada' : undefined}>
               <span>
                 {tarea.descripcion}
-                <small>{tarea.mecanico ? `Hecha por ${tarea.mecanico.nombre}` : 'Sin responsable'}</small>
+                <small>
+                  {tarea.mecanico ? `Hecha por ${tarea.mecanico.nombre}` : 'Sin responsable'}
+                  {tarea.aprobacion === 'rechazada' ? ' · Rechazada, no suma' : ''}
+                </small>
               </span>
-              <span>{tarea.precio != null ? `$ ${importe(tarea.precio)}` : 'Sin precio'}</span>
+              <span className={tarea.aprobacion === 'rechazada' ? 'sin-importe' : undefined}>
+                {tarea.aprobacion === 'rechazada'
+                  ? `No suma${tarea.precio != null ? ` · $ ${importe(tarea.precio)}` : ''}`
+                  : tarea.precio != null
+                    ? `$ ${importe(tarea.precio)}`
+                    : 'Sin precio'}
+              </span>
             </li>
           ))}
         </ul>
@@ -41,12 +50,19 @@ function Resumen({ resumen }: { resumen: ResumenCierre }) {
         {valorizados.length === 0 && <p className="estado">No hay repuestos cargados.</p>}
         <ul className="lineas-cierre">
           {valorizados.map((repuesto) => (
-            <li key={repuesto.id}>
+            <li key={repuesto.id} className={repuesto.aprobacion === 'rechazado' ? 'linea-rechazada' : undefined}>
               <span>
                 {repuesto.descripcion}
-                <small>Cantidad: {repuesto.cantidad}</small>
+                <small>
+                  Cantidad: {repuesto.cantidad}
+                  {repuesto.aprobacion === 'rechazado' ? ' · Rechazado, no suma' : ''}
+                </small>
               </span>
-              <span>$ {importe(repuesto.precio_cliente ?? 0)}</span>
+              <span className={repuesto.aprobacion === 'rechazado' ? 'sin-importe' : undefined}>
+                {repuesto.aprobacion === 'rechazado'
+                  ? `No suma · $ ${importe(repuesto.precio_cliente ?? 0)}`
+                  : `$ ${importe(repuesto.precio_cliente ?? 0)}`}
+              </span>
             </li>
           ))}
         </ul>

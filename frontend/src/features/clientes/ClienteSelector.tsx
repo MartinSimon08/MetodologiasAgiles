@@ -1,5 +1,6 @@
-import { SelectorBuscable } from '../../components/SelectorBuscable'
+import { SelectorBuscable, type FormularioCreacion } from '../../components/SelectorBuscable'
 import { listarClientes, type Cliente } from './api'
+import { NuevoClienteForm } from './NuevoClienteForm'
 
 interface Props {
   etiqueta: string
@@ -15,6 +16,10 @@ async function cargar(pagina: number, q: string) {
   return { items: clientes, meta }
 }
 
+function FormularioNuevoCliente({ onCreado, onCancelar }: FormularioCreacion<Cliente>) {
+  return <NuevoClienteForm onRegistrado={onCreado} onCancelar={onCancelar} />
+}
+
 export function ClienteSelector(props: Props) {
   return (
     <SelectorBuscable<Cliente>
@@ -28,6 +33,10 @@ export function ClienteSelector(props: Props) {
           <span>{cliente.telefono}</span>
         </>
       )}
+      crear={{
+        etiqueta: 'Nuevo cliente',
+        Formulario: FormularioNuevoCliente,
+      }}
       textos={{
         cargando: 'Cargando clientes…',
         sinResultados: 'Ningún cliente coincide con la búsqueda.',

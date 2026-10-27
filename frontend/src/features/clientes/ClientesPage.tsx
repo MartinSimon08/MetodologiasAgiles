@@ -38,20 +38,20 @@ export function ClientesPage() {
     window.scrollTo({ top: 0 })
   }
 
+  const nuevo = !registrando && (
+    <BotonNuevo
+      onClick={() => {
+        setAviso(null)
+        setRegistrando(true)
+      }}
+    >
+      Nuevo cliente
+    </BotonNuevo>
+  )
+
   return (
     <section className="clientes">
-      <EncabezadoPagina titulo="Clientes" bajada="Personas que traen vehículos al taller.">
-        {!registrando && (
-          <BotonNuevo
-            onClick={() => {
-              setAviso(null)
-              setRegistrando(true)
-            }}
-          >
-            Nuevo cliente
-          </BotonNuevo>
-        )}
-      </EncabezadoPagina>
+      <EncabezadoPagina titulo="Clientes" bajada="Personas que traen vehículos al taller." />
 
       {aviso && (
         <p className="aviso" role="status">
@@ -61,9 +61,9 @@ export function ClientesPage() {
 
       {registrando && (
         <NuevoClienteForm
-          onRegistrado={(nombre) => {
+          onRegistrado={(cliente) => {
             setRegistrando(false)
-            setAviso(`Se registró a ${nombre}.`)
+            setAviso(`Se registró a ${cliente.nombre}.`)
           }}
           onCancelar={() => setRegistrando(false)}
         />
@@ -74,6 +74,7 @@ export function ClientesPage() {
         placeholder="Nombre, teléfono o patente"
         valor={busqueda}
         onCambiar={(valor) => actualizarFiltros(1, valor)}
+        accion={nuevo || undefined}
       />
 
       {clientes.isPending && <Cargando />}

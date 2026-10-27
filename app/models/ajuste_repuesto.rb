@@ -125,7 +125,8 @@ class AjusteRepuesto < ApplicationRecord
     return unless calculable? && cantidad_dentro_de_lo_disponible? && !ajuste_precio_cliente.nil?
 
     orden = repuesto.orden
-    resultante = orden.total + ajuste_precio_cliente.to_d
+    delta = repuesto.aprobacion_rechazado? ? 0.to_d : ajuste_precio_cliente.to_d
+    resultante = orden.total + delta
     return if resultante >= orden.adelantos.sum(:importe).to_d
 
     errors.add(:base, :deja_total_bajo_adelantos)

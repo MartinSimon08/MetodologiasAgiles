@@ -36,7 +36,7 @@ class Orden < ApplicationRecord
   end
 
   def total_repuestos
-    repuestos.vigentes.valorizado.sum(:precio_cliente).to_d + total_ajustes_repuestos
+    repuestos_que_suman.valorizado.sum(:precio_cliente).to_d + total_ajustes_repuestos
   end
 
   def total_a_cobrar
@@ -48,11 +48,11 @@ class Orden < ApplicationRecord
   end
 
   def total_reemplazando(repuesto, precio:, incluir_ajustes_del_repuesto: true)
-    vigentes = repuestos.vigentes
+    vigentes = repuestos_que_suman
     vigentes = vigentes.where.not(id: repuesto.id) unless incluir_ajustes_del_repuesto
     mano_de_obra_cargada +
-      repuestos.vigentes.where.not(id: repuesto.id).sum(:precio_cliente).to_d +
-      precio.to_d +
+      repuestos_que_suman.where.not(id: repuesto.id).sum(:precio_cliente).to_d +
+      (repuesto.aprobacion_rechazado? ? 0 : precio.to_d) +
       AjusteRepuesto.where(repuesto_id: vigentes.select(:id)).sum(:ajuste_precio_cliente).to_d
   end
 
@@ -64,11 +64,16 @@ class Orden < ApplicationRecord
 
   private
 
+  def repuestos_que_suman
+    repuestos.vigentes.where.not(aprobacion: :rechazado)
+  end
+
   def total_ajustes_repuestos
-    AjusteRepuesto.where(repuesto_id: repuestos.vigentes.select(:id)).sum(:ajuste_precio_cliente).to_d
+    AjusteRepuesto.where(repuesto_id: repuestos_que_suman.select(:id)).sum(:ajuste_precio_cliente).to_d
   end
 
   def sin_repuestos_pendientes_de_valorizar
-    errors.add(:base, :repuestos_pendientes) if repuestos.vigentes.pendiente_de_valorizar.exists?
+    pendientes = repuestos.vigentes.where.not(aprobacion: :rechazado).pendiente_de_valorizar
+    errors.add(:base, :repuestos_pendientes) if pendientes.exists?
   end
 end

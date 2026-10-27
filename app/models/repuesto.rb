@@ -8,11 +8,14 @@ class Repuesto < ApplicationRecord
 
   enum :estado, { pendiente_de_valorizar: "pendiente_de_valorizar", valorizado: "valorizado" },
     validate: true, default: :valorizado
+  enum :aprobacion, { pendiente: "pendiente", aprobado: "aprobado", rechazado: "rechazado" },
+    prefix: true, validate: true, default: :pendiente
 
   scope :vigentes, -> { where(quitado_en: nil) }
   scope :quitados, -> { where.not(quitado_en: nil) }
 
   normalizes :descripcion, with: ->(descripcion) { descripcion.squish }
+  normalizes :proveedor, with: ->(proveedor) { proveedor.squish.presence }
 
   validates :descripcion, presence: true, length: { maximum: 200 }
   validates :cantidad, numericality: { only_integer: true, greater_than: 0, less_than_or_equal_to: 2_147_483_647 }

@@ -42,6 +42,17 @@ RSpec.describe RepuestoValorizar do
     expect(repuesto.reload).to have_attributes(costo_unitario: BigDecimal("100"))
   end
 
+  it "rechaza valorizar un repuesto rechazado" do
+    RepuestoRegistrarAprobacion.call(repuesto: repuesto, aprobacion: "rechazado")
+
+    expect { described_class.call(repuesto: repuesto, costo_unitario: "100") }
+      .to raise_error(ActiveRecord::RecordInvalid) { |error|
+        expect(error.record.errors[:base]).to include("No se puede cargar el costo de un repuesto rechazado")
+      }
+
+    expect(repuesto.reload).to be_pendiente_de_valorizar
+  end
+
   it "rechaza valorizar en una orden cerrada" do
     pendiente = repuesto
     marcar_cerrada(orden)

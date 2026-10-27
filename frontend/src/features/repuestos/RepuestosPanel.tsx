@@ -7,7 +7,7 @@ import { useAuth } from '../auth/AuthContext'
 import { invalidarTotalesOrden } from '../ordenes/totales'
 import { AvisoRepuestoForm } from './AvisoRepuestoForm'
 import { ComprobanteRepuesto } from './ComprobanteRepuesto'
-import { listarRepuestos, quitarRepuesto, ESTADO_REPUESTO_LABELS, type AjusteRepuesto, type Repuesto, type TipoAjuste } from './api'
+import { APROBACION_REPUESTO_LABELS, ESTADO_REPUESTO_LABELS, listarRepuestos, quitarRepuesto, type AjusteRepuesto, type Repuesto, type TipoAjuste } from './api'
 import { EditarRepuestoForm } from './EditarRepuestoForm'
 import { NuevoRepuestoForm } from './NuevoRepuestoForm'
 import { RegistrarAjusteForm } from './RegistrarAjusteForm'
@@ -136,6 +136,11 @@ export function RepuestosPanel({ ordenId, ordenAbierta }: { ordenId: number; ord
         <ul className="lista">
           {repuestos.data.repuestos.map((repuesto) => <li key={repuesto.id} className="tarjeta item-datos">
             <strong>{repuesto.descripcion}</strong>
+            {repuesto.aprobacion !== 'pendiente' && (
+              <span className={`insignia insignia-${repuesto.aprobacion}`}>
+                {APROBACION_REPUESTO_LABELS[repuesto.aprobacion]}
+              </span>
+            )}
             {!esAdministrador ? (
               <>
                 <span className={`insignia insignia-${repuesto.estado}`}>
@@ -181,8 +186,10 @@ export function RepuestosPanel({ ordenId, ordenAbierta }: { ordenId: number; ord
             ) : esAdministrador && ordenAbierta && (
               <>
                 <div className="acciones item-acciones">
-                  <button type="button" className="secundario" onClick={() => empezarEdicion(repuesto)}>Corregir</button>
-                  {repuesto.estado === 'pendiente_de_valorizar' && (
+                  {repuesto.aprobacion !== 'rechazado' && (
+                    <button type="button" className="secundario" onClick={() => empezarEdicion(repuesto)}>Corregir</button>
+                  )}
+                  {repuesto.aprobacion !== 'rechazado' && repuesto.estado === 'pendiente_de_valorizar' && (
                     <button type="button" className="secundario" onClick={() => empezarValorizar(repuesto)}>Cargar costo</button>
                   )}
                   {repuesto.estado === 'valorizado' && (repuesto.cantidad_disponible ?? 0) > 0 && (

@@ -154,6 +154,43 @@ RSpec.describe Orden, type: :model do
     expect(orden.total).to eq(12_345)
   end
 
+  it "deja visibles los ítems rechazados y no los suma al total" do
+    orden = create(:orden)
+    admin = create(:usuario, :administrador)
+    incluida = create(:tarea, :terminada, orden: orden, precio: 15_000)
+    rechazada = create(:tarea, :terminada, orden: orden, precio: 4_000, aprobacion: :rechazada)
+    create(:tarea, orden: orden, precio: 3_000, aprobacion: :rechazada)
+    repuesto = RepuestoAgregar.call(
+      orden: orden, registrado_por: admin, descripcion: "Filtro", cantidad: 1, costo_unitario: "1000", margen: 50
+    )
+    rechazado = RepuestoAgregar.call(
+      orden: orden, registrado_por: admin, descripcion: "Pastilla", cantidad: 1, costo_unitario: "800", margen: 25
+    )
+    RepuestoRegistrarAprobacion.call(repuesto: rechazado, aprobacion: "rechazado")
+
+    expect(orden.tareas).to include(incluida, rechazada)
+    expect(orden.repuestos).to include(repuesto, rechazado)
+    expect(orden.mano_de_obra).to eq(15_000)
+    expect(orden.mano_de_obra_cargada).to eq(15_000)
+    expect(orden.total_repuestos).to eq(1_500)
+    expect(orden.total).to eq(16_500)
+    expect(orden.total_a_cobrar).to eq(16_500)
+  end
+
+  it "no suma el ajuste de un repuesto rechazado" do
+    orden = create(:orden)
+    admin = create(:usuario, :administrador)
+    repuesto = RepuestoAgregar.call(
+      orden: orden, registrado_por: admin, descripcion: "Filtro", cantidad: 2, costo_unitario: "100", margen: "0"
+    )
+    RepuestoRegistrarAjuste.call(
+      repuesto: repuesto, registrado_por: admin, tipo: "devolucion", cantidad: 1, costo_unitario: "100", motivo: "Falla"
+    )
+    RepuestoRegistrarAprobacion.call(repuesto: repuesto, aprobacion: "rechazado")
+
+    expect(orden.reload.total).to eq(0)
+  end
+
   it "incluye en el total el ajuste de precio de una devolución" do
     orden = create(:orden)
     admin = create(:usuario, :administrador)

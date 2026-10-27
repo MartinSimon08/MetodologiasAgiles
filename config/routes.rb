@@ -31,6 +31,7 @@ Rails.application.routes.draw do
     end
   end
   resources :repuestos_catalogo, only: %i[index create update destroy]
+  resources :repuestos_por_proveedor, only: :index
 
   resources :tareas_frecuentes, only: %i[index create]
   resources :tareas_mecanico, only: :index
@@ -41,6 +42,8 @@ Rails.application.routes.draw do
       resources :ajustes, only: :create, controller: "ajustes_repuesto"
       member do
         patch :valorizar
+        patch :aprobar
+        patch :rechazar
         get :comprobante
         post :adjuntar_comprobante, path: :comprobante
       end
@@ -65,6 +68,7 @@ Rails.application.routes.draw do
       patch :cerrar
       get :resumen_cierre
       get :total_parcial
+      get :presupuesto
     end
   end
 end

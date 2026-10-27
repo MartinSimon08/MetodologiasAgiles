@@ -53,6 +53,7 @@ export function Layout() {
               <NavLink to="/clientes">Clientes</NavLink>
               <NavLink to="/vehiculos">Vehículos</NavLink>
               <NavLink to="/repuestos">Repuestos</NavLink>
+              <NavLink to="/aseguradoras">Aseguradoras</NavLink>
               <NavLink to="/usuarios">Usuarios</NavLink>
               <NavLink to="/tareas-frecuentes">Tareas frecuentes</NavLink>
               <NavLink to="/configuracion">Configuración</NavLink>

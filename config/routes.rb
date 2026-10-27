@@ -22,6 +22,12 @@ Rails.application.routes.draw do
   end
 
   resources :clientes, only: %i[index create]
+  resources :aseguradoras, only: %i[index create update destroy] do
+    member do
+      patch :desactivar
+      patch :activar
+    end
+  end
   resources :vehiculos, only: %i[index create] do
     collection do
       get :verificar_patente

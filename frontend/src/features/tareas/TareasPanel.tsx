@@ -18,6 +18,7 @@ import {
 import { NotasTarea } from './NotasTarea'
 import { NuevaTareaForm } from './NuevaTareaForm'
 import { APROBACION_TAREA_LABELS, ESTADO_TAREA_LABELS } from './types'
+import { Cargando } from '../../components/Cargando'
 
 interface Props {
   ordenId: number
@@ -134,7 +135,7 @@ export function TareasPanel({ ordenId, ordenAbierta }: Props) {
         />
       )}
 
-      {tareas.isPending && <p className="estado">Cargando tareas…</p>}
+      {tareas.isPending && <Cargando />}
       {tareas.isError && (
         <p className="error" role="alert">
           {errorMessage(tareas.error, 'No se pudieron cargar las tareas.')}

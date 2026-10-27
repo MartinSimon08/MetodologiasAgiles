@@ -12,6 +12,7 @@ import { EditarRepuestoForm } from './EditarRepuestoForm'
 import { NuevoRepuestoForm } from './NuevoRepuestoForm'
 import { RegistrarAjusteForm } from './RegistrarAjusteForm'
 import { ValorizarRepuestoForm } from './ValorizarRepuestoForm'
+import { Cargando } from '../../components/Cargando'
 
 export function RepuestosPanel({ ordenId, ordenAbierta }: { ordenId: number; ordenAbierta: boolean }) {
   const { usuario } = useAuth()
@@ -120,7 +121,7 @@ export function RepuestosPanel({ ordenId, ordenAbierta }: { ordenId: number; ord
         }} />}
       {esAdministrador && valorizando && <ValorizarRepuestoForm key={valorizando.id} ordenId={ordenId} repuesto={valorizando}
         onCancelar={() => setValorizando(null)} onGuardado={() => setValorizando(null)} />}
-      {repuestos.isPending && <p className="estado">Cargando repuestos…</p>}
+      {repuestos.isPending && <Cargando />}
       {repuestos.isError && <p className="error" role="alert">
         {errorMessage(repuestos.error, 'No se pudieron cargar los repuestos.')}
       </p>}

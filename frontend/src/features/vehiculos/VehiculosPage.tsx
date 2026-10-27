@@ -10,6 +10,7 @@ import { useDebounce } from '../../lib/useDebounce'
 import { listarVehiculos, type Vehiculo } from './api'
 import { CambiarDuenioForm } from './CambiarDuenioForm'
 import { NuevoVehiculoForm } from './NuevoVehiculoForm'
+import { Cargando } from '../../components/Cargando'
 
 function descripcion(vehiculo: Vehiculo) {
   return [vehiculo.marca, vehiculo.modelo, vehiculo.anio].filter(Boolean).join(' ')
@@ -86,7 +87,7 @@ export function VehiculosPage() {
         onCambiar={(valor) => actualizarFiltros(1, valor)}
       />
 
-      {vehiculos.isPending && <p className="estado">Cargando vehículos…</p>}
+      {vehiculos.isPending && <Cargando />}
       {vehiculos.isError && (
         <p className="error" role="alert">
           {errorMessage(vehiculos.error, 'No se pudieron cargar los vehículos.')}

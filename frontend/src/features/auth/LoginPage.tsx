@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { errorMessage } from '../../lib/api'
+import { SelectorTema } from '../../components/SelectorTema'
 import { useAuth, type MotivoCierre } from './AuthContext'
 
 function OjoAbierto() {
@@ -59,6 +60,7 @@ export function LoginPage() {
         <p className="login-titulo">Órdenes, tareas y repuestos del día.</p>
       </div>
       <form className="tarjeta formulario" onSubmit={handleSubmit}>
+        <SelectorTema className="selector-tema-login" />
         <p className="kicker">Ingreso</p>
         <h1>Gestión de Taller</h1>
         {motivoCierre && !error && (

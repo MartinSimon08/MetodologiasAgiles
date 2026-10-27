@@ -6,6 +6,7 @@ import { errorMessage } from '../../lib/api'
 import { importe } from '../../lib/formato'
 import { listarTareasFrecuentes } from './api'
 import { NuevaTareaFrecuenteForm } from './NuevaTareaFrecuenteForm'
+import { Cargando } from '../../components/Cargando'
 
 export function TareasFrecuentesPage() {
   const [creando, setCreando] = useState(false)
@@ -50,7 +51,7 @@ export function TareasFrecuentesPage() {
         />
       )}
 
-      {tareasFrecuentes.isPending && <p className="estado">Cargando catálogo…</p>}
+      {tareasFrecuentes.isPending && <Cargando />}
       {tareasFrecuentes.isError && (
         <p className="error" role="alert">
           {errorMessage(tareasFrecuentes.error, 'No se pudo cargar el catálogo.')}

@@ -8,12 +8,14 @@ import {
   obtenerConfiguracion,
   type ConfiguracionTaller,
 } from './api'
+import { Cargando } from '../../components/Cargando'
 
 const QUERY_KEY = ['configuracion-taller']
 
-function MargenForm({ configuracion }: { configuracion: ConfiguracionTaller }) {
+function ConfiguracionForm({ configuracion }: { configuracion: ConfiguracionTaller }) {
   const queryClient = useQueryClient()
   const [margen, setMargen] = useState(String(configuracion.margen_repuestos))
+  const [cupo, setCupo] = useState(String(configuracion.cupo_diario))
   const [aviso, setAviso] = useState(false)
 
   const mutation = useMutation({
@@ -21,6 +23,7 @@ function MargenForm({ configuracion }: { configuracion: ConfiguracionTaller }) {
     onSuccess: (actualizada) => {
       queryClient.setQueryData(QUERY_KEY, actualizada)
       setMargen(String(actualizada.margen_repuestos))
+      setCupo(String(actualizada.cupo_diario))
       setAviso(true)
     },
   })
@@ -31,7 +34,7 @@ function MargenForm({ configuracion }: { configuracion: ConfiguracionTaller }) {
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setAviso(false)
-    mutation.mutate(Number(margen))
+    mutation.mutate({ margen_repuestos: Number(margen), cupo_diario: Number(cupo) })
   }
 
   return (
@@ -58,14 +61,32 @@ function MargenForm({ configuracion }: { configuracion: ConfiguracionTaller }) {
         <ErroresCampo errores={errores.margen_repuestos} />
       </label>
 
+      <label>
+        Cupo diario de ingresos
+        <input
+          type="number"
+          inputMode="numeric"
+          min="1"
+          step="1"
+          value={cupo}
+          onChange={(event) => setCupo(event.target.value)}
+          required
+          aria-describedby="ayuda-cupo"
+        />
+        <small id="ayuda-cupo">
+          Cantidad máxima de vehículos que la turnera acepta por día. Aplica a los turnos que se asignen desde ahora.
+        </small>
+        <ErroresCampo errores={errores.cupo_diario} />
+      </label>
+
       {mutation.isError && !hayErroresDeCampo && (
         <p className="error" role="alert">
-          {errorMessage(mutation.error, 'No se pudo guardar el margen.')}
+          {errorMessage(mutation.error, 'No se pudo guardar la configuración.')}
         </p>
       )}
       {aviso && (
         <p className="aviso" role="status">
-          Se guardó el margen por defecto.
+          Se guardó la configuración.
         </p>
       )}
 
@@ -88,13 +109,13 @@ export function ConfiguracionPage() {
     <section className="configuracion">
       <EncabezadoPagina titulo="Configuración" bajada="Valores generales que usa el taller." />
 
-      {configuracion.isPending && <p className="estado">Cargando configuración…</p>}
+      {configuracion.isPending && <Cargando />}
       {configuracion.isError && (
         <p className="error" role="alert">
           {errorMessage(configuracion.error, 'No se pudo cargar la configuración.')}
         </p>
       )}
-      {configuracion.data && <MargenForm configuracion={configuracion.data} />}
+      {configuracion.data && <ConfiguracionForm configuracion={configuracion.data} />}
     </section>
   )
 }

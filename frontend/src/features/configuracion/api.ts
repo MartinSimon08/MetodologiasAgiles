@@ -2,6 +2,7 @@ import { api } from '../../lib/api'
 
 export interface ConfiguracionTaller {
   margen_repuestos: number
+  cupo_diario: number
 }
 
 export async function obtenerConfiguracion() {
@@ -9,9 +10,9 @@ export async function obtenerConfiguracion() {
   return data
 }
 
-export async function actualizarConfiguracion(margenRepuestos: number) {
+export async function actualizarConfiguracion(cambios: Partial<ConfiguracionTaller>) {
   const { data } = await api.patch<ConfiguracionTaller>('/configuracion_taller', {
-    configuracion_taller: { margen_repuestos: margenRepuestos },
+    configuracion_taller: cambios,
   })
   return data
 }

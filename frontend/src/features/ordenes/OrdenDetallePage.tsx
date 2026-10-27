@@ -11,6 +11,7 @@ import { CancelarOrden } from './CancelarOrden'
 import { CerrarOrden } from './CerrarOrden'
 import { TotalParcialOrden } from './TotalParcialOrden'
 import { describirVehiculo, ESTADO_ORDEN_LABELS } from './types'
+import { Cargando } from '../../components/Cargando'
 
 export function OrdenDetallePage() {
   const { id } = useParams()
@@ -28,7 +29,7 @@ export function OrdenDetallePage() {
         ← Volver a órdenes
       </Link>
 
-      {orden.isPending && <p className="estado">Cargando orden…</p>}
+      {orden.isPending && <Cargando />}
       {orden.isError && (
         <p className="error" role="alert">
           {errorMessage(orden.error, 'No se pudo cargar la orden.')}

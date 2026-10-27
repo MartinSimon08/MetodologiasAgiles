@@ -10,6 +10,7 @@ import { useAuth } from '../auth/AuthContext'
 import { listarOrdenes } from './api'
 import { NuevaOrdenForm } from './NuevaOrdenForm'
 import { describirVehiculo, ESTADO_ORDEN_LABELS, type EstadoOrden } from './types'
+import { Cargando } from '../../components/Cargando'
 
 const ESTADOS = Object.keys(ESTADO_ORDEN_LABELS) as EstadoOrden[]
 
@@ -69,7 +70,7 @@ export function OrdenesPage() {
         </select>
       </label>
 
-      {ordenes.isPending && <p className="estado">Cargando órdenes…</p>}
+      {ordenes.isPending && <Cargando />}
       {ordenes.isError && (
         <p className="error" role="alert">
           {errorMessage(ordenes.error, 'No se pudieron cargar las órdenes.')}

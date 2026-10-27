@@ -8,6 +8,7 @@ import { describirVehiculo } from '../ordenes/types'
 import { agregarNotaTarea, completarTarea, liberarTarea, listarTareasMecanico, tomarTarea } from './api'
 import { NotasTarea } from './NotasTarea'
 import { APROBACION_TAREA_LABELS, type TareaMecanico } from './types'
+import { Cargando } from '../../components/Cargando'
 
 const ACTUALIZACION_MS = 30 * 1000
 
@@ -127,7 +128,7 @@ export function MisTareasPage() {
         </p>
       )}
 
-      {tareas.isPending && <p className="estado">Cargando tareas…</p>}
+      {tareas.isPending && <Cargando />}
       {tareas.isError && (
         <p className="error" role="alert">
           {errorMessage(tareas.error, 'No se pudieron cargar las tareas.')}

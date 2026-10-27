@@ -5,6 +5,7 @@ import { fechaHora, importe } from '../../lib/formato'
 import { useAuth } from '../auth/AuthContext'
 import { listarAdelantos, totalAdelantado } from './api'
 import { NuevoAdelantoForm } from './NuevoAdelantoForm'
+import { Cargando } from '../../components/Cargando'
 
 export function AdelantosPanel({ ordenId, ordenAbierta }: { ordenId: number; ordenAbierta: boolean }) {
   const { usuario } = useAuth()
@@ -57,7 +58,7 @@ export function AdelantosPanel({ ordenId, ordenAbierta }: { ordenId: number; ord
       )}
       {!ordenAbierta && <p className="estado">Esta orden ya no admite adelantos.</p>}
 
-      {consulta.isPending && <p className="estado">Cargando adelantos…</p>}
+      {consulta.isPending && <Cargando />}
       {consulta.isError && (
         <p className="error" role="alert">
           {errorMessage(consulta.error, 'No se pudieron cargar los adelantos.')}

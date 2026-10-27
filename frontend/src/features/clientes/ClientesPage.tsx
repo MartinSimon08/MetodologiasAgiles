@@ -9,6 +9,7 @@ import { errorMessage } from '../../lib/api'
 import { useDebounce } from '../../lib/useDebounce'
 import { listarClientes } from './api'
 import { NuevoClienteForm } from './NuevoClienteForm'
+import { Cargando } from '../../components/Cargando'
 
 export function ClientesPage() {
   const [registrando, setRegistrando] = useState(false)
@@ -75,7 +76,7 @@ export function ClientesPage() {
         onCambiar={(valor) => actualizarFiltros(1, valor)}
       />
 
-      {clientes.isPending && <p className="estado">Cargando clientes…</p>}
+      {clientes.isPending && <Cargando />}
       {clientes.isError && (
         <p className="error" role="alert">
           {errorMessage(clientes.error, 'No se pudieron cargar los clientes.')}

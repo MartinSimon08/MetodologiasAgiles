@@ -1986,6 +1986,8 @@ label.boton-archivo:has(input:disabled) {
     width: 100%;
     animation: none;
     opacity: 0.6;
+  }
+}
 
 .lista-en-curso {
   border-color: var(--tinta);

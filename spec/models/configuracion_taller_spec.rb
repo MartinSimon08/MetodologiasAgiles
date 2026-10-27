@@ -23,4 +23,18 @@ RSpec.describe ConfiguracionTaller, type: :model do
   it "rechaza un margen mayor a cien" do
     expect(described_class.new(margen_repuestos: 100.01)).not_to be_valid
   end
+
+  it "usa un cupo diario inicial mayor a cero" do
+    expect(described_class.actual.cupo_diario).to eq(5)
+  end
+
+  it "acepta un cupo diario entero mayor a cero" do
+    expect(described_class.new(cupo_diario: 1)).to be_valid
+  end
+
+  it "rechaza un cupo diario de cero, negativo o decimal" do
+    [ 0, -1, 2.5 ].each do |valor|
+      expect(described_class.new(cupo_diario: valor)).not_to be_valid
+    end
+  end
 end

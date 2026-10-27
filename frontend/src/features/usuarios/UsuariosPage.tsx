@@ -11,6 +11,7 @@ import { listarUsuarios, type UsuarioDesactivado } from './api'
 import { DesactivarUsuario } from './DesactivarUsuario'
 import { NuevoUsuarioForm } from './NuevoUsuarioForm'
 import { ResetearPasswordForm } from './ResetearPasswordForm'
+import { Cargando } from '../../components/Cargando'
 
 export function UsuariosPage() {
   const { usuario: actual } = useAuth()
@@ -80,7 +81,7 @@ export function UsuariosPage() {
         />
       )}
 
-      {usuarios.isPending && <p className="estado">Cargando usuarios…</p>}
+      {usuarios.isPending && <Cargando />}
       {usuarios.isError && (
         <p className="error" role="alert">
           {errorMessage(usuarios.error, 'No se pudieron cargar los usuarios.')}

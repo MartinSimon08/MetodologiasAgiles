@@ -4,6 +4,7 @@ import { Paginacion } from '../../components/Paginacion'
 import { errorMessage } from '../../lib/api'
 import { importe } from '../../lib/formato'
 import { listarCatalogo, type RepuestoCatalogo } from './api'
+import { Cargando } from '../../components/Cargando'
 
 interface Props {
   onSeleccionar?: (repuesto: RepuestoCatalogo) => void
@@ -28,14 +29,14 @@ export function CatalogoRepuestos({ onSeleccionar, onEditar, onEliminar, filtro,
       {filtro === undefined && <div className="buscador-con-accion">
         <label className="buscador">
           <span>Buscar en el catálogo</span>
-          <input type="search" value={buscar} onChange={(event) => {
+          <input type="search" placeholder="Nombre del repuesto" value={buscar} onChange={(event) => {
             setBuscar(event.target.value)
             setPagina(1)
           }} />
         </label>
         {accionNuevo}
       </div>}
-      {catalogo.isPending && <p className="estado">Cargando catálogo…</p>}
+      {catalogo.isPending && <Cargando />}
       {catalogo.isError && <p className="error" role="alert">
         {errorMessage(catalogo.error, 'No se pudo cargar el catálogo.')}
       </p>}

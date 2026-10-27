@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_26_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_27_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "unaccent"
@@ -90,7 +90,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_26_120000) do
     t.decimal "margen_repuestos", precision: 5, scale: 2, default: "0.0", null: false
     t.boolean "registro_unico", default: true, null: false
     t.datetime "updated_at", null: false
+    t.integer "cupo_diario", default: 5, null: false
     t.index ["registro_unico"], name: "index_configuraciones_taller_on_registro_unico", unique: true
+    t.check_constraint "cupo_diario > 0", name: "configuraciones_taller_cupo_diario_valido"
     t.check_constraint "margen_repuestos >= 0::numeric AND margen_repuestos <= 100::numeric", name: "configuraciones_taller_margen_repuestos_valido"
     t.check_constraint "registro_unico = true", name: "configuraciones_taller_registro_unico"
   end

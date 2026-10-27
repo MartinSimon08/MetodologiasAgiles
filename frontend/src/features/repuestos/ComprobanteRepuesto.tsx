@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState, type ChangeEvent } from 'react'
 import { errorMessage, fieldErrors } from '../../lib/api'
 import { adjuntarComprobante, verComprobante, type Repuesto } from './api'
+import { Cargando } from '../../components/Cargando'
 
 const TIPOS = new Set(['image/jpeg', 'image/png', 'image/webp'])
 const TAMANO_MAXIMO = 8 * 1024 * 1024
@@ -93,7 +94,7 @@ export function ComprobanteRepuesto({ ordenId, repuesto, puedeAdjuntar }: {
       {mensaje && <p className="error" role="alert">{mensaje}</p>}
       {visible && (
         <div className="comprobante-vista">
-          {cargando && <p className="estado">Cargando comprobante…</p>}
+          {cargando && <Cargando />}
           {errorCarga && <p className="error" role="alert">{errorCarga}</p>}
           {url && <img src={url} alt={`Comprobante de ${repuesto.descripcion}`} />}
           <button type="button" className="secundario" onClick={() => setVisible(false)}>Cerrar</button>

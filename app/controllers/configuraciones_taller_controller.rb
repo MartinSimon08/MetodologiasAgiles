@@ -13,10 +13,10 @@ class ConfiguracionesTallerController < ApplicationController
   private
 
   def configuracion_params
-    params.require(:configuracion_taller).permit(:margen_repuestos).with_defaults(margen_repuestos: nil)
+    params.require(:configuracion_taller).permit(:margen_repuestos, :cupo_diario)
   end
 
   def serialize(configuracion)
-    { margen_repuestos: configuracion.margen_repuestos.to_f }
+    { margen_repuestos: configuracion.margen_repuestos.to_f, cupo_diario: configuracion.cupo_diario }
   end
 end

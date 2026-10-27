@@ -1,7 +1,7 @@
 class ConfiguracionTallerActualizar
-  def self.call(margen_repuestos:)
+  def self.call(**atributos)
     ConfiguracionTaller.actual.tap do |configuracion|
-      configuracion.update!(margen_repuestos: margen_repuestos)
+      configuracion.update!(atributos)
     end
   end
 end

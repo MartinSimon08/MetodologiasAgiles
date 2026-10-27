@@ -9,6 +9,7 @@ import { useDebounce } from '../../lib/useDebounce'
 import { describirVehiculo } from '../ordenes/types'
 import { listarRepuestosPorProveedor, nombreProveedor } from './api'
 import { RepuestosNav } from './RepuestosNav'
+import { Cargando } from '../../components/Cargando'
 
 export function RepuestosPorProveedorPage() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -92,7 +93,7 @@ export function RepuestosPorProveedorPage() {
         </label>
       </form>
 
-      {compras.isPending && <p className="estado">Cargando compras…</p>}
+      {compras.isPending && <Cargando />}
       {compras.isError && !errores.desde && !errores.hasta && (
         <p className="error" role="alert">
           {errorMessage(compras.error, 'No se pudieron cargar las compras.')}

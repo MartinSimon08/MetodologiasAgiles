@@ -14,6 +14,8 @@ RSpec.describe "Autorización por rol", type: :request do
     "PATCH /usuarios/:id/desactivar" => :administrador,
     "GET /clientes" => :administrador,
     "POST /clientes" => :administrador,
+    "GET /casos" => :administrador,
+    "POST /casos" => :administrador,
     "GET /aseguradoras" => :administrador,
     "POST /aseguradoras" => :administrador,
     "PATCH /aseguradoras/:id" => :administrador,

@@ -1,6 +1,8 @@
 class Aseguradora < ApplicationRecord
   TELEFONO_FORMATO = /\A\+?\d{6,15}\z/
 
+  has_many :casos, dependent: :restrict_with_error
+
   scope :activas, -> { where(activa: true) }
 
   normalizes :nombre, with: ->(nombre) { nombre.squish }

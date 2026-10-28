@@ -22,6 +22,7 @@ Rails.application.routes.draw do
   end
 
   resources :clientes, only: %i[index create]
+  resources :casos, only: %i[index create]
   resources :aseguradoras, only: %i[index create update destroy] do
     member do
       patch :desactivar

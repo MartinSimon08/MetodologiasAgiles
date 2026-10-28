@@ -2,6 +2,7 @@ class Cliente < ApplicationRecord
   TELEFONO_FORMATO = /\A\+?\d{6,15}\z/
 
   has_many :vehiculos, dependent: :restrict_with_error
+  has_many :casos, foreign_key: :asegurado_id, inverse_of: :asegurado, dependent: :restrict_with_error
 
   normalizes :nombre, with: ->(nombre) { nombre.strip }
   normalizes :telefono, with: ->(telefono) { telefono.gsub(/[\s\-().]/, "") }

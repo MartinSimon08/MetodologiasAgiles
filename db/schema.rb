@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_27_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_27_130000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "unaccent"
@@ -74,6 +74,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_27_120000) do
     t.check_constraint "costo_unitario >= 0::numeric", name: "ajustes_repuesto_costo_no_negativo"
     t.check_constraint "precio_original >= 0::numeric", name: "ajustes_repuesto_precio_original_no_negativo"
     t.check_constraint "tipo::text = ANY (ARRAY['devolucion'::character varying::text, 'cambio'::character varying::text])", name: "ajustes_repuesto_tipo_valido"
+  end
+
+  create_table "aseguradoras", force: :cascade do |t|
+    t.string "nombre", null: false
+    t.string "telefono"
+    t.string "email"
+    t.boolean "activa", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index "lower((nombre)::text)", name: "index_aseguradoras_on_lower_nombre", unique: true
   end
 
   create_table "clientes", force: :cascade do |t|

@@ -11,6 +11,7 @@ es:
       repuesto_catalogo: Repuesto del catálogo
       tarea_frecuente: Tarea frecuente
       vehiculo: Vehículo
+      aseguradora: Aseguradora
     attributes:
       usuario:
         nombre: Nombre
@@ -22,6 +23,11 @@ es:
         nombre: Nombre
         telefono: Teléfono
         email: Email
+      aseguradora:
+        nombre: Nombre
+        telefono: Teléfono
+        email: Email
+        activa: Activa
       orden:
         cliente: Cliente
         vehiculo: Vehículo
@@ -88,6 +94,11 @@ es:
             base:
               ya_desactivado: El usuario ya está desactivado
               ultimo_administrador: No se puede desactivar al último administrador activo
+        aseguradora:
+          attributes:
+            base:
+              ya_activa: La aseguradora ya está activa
+              ya_desactivada: La aseguradora ya está desactivada
         adelanto:
           attributes:
             orden:

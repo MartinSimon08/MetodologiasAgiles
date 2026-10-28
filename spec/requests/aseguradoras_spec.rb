@@ -184,6 +184,16 @@ RSpec.describe "Administración de aseguradoras", type: :request do
       expect(response).to have_http_status(:created)
     end
 
+    it "no elimina una aseguradora con casos" do
+      create(:caso, aseguradora: aseguradora)
+
+      delete "/aseguradoras/#{aseguradora.id}", headers: auth_headers(admin)
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body["errors"]["base"]).to eq([ "No se puede eliminar porque existen casos dependientes" ])
+      expect(Aseguradora.exists?(aseguradora.id)).to be(true)
+    end
+
     it "devuelve 404 para una aseguradora inexistente" do
       delete "/aseguradoras/0", headers: auth_headers(admin)
 

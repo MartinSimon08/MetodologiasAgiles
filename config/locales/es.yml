@@ -12,6 +12,7 @@ es:
       tarea_frecuente: Tarea frecuente
       vehiculo: Vehículo
       aseguradora: Aseguradora
+      caso: Caso
     attributes:
       usuario:
         nombre: Nombre
@@ -28,6 +29,15 @@ es:
         telefono: Teléfono
         email: Email
         activa: Activa
+        casos: casos
+      caso:
+        aseguradora: Aseguradora
+        asegurado: Asegurado
+        vehiculo: Vehículo
+        numero_siniestro: Número de siniestro
+        descripcion: Descripción
+        fecha_turno: Turno
+        orden: Orden
       orden:
         cliente: Cliente
         vehiculo: Vehículo
@@ -99,6 +109,14 @@ es:
             base:
               ya_activa: La aseguradora ya está activa
               ya_desactivada: La aseguradora ya está desactivada
+        caso:
+          attributes:
+            aseguradora:
+              desactivada: está desactivada
+            vehiculo:
+              no_es_del_asegurado: no pertenece al asegurado
+            numero_siniestro:
+              taken: ya está cargado para esta aseguradora
         adelanto:
           attributes:
             orden:

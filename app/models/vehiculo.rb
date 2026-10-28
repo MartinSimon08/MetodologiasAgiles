@@ -3,6 +3,7 @@ class Vehiculo < ApplicationRecord
   ANIO_MINIMO = 1900
 
   belongs_to :cliente
+  has_many :casos, dependent: :restrict_with_error
 
   normalizes :patente, with: ->(patente) { patente.upcase.gsub(/[\s\-.]/, "") }
   normalizes :marca, :modelo, with: ->(valor) { valor.squish.presence }

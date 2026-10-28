@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_27_130000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_28_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "unaccent"
@@ -84,6 +84,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_27_130000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index "lower((nombre)::text)", name: "index_aseguradoras_on_lower_nombre", unique: true
+  end
+
+  create_table "casos", force: :cascade do |t|
+    t.bigint "aseguradora_id", null: false
+    t.bigint "asegurado_id", null: false
+    t.bigint "vehiculo_id", null: false
+    t.bigint "orden_id"
+    t.string "numero_siniestro", null: false
+    t.text "descripcion"
+    t.date "fecha_turno"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["asegurado_id"], name: "index_casos_on_asegurado_id"
+    t.index ["aseguradora_id", "numero_siniestro"], name: "index_casos_on_aseguradora_id_and_numero_siniestro", unique: true
+    t.index ["orden_id"], name: "index_casos_on_orden_id", unique: true
+    t.index ["vehiculo_id"], name: "index_casos_on_vehiculo_id"
   end
 
   create_table "clientes", force: :cascade do |t|
@@ -229,6 +245,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_27_130000) do
   add_foreign_key "adelantos", "usuarios", column: "registrado_por_id"
   add_foreign_key "ajustes_repuesto", "repuestos"
   add_foreign_key "ajustes_repuesto", "usuarios", column: "registrado_por_id"
+  add_foreign_key "casos", "aseguradoras"
+  add_foreign_key "casos", "clientes", column: "asegurado_id"
+  add_foreign_key "casos", "ordenes"
+  add_foreign_key "casos", "vehiculos"
   add_foreign_key "ordenes", "clientes"
   add_foreign_key "ordenes", "usuarios", column: "cerrada_por_id"
   add_foreign_key "ordenes", "vehiculos"

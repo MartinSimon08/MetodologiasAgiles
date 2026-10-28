@@ -50,6 +50,7 @@ export function Layout() {
           <NavLink to="/ordenes">Órdenes</NavLink>
           {usuario?.rol === 'administrador' && (
             <>
+              <NavLink to="/casos">Casos</NavLink>
               <NavLink to="/clientes">Clientes</NavLink>
               <NavLink to="/vehiculos">Vehículos</NavLink>
               <NavLink to="/repuestos">Repuestos</NavLink>

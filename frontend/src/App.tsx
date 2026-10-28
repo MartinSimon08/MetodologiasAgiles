@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { InicioPage } from './components/InicioPage'
 import { Layout } from './components/Layout'
 import { AseguradorasPage } from './features/aseguradoras/AseguradorasPage'
+import { CasosPage } from './features/casos/CasosPage'
 import { ClientesPage } from './features/clientes/ClientesPage'
 import { ConfiguracionPage } from './features/configuracion/ConfiguracionPage'
 import { LoginPage } from './features/auth/LoginPage'
@@ -67,6 +68,14 @@ function App() {
             element={
               <RequireAuth roles={['administrador']}>
                 <VehiculosPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="casos"
+            element={
+              <RequireAuth roles={['administrador']}>
+                <CasosPage />
               </RequireAuth>
             }
           />

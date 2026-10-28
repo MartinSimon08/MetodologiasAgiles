@@ -38,6 +38,11 @@ export async function listarVehiculos(pagina: number, q = '') {
   return data
 }
 
+export async function listarVehiculosDeCliente(clienteId: number) {
+  const { data } = await api.get<PaginaVehiculos>('/vehiculos', { params: { cliente_id: clienteId, por_pagina: 100 } })
+  return data.vehiculos
+}
+
 export async function verificarPatente(patente: string) {
   const { data } = await api.get<VerificacionPatente>('/vehiculos/verificar_patente', { params: { patente } })
   return data

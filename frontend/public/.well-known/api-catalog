@@ -1,0 +1,24 @@
+{
+  "linkset": [
+    {
+      "anchor": "https://204-216-155-6.sslip.io/api",
+      "service-desc": [
+        {
+          "href": "https://204-216-155-6.sslip.io/docs",
+          "type": "text/html"
+        }
+      ],
+      "service-doc": [
+        {
+          "href": "https://204-216-155-6.sslip.io/llms.txt",
+          "type": "text/plain"
+        }
+      ],
+      "status": [
+        {
+          "href": "https://204-216-155-6.sslip.io/api/up"
+        }
+      ]
+    }
+  ]
+}

@@ -6,14 +6,21 @@ Reemplaza el cuaderno y WhatsApp con los que el taller coordina el día. Cualqui
 
 La interfaz es una PWA React: recepción en la web y vista móvil para mecánicos. La API es Ruby on Rails 8 con PostgreSQL. Los roles son administrador y mecánico.
 
+## Cuándo usarlo
+
+Usalo para entender o operar el día de un taller: abrir una orden, tomar una tarea, cargar un repuesto comprado al momento y cerrar con un cobro. No lo uses como ERP, como inventario ni como sistema de varias sucursales. No tiene planes ni precio público. Sin sesión solo se puede leer la superficie pública. Los clientes, los vehículos y las órdenes piden una cuenta de administrador o de mecánico.
+
 ## Documentación
+
+- [Inicio](https://204-216-155-6.sslip.io/): qué es el taller y para quién es
+- [Documentación de la API](https://204-216-155-6.sslip.io/docs): sesión, roles y recursos
+- [Acerca de](https://204-216-155-6.sslip.io/about): el producto y sus límites
+- [Contacto](https://204-216-155-6.sslip.io/contact): cómo escribir al proyecto
+- [Privacidad](https://204-216-155-6.sslip.io/privacy): qué datos guarda el taller
+
+## Optional
 
 - [Guía del proyecto](https://raw.githubusercontent.com/MartinSimon08/MetodologiasAgiles/main/README.md): stack, puesta en marcha y convenciones
 - [Instrucciones para agentes](https://raw.githubusercontent.com/MartinSimon08/MetodologiasAgiles/main/AGENTS.md): producto, arquitectura y reglas de código
 - [Repuestos](https://raw.githubusercontent.com/MartinSimon08/MetodologiasAgiles/main/docs/repuestos.md): catálogo de referencia, carga en la orden, valorización y bajas
-
-## Optional
-
-- [Trello y GitHub](https://raw.githubusercontent.com/MartinSimon08/MetodologiasAgiles/main/docs/trello-github.md): tickets de sprint y pull requests
-- [Frontend](https://raw.githubusercontent.com/MartinSimon08/MetodologiasAgiles/main/frontend/README.md): la PWA de recepción y de mecánicos
 - [Repositorio](https://github.com/MartinSimon08/MetodologiasAgiles): código fuente

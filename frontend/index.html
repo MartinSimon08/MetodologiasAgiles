@@ -4,12 +4,62 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Gestión de Taller</title>
+    <meta
+      name="description"
+      content="Software de gestión para un único taller mecánico: órdenes de trabajo, tareas que cualquier mecánico toma, repuestos comprados al momento y el cobro al cierre."
+    />
+    <meta name="is-agentic-site-type" content="app" />
+    <link rel="canonical" href="https://204-216-155-6.sslip.io/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Gestión de Taller" />
+    <meta property="og:title" content="Gestión de Taller" />
+    <meta
+      property="og:description"
+      content="Software de gestión para un único taller mecánico: órdenes de trabajo, tareas que cualquier mecánico toma, repuestos comprados al momento y el cobro al cierre."
+    />
+    <meta property="og:url" content="https://204-216-155-6.sslip.io/" />
+    <meta property="og:image" content="https://204-216-155-6.sslip.io/fondo-login.png" />
+    <meta property="og:image:alt" content="Fondo de la pantalla de ingreso de Gestión de Taller" />
+    <meta property="og:locale" content="es_AR" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap"
       rel="stylesheet"
     />
+    <link rel="stylesheet" href="/publico.css" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "SoftwareApplication",
+            "name": "Gestión de Taller",
+            "applicationCategory": "BusinessApplication",
+            "operatingSystem": "Web",
+            "url": "https://204-216-155-6.sslip.io/",
+            "inLanguage": "es",
+            "description": "Software de gestión para un único taller mecánico. La orden de trabajo reúne al cliente, el vehículo, las tareas, los repuestos comprados al momento y el cobro.",
+            "provider": { "@id": "https://204-216-155-6.sslip.io/#organizacion" }
+          },
+          {
+            "@type": "Organization",
+            "@id": "https://204-216-155-6.sslip.io/#organizacion",
+            "name": "Gestión de Taller",
+            "url": "https://204-216-155-6.sslip.io/",
+            "logo": "https://204-216-155-6.sslip.io/fondo-login.png",
+            "description": "Software de gestión para un único taller mecánico.",
+            "sameAs": ["https://github.com/MartinSimon08/MetodologiasAgiles"],
+            "contactPoint": {
+              "@type": "ContactPoint",
+              "contactType": "contacto",
+              "url": "https://204-216-155-6.sslip.io/contact",
+              "availableLanguage": ["es"]
+            }
+          }
+        ]
+      }
+    </script>
     <script>
       try {
         var t = localStorage.getItem('tema')
@@ -19,7 +69,50 @@
     </script>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <main class="publico">
+        <p class="kicker">Taller mecánico</p>
+        <h1>Gestión de Taller</h1>
+        <p>
+          Gestión de Taller es el software de gestión de un único taller mecánico. Reemplaza el
+          cuaderno y WhatsApp con los que el taller coordina el día. Cuando entra un vehículo se
+          abre una orden de trabajo del cliente. De esa orden salen las tareas, los repuestos
+          comprados en el momento y el cobro.
+        </p>
+        <h2>Para quién es</h2>
+        <p>
+          Hay dos roles. El administrador está en recepción: abre la orden, da de alta clientes y
+          vehículos, carga el costo y el margen de cada repuesto, anota señas y cierra el cobro. El
+          mecánico usa el celular: ve las tareas disponibles, toma una, anota lo que encontró, la
+          termina o la libera. Nadie asigna el trabajo de antemano. Cualquier mecánico libre toma lo
+          que está disponible.
+        </p>
+        <h2>Qué hace</h2>
+        <p>
+          La orden reúne al cliente, el vehículo, las tareas y los repuestos. Una tarea tiene
+          mecánico responsable solo mientras sigue tomada. Un repuesto se carga al comprarlo, con el
+          costo real y un margen para el precio al cliente. El catálogo guarda un costo de referencia
+          y no controla cantidades. Al cerrar, el total es la mano de obra más los repuestos, menos
+          las señas que ya se registraron con la orden abierta.
+        </p>
+        <h2>Cuándo usarlo</h2>
+        <p>
+          Sirve para operar el día de ese taller: abrir una orden, tomar una tarea, cargar un
+          repuesto comprado al momento y cobrar al cierre. No sirve como ERP, como control de stock
+          ni como sistema de varias sucursales. No tiene planes ni un precio público. Sin sesión solo
+          se leen estas páginas. Los clientes, los vehículos y las órdenes piden una cuenta.
+        </p>
+        <nav aria-label="Páginas públicas">
+          <a href="/login">Ingresar</a>
+          <a href="/about">Acerca de</a>
+          <a href="/contact">Contacto</a>
+          <a href="/privacy">Privacidad</a>
+          <a href="/docs">Documentación</a>
+          <a href="/llms.txt">llms.txt</a>
+          <a href="/sitemap.xml">Mapa del sitio</a>
+        </nav>
+      </main>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

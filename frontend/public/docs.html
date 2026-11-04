@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Documentación de la API · Gestión de Taller</title>
+    <meta
+      name="description"
+      content="Cómo autenticarse en la API de Gestión de Taller y qué recursos expone: órdenes, tareas, repuestos y el resto de la operación del taller."
+    />
+    <link rel="canonical" href="https://204-216-155-6.sslip.io/docs" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/publico.css" />
+    <script>
+      try {
+        var t = localStorage.getItem('tema')
+        if (!t) t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+        document.documentElement.dataset.tema = t
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <main class="publico">
+      <p class="kicker">Gestión de Taller</p>
+      <h1>Documentación de la API de Gestión de Taller</h1>
+      <p>
+        Esta es la documentación pública de la API de Gestión de Taller. Sirve para saber cómo
+        autenticarse y qué recursos existen. No reemplaza la sesión: casi todo pide un token de un
+        usuario del taller.
+      </p>
+      <h2>Dónde está</h2>
+      <p>
+        En el sitio publicado, la API vive en el mismo origen bajo <code>/api</code>. El chequeo de
+        vida es <code>GET /api/up</code>. El catálogo de enlaces, en el formato de la RFC 9727, está
+        en <code>/.well-known/api-catalog</code>.
+      </p>
+      <h2>Sesión</h2>
+      <p>
+        <code>POST /api/sesion</code> recibe <code>email</code> y <code>password</code>. Si coinciden
+        con un usuario activo, responde 201 y un JSON con <code>token</code>. Si no, responde 401.
+        El resto de las llamadas lleva <code>Authorization: Bearer</code> y ese token.
+      </p>
+      <p>
+        <code>GET /api/sesion</code> devuelve el usuario actual: <code>id</code>, <code>nombre</code>,
+        <code>email</code> y <code>rol</code>. Una respuesta autenticada puede traer el header
+        <code>X-Token-Renovado</code> con un token nuevo. Sin token válido, la respuesta es 401. Si
+        el rol no alcanza para esa acción, la respuesta es 403.
+      </p>
+      <h2>Roles</h2>
+      <p>
+        El administrador es la recepción. Abre, cierra y cancela órdenes. Carga clientes, vehículos,
+        repuestos, usuarios y la configuración del taller. El mecánico toma, completa y libera
+        tareas, y puede avisar un repuesto. No administra el taller.
+      </p>
+      <h2>Recursos</h2>
+      <p>
+        Los recursos principales son <code>ordenes</code>, <code>tareas</code>,
+        <code>repuestos</code>, <code>adelantos</code>, <code>clientes</code>,
+        <code>vehiculos</code>, <code>casos</code>, <code>aseguradoras</code>, <code>usuarios</code>,
+        <code>repuestos_catalogo</code> y <code>tareas_frecuentes</code>. Tomar una tarea es una sola
+        escritura a la vez: dos mecánicos no pueden quedarse con la misma. Cerrar una orden calcula
+        el total de mano de obra y repuestos.
+      </p>
+      <h2>Qué no ofrece</h2>
+      <p>
+        No hay una clave de API distinta del usuario del taller, ni webhooks, ni un portal para
+        terceros. El detalle de cada acción está en el
+        <a href="https://github.com/MartinSimon08/MetodologiasAgiles">repositorio</a>, enlazado
+        también desde <a href="/llms.txt">llms.txt</a>.
+      </p>
+      <nav aria-label="Páginas públicas">
+        <a href="/">Inicio</a>
+        <a href="/about">Acerca de</a>
+        <a href="/contact">Contacto</a>
+        <a href="/privacy">Privacidad</a>
+        <a href="/llms.txt">llms.txt</a>
+      </nav>
+    </main>
+  </body>
+</html>

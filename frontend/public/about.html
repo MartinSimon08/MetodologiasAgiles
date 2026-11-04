@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Acerca de · Gestión de Taller</title>
+    <meta
+      name="description"
+      content="Gestión de Taller coordina el día de un único taller mecánico: órdenes, tareas en pull y repuestos comprados al momento, sin stock ni sucursales."
+    />
+    <link rel="canonical" href="https://204-216-155-6.sslip.io/about" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/publico.css" />
+    <script>
+      try {
+        var t = localStorage.getItem('tema')
+        if (!t) t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+        document.documentElement.dataset.tema = t
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <main class="publico">
+      <p class="kicker">Gestión de Taller</p>
+      <h1>Acerca de Gestión de Taller</h1>
+      <p>
+        Gestión de Taller existe para un taller mecánico que coordina el día con un cuaderno y con
+        WhatsApp. El programa no intenta ser un ERP. El centro es la orden de trabajo.
+      </p>
+      <p>
+        Cuando entra un vehículo, la recepción abre una orden del cliente. La orden junta el
+        vehículo, las tareas, los repuestos que se compran en el momento y el cobro. Las tareas no
+        se asignan: quedan disponibles y cualquier mecánico libre las toma, las termina o las
+        libera. Si dos intentan tomar la misma, uno solo se queda con ella.
+      </p>
+      <p>
+        Los repuestos no salen de un stock. Se anotan sobre la orden con el costo real y un margen.
+        El catálogo, si se usa, guarda un costo de referencia para la próxima vez, no una cantidad
+        en depósito. Las señas se registran con la orden abierta. Al cerrar, el total es la mano de
+        obra más los repuestos.
+      </p>
+      <p>
+        La pantalla de recepción es para el administrador. La vista móvil es para el mecánico. La
+        API es Ruby on Rails 8 y la interfaz es una PWA en React. El código es público, con licencia
+        MIT, en el
+        <a href="https://github.com/MartinSimon08/MetodologiasAgiles">repositorio</a>.
+      </p>
+      <p>
+        No hay sucursales, ni inventario permanente, ni planes de precio. Lo usa un taller. Los
+        datos de los clientes no están en estas páginas: piden sesión.
+      </p>
+      <nav aria-label="Páginas públicas">
+        <a href="/">Inicio</a>
+        <a href="/contact">Contacto</a>
+        <a href="/privacy">Privacidad</a>
+        <a href="/docs">Documentación</a>
+        <a href="/llms.txt">llms.txt</a>
+      </nav>
+    </main>
+  </body>
+</html>

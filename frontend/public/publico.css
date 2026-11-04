@@ -1,0 +1,96 @@
+.publico {
+  --tinta: #181818;
+  --tinta-suave: #909090;
+  --papel: #efefe4;
+  --senal: #0071bb;
+  box-sizing: border-box;
+  max-width: 42rem;
+  min-height: 100svh;
+  margin: 0 auto;
+  padding: 48px 20px 64px;
+  background: var(--papel);
+  color: var(--tinta);
+  font: 400 18px/27px "IBM Plex Sans", "Segoe UI", sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+
+html:has(.publico) {
+  background: #efefe4;
+}
+
+body:has(.publico) {
+  margin: 0;
+}
+
+html[data-tema="dark"]:has(.publico) {
+  background: #121314;
+}
+
+html[data-tema="dark"] .publico {
+  --tinta: #ececea;
+  --tinta-suave: #9a9a96;
+  --papel: #121314;
+  --senal: #4da6e8;
+}
+
+.publico * {
+  box-sizing: border-box;
+}
+
+.publico h1,
+.publico h2,
+.publico p,
+.publico ul {
+  margin: 0;
+}
+
+.publico h1 {
+  margin: 8px 0 20px;
+  font-size: 36px;
+  font-weight: 300;
+  letter-spacing: -0.03em;
+  line-height: 40px;
+}
+
+.publico h2 {
+  margin: 32px 0 8px;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 28px;
+}
+
+.publico p,
+.publico li {
+  margin-bottom: 12px;
+}
+
+.publico ul {
+  padding-left: 1.2rem;
+}
+
+.publico a {
+  color: var(--senal);
+}
+
+.publico .kicker {
+  margin: 0;
+  color: var(--tinta-suave);
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  line-height: 16px;
+  text-transform: uppercase;
+}
+
+.publico nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-top: 36px;
+}
+
+.publico code {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 0.92em;
+}

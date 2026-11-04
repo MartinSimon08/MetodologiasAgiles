@@ -1,5 +1,6 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { InicioPage } from './components/InicioPage'
+import { NoEncontrado } from './components/NoEncontrado'
 import { Layout } from './components/Layout'
 import { AseguradorasPage } from './features/aseguradoras/AseguradorasPage'
 import { CasosPage } from './features/casos/CasosPage'
@@ -112,7 +113,7 @@ function App() {
             }
           />
         </Route>
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<NoEncontrado />} />
       </Routes>
     </BrowserRouter>
   )

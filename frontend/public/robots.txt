@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://204-216-155-6.sslip.io/sitemap.xml

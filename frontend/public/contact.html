@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Contacto · Gestión de Taller</title>
+    <meta
+      name="description"
+      content="El contacto de Gestión de Taller es el repositorio del proyecto. No hay teléfono ni correo de ventas."
+    />
+    <link rel="canonical" href="https://204-216-155-6.sslip.io/contact" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/publico.css" />
+    <script>
+      try {
+        var t = localStorage.getItem('tema')
+        if (!t) t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+        document.documentElement.dataset.tema = t
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <main class="publico">
+      <p class="kicker">Gestión de Taller</p>
+      <h1>Contacto de Gestión de Taller</h1>
+      <p>
+        Gestión de Taller no publica un teléfono ni un correo de ventas. El canal para hablar del
+        software es el repositorio
+        <a href="https://github.com/MartinSimon08/MetodologiasAgiles">MartinSimon08/MetodologiasAgiles</a>.
+        Ahí están las issues y el código.
+      </p>
+      <p>
+        El sitio <a href="https://204-216-155-6.sslip.io/">204-216-155-6.sslip.io</a> es el del
+        taller, no un mostrador de atención al público. Para un auto, una orden o un repuesto hay
+        que ingresar con un usuario del taller. Esas cuentas las crea el administrador en la
+        pantalla Usuarios. Esta página no recibe mensajes y no los reenvía a nadie.
+      </p>
+      <p>
+        Si un enlace público falla, o si la <a href="/docs">documentación de la API</a> no coincide
+        con lo que responde el servidor, el lugar para decirlo es una issue del repositorio. La
+        privacidad de los datos del taller está en la <a href="/privacy">página de privacidad</a>.
+        Qué es el producto y qué no hace está en <a href="/about">Acerca de</a>.
+      </p>
+      <p>
+        No hay un equipo comercial ni un horario de soporte publicado. Quien mantiene el código
+        responde por el repositorio, no por los autos que entran al taller.
+      </p>
+      <nav aria-label="Páginas públicas">
+        <a href="/">Inicio</a>
+        <a href="/about">Acerca de</a>
+        <a href="/privacy">Privacidad</a>
+        <a href="/docs">Documentación</a>
+        <a href="/llms.txt">llms.txt</a>
+      </nav>
+    </main>
+  </body>
+</html>

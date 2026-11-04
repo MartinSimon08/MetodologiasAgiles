@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Privacidad · Gestión de Taller</title>
+    <meta
+      name="description"
+      content="Qué datos guarda Gestión de Taller, quién los ve y cómo funciona la sesión del taller."
+    />
+    <link rel="canonical" href="https://204-216-155-6.sslip.io/privacy" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/publico.css" />
+    <script>
+      try {
+        var t = localStorage.getItem('tema')
+        if (!t) t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+        document.documentElement.dataset.tema = t
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <main class="publico">
+      <p class="kicker">Gestión de Taller</p>
+      <h1>Privacidad de Gestión de Taller</h1>
+      <p>
+        Gestión de Taller guarda los datos de un único taller mecánico para coordinar el trabajo del
+        día. No es una red social ni un directorio público de clientes.
+      </p>
+      <h2>Qué se guarda</h2>
+      <p>
+        Usuarios del taller (nombre, email, rol y una contraseña hasheada), clientes, vehículos,
+        órdenes de trabajo, tareas, notas de las tareas, repuestos con su costo y su margen,
+        comprobantes adjuntos, adelantos, y aseguradoras o casos cuando la orden los usa.
+      </p>
+      <h2>Quién lo ve</h2>
+      <p>
+        Un administrador ve la operación del taller. Un mecánico ve las tareas y lo necesario para
+        hacerlas. Esos datos no se publican en estas páginas. Sin sesión, la API responde 401 y no
+        entrega la orden, el cliente ni el vehículo.
+      </p>
+      <p>
+        La sesión es un JWT. El navegador lo envía como <code>Authorization: Bearer</code>. El
+        servidor puede devolver un token renovado en el header <code>X-Token-Renovado</code>. Dejar
+        de enviar ese token cierra el acceso desde ese navegador.
+      </p>
+      <p>
+        No vendemos datos ni los mezclamos con otros talleres. Hay una sola base para ese taller. El
+        código del programa es público, con licencia MIT, en el
+        <a href="https://github.com/MartinSimon08/MetodologiasAgiles">repositorio</a>. El contenido
+        de las órdenes no está en el repositorio.
+      </p>
+      <p>
+        Para preguntar por el software, la <a href="/contact">página de contacto</a> indica el
+        repositorio. Para pedir un dato de un cliente del taller, hay que hablar con el taller, no
+        con esta página.
+      </p>
+      <nav aria-label="Páginas públicas">
+        <a href="/">Inicio</a>
+        <a href="/about">Acerca de</a>
+        <a href="/contact">Contacto</a>
+        <a href="/docs">Documentación</a>
+        <a href="/llms.txt">llms.txt</a>
+      </nav>
+    </main>
+  </body>
+</html>

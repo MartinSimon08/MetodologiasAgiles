@@ -20,6 +20,7 @@ const rutasSpa = [
   /^\/aseguradoras$/,
   /^\/usuarios$/,
   /^\/tareas-frecuentes$/,
+  /^\/reportes\/tareas-por-mecanico$/,
   /^\/configuracion$/,
 ]
 

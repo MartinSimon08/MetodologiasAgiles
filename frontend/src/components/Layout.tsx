@@ -57,6 +57,7 @@ export function Layout() {
               <NavLink to="/aseguradoras">Aseguradoras</NavLink>
               <NavLink to="/usuarios">Usuarios</NavLink>
               <NavLink to="/tareas-frecuentes">Tareas frecuentes</NavLink>
+              <NavLink to="/reportes/tareas-por-mecanico">Reportes</NavLink>
               <NavLink to="/configuracion">Configuración</NavLink>
             </>
           )}

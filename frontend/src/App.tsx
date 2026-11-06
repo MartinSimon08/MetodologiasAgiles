@@ -16,6 +16,7 @@ import { VehiculosPage } from './features/vehiculos/VehiculosPage'
 import { CatalogoRepuestosPage } from './features/repuestos/CatalogoRepuestosPage'
 import { RepuestosPorProveedorPage } from './features/repuestos/RepuestosPorProveedorPage'
 import { MisTareasPage } from './features/tareas/MisTareasPage'
+import { ReporteTareasFrecuentesPage } from './features/reportes/ReporteTareasFrecuentesPage'
 
 function App() {
   return (
@@ -53,6 +54,14 @@ function App() {
             element={
               <RequireAuth roles={['administrador']}>
                 <RepuestosPorProveedorPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="reportes/tareas-frecuentes"
+            element={
+              <RequireAuth roles={['administrador']}>
+                <ReporteTareasFrecuentesPage />
               </RequireAuth>
             }
           />

@@ -43,6 +43,8 @@ Rails.application.routes.draw do
   resources :tareas_frecuentes, only: %i[index create]
   resources :tareas_mecanico, only: :index
 
+  get "reportes/tareas_frecuentes", to: "reportes#tareas_frecuentes"
+
   resources :ordenes, only: %i[index show create] do
     resources :adelantos, only: %i[index create]
     resources :repuestos, only: %i[index create update destroy] do

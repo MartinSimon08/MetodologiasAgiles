@@ -15,6 +15,7 @@ import { UsuariosPage } from './features/usuarios/UsuariosPage'
 import { VehiculosPage } from './features/vehiculos/VehiculosPage'
 import { CatalogoRepuestosPage } from './features/repuestos/CatalogoRepuestosPage'
 import { RepuestosPorProveedorPage } from './features/repuestos/RepuestosPorProveedorPage'
+import { ReporteTareasPorMecanicoPage } from './features/reportes/ReporteTareasPorMecanicoPage'
 import { MisTareasPage } from './features/tareas/MisTareasPage'
 
 function App() {
@@ -45,6 +46,14 @@ function App() {
             element={
               <RequireAuth roles={['administrador']}>
                 <CatalogoRepuestosPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="reportes/tareas-por-mecanico"
+            element={
+              <RequireAuth roles={['administrador']}>
+                <ReporteTareasPorMecanicoPage />
               </RequireAuth>
             }
           />

@@ -741,6 +741,7 @@ button.peligro:focus-visible {
 .adelantos,
 .configuracion,
 .tareas-frecuentes,
+.reportes,
 .orden-detalle {
   display: flex;
   flex-direction: column;

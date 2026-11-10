@@ -45,6 +45,7 @@ Rails.application.routes.draw do
 
   get "reportes/tareas_por_mecanico", to: "reportes#tareas_por_mecanico"
   get "reportes/margen_repuestos", to: "reportes#margen_repuestos"
+  get "reportes/tareas_frecuentes", to: "reportes#tareas_frecuentes"
 
   resources :ordenes, only: %i[index show create] do
     resources :adelantos, only: %i[index create]

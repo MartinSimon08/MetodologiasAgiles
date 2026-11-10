@@ -7,6 +7,8 @@ class Tarea < ApplicationRecord
   enum :aprobacion, { pendiente: "pendiente", aprobada: "aprobada", rechazada: "rechazada" },
        prefix: true, validate: true
 
+  normalizes :descripcion, with: ->(descripcion) { descripcion.squish }
+
   validates :descripcion, presence: true
   validates :precio, numericality: { greater_than_or_equal_to: 0 }, allow_nil: true
   validate :orden_abierta, on: :create

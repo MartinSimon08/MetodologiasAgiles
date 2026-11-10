@@ -17,6 +17,7 @@ class FrontendApp
     %r{\A/clientes\z},
     %r{\A/vehiculos\z},
     %r{\A/casos\z},
+    %r{\A/casos/aseguradora\z},
     %r{\A/aseguradoras\z},
     %r{\A/usuarios\z},
     %r{\A/tareas-frecuentes\z},

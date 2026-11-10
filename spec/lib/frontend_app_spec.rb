@@ -34,6 +34,13 @@ RSpec.describe FrontendApp do
     expect(respuesta.body).to include("root")
   end
 
+  it "sirve la consulta de casos por aseguradora" do
+    respuesta = request.get("/casos/aseguradora")
+
+    expect(respuesta.status).to eq(200)
+    expect(respuesta.body).to include("root")
+  end
+
   it "ignora la barra final de una ruta del frontend" do
     respuesta = request.get("/ordenes/")
 

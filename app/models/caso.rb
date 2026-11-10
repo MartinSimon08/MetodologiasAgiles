@@ -5,7 +5,7 @@ class Caso < ApplicationRecord
   belongs_to :aseguradora
   belongs_to :asegurado, class_name: "Cliente"
   belongs_to :vehiculo
-  belongs_to :orden, optional: true
+  belongs_to :orden, optional: true, inverse_of: :caso
 
   normalizes :numero_siniestro, with: ->(numero) { numero.squish.upcase }
   normalizes :descripcion, with: ->(descripcion) { descripcion.strip.presence }

@@ -7,6 +7,7 @@ class Orden < ApplicationRecord
   has_many :tareas, dependent: :restrict_with_error
   has_many :repuestos, dependent: :restrict_with_error
   has_many :adelantos, dependent: :restrict_with_error
+  has_one :caso, dependent: :restrict_with_error, inverse_of: :orden
   has_many :ajustes_repuesto, through: :repuestos, source: :ajustes
 
   enum :estado, { abierta: "abierta", cerrada: "cerrada", cancelada: "cancelada" }, validate: true

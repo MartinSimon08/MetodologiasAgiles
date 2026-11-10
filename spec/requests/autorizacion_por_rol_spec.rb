@@ -15,6 +15,7 @@ RSpec.describe "Autorización por rol", type: :request do
     "GET /clientes" => :administrador,
     "POST /clientes" => :administrador,
     "GET /casos" => :administrador,
+    "GET /casos/aseguradora" => :administrador,
     "POST /casos" => :administrador,
     "GET /aseguradoras" => :administrador,
     "POST /aseguradoras" => :administrador,

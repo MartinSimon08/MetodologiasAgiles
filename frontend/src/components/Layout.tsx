@@ -1,12 +1,13 @@
 import { SelectorTema } from './SelectorTema'
 import { useState } from 'react'
-import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet, useMatch } from 'react-router-dom'
 import { useAuth } from '../features/auth/AuthContext'
 import { ROL_LABELS } from '../features/auth/types'
 import { NotificacionesTareas } from '../features/tareas/NotificacionesTareas'
 
 export function Layout() {
   const { usuario, logout } = useAuth()
+  const enReportes = Boolean(useMatch('/reportes/*'))
   const [colapsada, setColapsada] = useState(() => {
     try {
       return localStorage.getItem('sidebar-colapsada') === '1'
@@ -57,7 +58,12 @@ export function Layout() {
               <NavLink to="/aseguradoras">Aseguradoras</NavLink>
               <NavLink to="/usuarios">Usuarios</NavLink>
               <NavLink to="/tareas-frecuentes">Tareas frecuentes</NavLink>
-              <NavLink to="/reportes/tareas-frecuentes">Reportes</NavLink>
+              <NavLink
+                to="/reportes/tareas-por-mecanico"
+                className={({ isActive }) => (isActive || enReportes ? 'active' : undefined)}
+              >
+                Reportes
+              </NavLink>
               <NavLink to="/configuracion">Configuración</NavLink>
             </>
           )}

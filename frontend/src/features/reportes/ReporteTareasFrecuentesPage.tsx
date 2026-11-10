@@ -3,6 +3,7 @@ import { Cargando } from '../../components/Cargando'
 import { EncabezadoPagina } from '../../components/EncabezadoPagina'
 import { errorMessage } from '../../lib/api'
 import { obtenerReporteTareasFrecuentes } from './api'
+import { ReportesNav } from './ReportesNav'
 
 export function ReporteTareasFrecuentesPage() {
   const reporte = useQuery({
@@ -14,6 +15,7 @@ export function ReporteTareasFrecuentesPage() {
 
   return (
     <section className="reportes">
+      <ReportesNav />
       <EncabezadoPagina
         titulo="Tareas más frecuentes"
         bajada="Cuántas veces se realizó cada tarea o servicio, de más a menos frecuente."

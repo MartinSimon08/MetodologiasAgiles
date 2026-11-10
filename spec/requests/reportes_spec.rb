@@ -101,4 +101,71 @@ RSpec.describe "Reportes", type: :request do
       expect(response.body).to be_empty
     end
   end
+
+  describe "GET /reportes/ingresos" do
+    it "separa los ingresos cobrados del saldo pendiente de aseguradoras" do
+      orden = create(:orden)
+      create(:tarea, orden: orden, precio: 10_000)
+      create(:caso, orden: orden, asegurado: orden.cliente, vehiculo: orden.vehiculo)
+      travel_to(Time.zone.local(2026, 4, 10, 12)) do
+        create(:adelanto, orden: orden, importe: "3000.00", registrado_por: admin)
+      end
+      travel_to(Time.zone.local(2026, 4, 15, 18)) do
+        orden.update!(estado: :cerrada, cerrada_en: Time.current, cerrada_por: admin, total_cerrado: orden.total)
+      end
+
+      directa = create(:orden)
+      create(:tarea, orden: directa, precio: 5_000)
+      travel_to(Time.zone.local(2026, 4, 12, 9)) do
+        create(:adelanto, orden: directa, importe: "2000.00", registrado_por: admin)
+      end
+
+      get "/reportes/ingresos", params: { desde: "2026-04-01", hasta: "2026-04-30" },
+        headers: auth_headers(admin)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body).to eq(
+        "franquicia_cobrada" => "3000.0",
+        "saldo_facturado_aseguradoras" => "0.0",
+        "saldo_pendiente_aseguradoras" => "7000.0",
+        "ingresos_clientes_directos" => "2000.0",
+        "total_ingresos" => "5000.0"
+      )
+    end
+
+    it "devuelve ceros cuando el período no tiene ingresos" do
+      get "/reportes/ingresos", params: { desde: "2026-04-01", hasta: "2026-04-30" },
+        headers: auth_headers(admin)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body).to eq(
+        "franquicia_cobrada" => "0.0",
+        "saldo_facturado_aseguradoras" => "0.0",
+        "saldo_pendiente_aseguradoras" => "0.0",
+        "ingresos_clientes_directos" => "0.0",
+        "total_ingresos" => "0.0"
+      )
+    end
+
+    it "devuelve errores de campo para un período inválido o incompleto" do
+      get "/reportes/ingresos", params: { hasta: "2026-04-30" }, headers: auth_headers(admin)
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body["errors"]).to eq("desde" => [ "no puede estar en blanco" ])
+    end
+
+    it "exige autenticación" do
+      get "/reportes/ingresos", params: { desde: "2026-04-01", hasta: "2026-04-30" }
+
+      expect(response).to have_http_status(:unauthorized)
+    end
+
+    it "prohíbe a los mecánicos consultar el reporte" do
+      get "/reportes/ingresos", params: { desde: "2026-04-01", hasta: "2026-04-30" },
+        headers: auth_headers(mecanico)
+
+      expect(response).to have_http_status(:forbidden)
+      expect(response.body).to be_empty
+    end
+  end
 end

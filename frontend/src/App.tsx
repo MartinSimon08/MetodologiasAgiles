@@ -15,6 +15,7 @@ import { UsuariosPage } from './features/usuarios/UsuariosPage'
 import { VehiculosPage } from './features/vehiculos/VehiculosPage'
 import { CatalogoRepuestosPage } from './features/repuestos/CatalogoRepuestosPage'
 import { RepuestosPorProveedorPage } from './features/repuestos/RepuestosPorProveedorPage'
+import { ReporteIngresosPage } from './features/reportes/ReporteIngresosPage'
 import { ReporteMargenRepuestosPage } from './features/reportes/ReporteMargenRepuestosPage'
 import { ReporteTareasPorMecanicoPage } from './features/reportes/ReporteTareasPorMecanicoPage'
 import { MisTareasPage } from './features/tareas/MisTareasPage'
@@ -63,6 +64,14 @@ function App() {
             element={
               <RequireAuth roles={['administrador']}>
                 <ReporteMargenRepuestosPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="reportes/ingresos"
+            element={
+              <RequireAuth roles={['administrador']}>
+                <ReporteIngresosPage />
               </RequireAuth>
             }
           />

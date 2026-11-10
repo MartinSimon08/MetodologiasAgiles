@@ -5,6 +5,7 @@ export function ReportesNav() {
     <nav className="subnav" aria-label="Reportes">
       <NavLink to="/reportes/tareas-por-mecanico">Tareas por mecánico</NavLink>
       <NavLink to="/reportes/margen-repuestos">Margen de repuestos</NavLink>
+      <NavLink to="/reportes/ingresos">Ingresos</NavLink>
     </nav>
   )
 }

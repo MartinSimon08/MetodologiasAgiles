@@ -56,4 +56,49 @@ RSpec.describe "Reportes", type: :request do
       expect(response.body).to be_empty
     end
   end
+
+  describe "GET /reportes/margen_repuestos" do
+    it "muestra el margen total de los repuestos de las órdenes del período" do
+      orden = travel_to(Time.zone.local(2026, 4, 10, 12)) { create(:orden) }
+      RepuestoAgregar.call(
+        orden: orden, registrado_por: admin, descripcion: "Filtro", cantidad: 1,
+        costo_unitario: "100", margen: "25"
+      )
+
+      get "/reportes/margen_repuestos", params: { desde: "2026-04-01", hasta: "2026-04-30" },
+        headers: auth_headers(admin)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body).to eq("margen_total" => "25.0")
+    end
+
+    it "devuelve cero cuando el período no tiene repuestos que sumen margen" do
+      get "/reportes/margen_repuestos", params: { desde: "2026-04-01", hasta: "2026-04-30" },
+        headers: auth_headers(admin)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body).to eq("margen_total" => "0.0")
+    end
+
+    it "devuelve errores de campo para un período inválido o incompleto" do
+      get "/reportes/margen_repuestos", params: { hasta: "2026-04-30" }, headers: auth_headers(admin)
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body["errors"]).to eq("desde" => [ "no puede estar en blanco" ])
+    end
+
+    it "exige autenticación" do
+      get "/reportes/margen_repuestos", params: { desde: "2026-04-01", hasta: "2026-04-30" }
+
+      expect(response).to have_http_status(:unauthorized)
+    end
+
+    it "prohíbe a los mecánicos consultar el reporte" do
+      get "/reportes/margen_repuestos", params: { desde: "2026-04-01", hasta: "2026-04-30" },
+        headers: auth_headers(mecanico)
+
+      expect(response).to have_http_status(:forbidden)
+      expect(response.body).to be_empty
+    end
+  end
 end

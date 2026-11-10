@@ -5,6 +5,7 @@ import { EncabezadoPagina } from '../../components/EncabezadoPagina'
 import { ErroresCampo } from '../../components/ErroresCampo'
 import { errorMessage, fieldErrors } from '../../lib/api'
 import { obtenerReporteTareasPorMecanico } from './api'
+import { ReportesNav } from './ReportesNav'
 
 function hoyIso() {
   return new Date().toISOString().slice(0, 10)
@@ -37,6 +38,7 @@ export function ReporteTareasPorMecanicoPage() {
 
   return (
     <section className="reportes">
+      <ReportesNav />
       <EncabezadoPagina
         titulo="Tareas por mecánico"
         bajada="Cantidad de tareas que tomó y completó cada mecánico en el período elegido."

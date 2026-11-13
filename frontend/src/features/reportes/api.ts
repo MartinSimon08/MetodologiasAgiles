@@ -41,3 +41,15 @@ export async function obtenerReporteTareasFrecuentes() {
   const { data } = await api.get<ReporteTareasFrecuentes>('/reportes/tareas_frecuentes')
   return data
 }
+
+export interface ReporteOrdenesPorPeriodo {
+  abiertas: number
+  cerradas: number
+}
+
+export async function obtenerReporteOrdenesPorPeriodo(filtros: { desde: string; hasta: string }) {
+  const { data } = await api.get<ReporteOrdenesPorPeriodo>('/reportes/ordenes_por_periodo', {
+    params: { desde: filtros.desde, hasta: filtros.hasta },
+  })
+  return data
+}

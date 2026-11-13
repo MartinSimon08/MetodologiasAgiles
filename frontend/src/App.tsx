@@ -15,6 +15,7 @@ import { UsuariosPage } from './features/usuarios/UsuariosPage'
 import { VehiculosPage } from './features/vehiculos/VehiculosPage'
 import { CatalogoRepuestosPage } from './features/repuestos/CatalogoRepuestosPage'
 import { RepuestosPorProveedorPage } from './features/repuestos/RepuestosPorProveedorPage'
+import { ReporteOrdenesPorPeriodoPage } from './features/reportes/ReporteOrdenesPorPeriodoPage'
 import { ReporteMargenRepuestosPage } from './features/reportes/ReporteMargenRepuestosPage'
 import { ReporteTareasPorMecanicoPage } from './features/reportes/ReporteTareasPorMecanicoPage'
 import { MisTareasPage } from './features/tareas/MisTareasPage'
@@ -56,6 +57,14 @@ function App() {
             element={
               <RequireAuth roles={['administrador']}>
                 <ReporteTareasPorMecanicoPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="reportes/ordenes-por-periodo"
+            element={
+              <RequireAuth roles={['administrador']}>
+                <ReporteOrdenesPorPeriodoPage />
               </RequireAuth>
             }
           />

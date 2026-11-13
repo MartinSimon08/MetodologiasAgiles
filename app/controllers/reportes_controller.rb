@@ -19,6 +19,13 @@ class ReportesController < ApplicationController
     render json: { tareas: ReporteTareasFrecuentes.call.map { |fila| serialize_frecuente(fila) } }
   end
 
+  def ordenes_por_periodo
+    resultado = ReporteOrdenesPorPeriodo.call(desde: params[:desde], hasta: params[:hasta])
+    return render json: { errors: resultado.errors }, status: :unprocessable_content if resultado.invalid?
+
+    render json: { abiertas: resultado.abiertas, cerradas: resultado.cerradas }
+  end
+
   private
 
   def serialize_mecanico(fila)

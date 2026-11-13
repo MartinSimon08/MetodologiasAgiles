@@ -8,6 +8,7 @@ import { NotificacionesTareas } from '../features/tareas/NotificacionesTareas'
 export function Layout() {
   const { usuario, logout } = useAuth()
   const enReportes = Boolean(useMatch('/reportes/*'))
+  const [menuAbierto, setMenuAbierto] = useState(false)
   const [colapsada, setColapsada] = useState(() => {
     try {
       return localStorage.getItem('sidebar-colapsada') === '1'
@@ -41,12 +42,24 @@ export function Layout() {
           <path d={colapsada ? 'M9 5l7 7-7 7' : 'M15 5l-7 7 7 7'} />
         </svg>
       </button>
-      <header className="barra" id="barra-lateral">
-        <NavLink to="/" className="marca">
+      <header className={menuAbierto ? 'barra menu-abierto' : 'barra'} id="barra-lateral">
+        <NavLink to="/" className="marca" onClick={() => setMenuAbierto(false)}>
           <small>Gestión</small>
           Taller
         </NavLink>
-        <nav aria-label="Secciones">
+        <button
+          type="button"
+          className="menu-toggle"
+          aria-expanded={menuAbierto}
+          aria-controls="menu-secciones"
+          aria-label={menuAbierto ? 'Cerrar menú' : 'Abrir menú'}
+          onClick={() => setMenuAbierto(!menuAbierto)}
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d={menuAbierto ? 'M6 6l12 12M18 6L6 18' : 'M4 7h16M4 12h16M4 17h16'} />
+          </svg>
+        </button>
+        <nav id="menu-secciones" aria-label="Secciones" onClick={() => setMenuAbierto(false)}>
           {usuario?.rol === 'mecanico' && <NavLink to="/mis-tareas">Mis tareas</NavLink>}
           <NavLink to="/ordenes">Órdenes</NavLink>
           {usuario?.rol === 'administrador' && (

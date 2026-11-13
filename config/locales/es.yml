@@ -111,6 +111,9 @@ es:
               ya_desactivada: La aseguradora ya está desactivada
         caso:
           attributes:
+            base:
+              sin_turno: El caso no tiene turno asignado
+              ya_ingresado: El caso ya tiene una orden abierta
             aseguradora:
               desactivada: está desactivada
             vehiculo:

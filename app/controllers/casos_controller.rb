@@ -20,6 +20,11 @@ class CasosController < ApplicationController
     render json: serialize(caso), status: :created
   end
 
+  def ingresar
+    caso = CasoIngresar.call(caso_id: params[:id])
+    render json: serialize(caso)
+  end
+
   private
 
   def caso_params

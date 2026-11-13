@@ -87,6 +87,54 @@ RSpec.describe "Casos de siniestro", type: :request do
     end
   end
 
+  describe "POST /casos/:id/ingresar" do
+    let(:caso) { create(:caso, asegurado: asegurado, vehiculo: vehiculo, descripcion: "Choque trasero", fecha_turno: Date.current) }
+
+    it "abre la orden del caso y lo devuelve ingresado" do
+      expect {
+        post "/casos/#{caso.id}/ingresar", headers: auth_headers(admin)
+      }.to change(Orden, :count).by(1)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body).to include("id" => caso.id, "orden_id" => Orden.last.id)
+      expect(Orden.last).to have_attributes(vehiculo: vehiculo, cliente: asegurado, motivo: "Choque trasero")
+    end
+
+    it "rechaza un caso sin turno" do
+      caso.update!(fecha_turno: nil)
+
+      expect {
+        post "/casos/#{caso.id}/ingresar", headers: auth_headers(admin)
+      }.not_to change(Orden, :count)
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body["errors"]["base"]).to eq([ "El caso no tiene turno asignado" ])
+    end
+
+    it "rechaza un caso que ya ingresó" do
+      post "/casos/#{caso.id}/ingresar", headers: auth_headers(admin)
+
+      post "/casos/#{caso.id}/ingresar", headers: auth_headers(admin)
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body["errors"]["base"]).to eq([ "El caso ya tiene una orden abierta" ])
+    end
+
+    it "responde 404 si el caso no existe" do
+      post "/casos/0/ingresar", headers: auth_headers(admin)
+
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it "prohíbe a mecánicos ingresar casos" do
+      expect {
+        post "/casos/#{caso.id}/ingresar", headers: auth_headers(create(:usuario))
+      }.not_to change(Orden, :count)
+
+      expect(response).to have_http_status(:forbidden)
+    end
+  end
+
   describe "GET /casos" do
     it "lista los casos del más nuevo al más viejo" do
       viejo = create(:caso, created_at: 2.days.ago)

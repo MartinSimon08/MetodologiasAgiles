@@ -37,3 +37,8 @@ export async function abrirCaso(caso: NuevoCaso) {
   const { data } = await api.post<Caso>('/casos', { caso })
   return data
 }
+
+export async function ingresarCaso(id: number) {
+  const { data } = await api.post<Caso>(`/casos/${id}/ingresar`)
+  return data
+}

@@ -65,3 +65,33 @@ export async function cambiarDuenio(vehiculoId: number, clienteId: number | null
   })
   return data
 }
+
+export interface OrdenHistorial {
+  id: number
+  motivo: string
+  created_at: string
+  cerrada_en: string
+  cliente: { id: number; nombre: string }
+  cerrada_por: { id: number; nombre: string }
+  total: string
+  mecanicos: { id: number; nombre: string }[]
+  tareas: {
+    id: number
+    descripcion: string
+    terminada_en: string | null
+    precio: string | null
+    mecanico: { id: number; nombre: string } | null
+  }[]
+  repuestos: { id: number; descripcion: string; cantidad: number; precio_cliente: string | null }[]
+}
+
+export interface HistorialVehiculo {
+  vehiculo: Vehiculo
+  ordenes: OrdenHistorial[]
+  meta: MetaPaginacion
+}
+
+export async function obtenerHistorialVehiculo(vehiculoId: number, pagina: number) {
+  const { data } = await api.get<HistorialVehiculo>(`/vehiculos/${vehiculoId}/historial`, { params: { pagina } })
+  return data
+}

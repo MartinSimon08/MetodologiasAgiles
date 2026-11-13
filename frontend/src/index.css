@@ -742,7 +742,8 @@ button.peligro:focus-visible {
 .configuracion,
 .tareas-frecuentes,
 .reportes,
-.orden-detalle {
+.orden-detalle,
+.historial-vehiculo {
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -1325,6 +1326,32 @@ button.secundario.peligro:hover:not(:disabled) {
 
 .motivo-orden p {
   margin: 0.4rem 0 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.historial-ordenes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.orden-historial {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.orden-historial h2 a {
+  color: var(--senal);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.motivo-historial {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }

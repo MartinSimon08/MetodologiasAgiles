@@ -12,6 +12,7 @@ import { OrdenDetallePage } from './features/ordenes/OrdenDetallePage'
 import { OrdenesPage } from './features/ordenes/OrdenesPage'
 import { TareasFrecuentesPage } from './features/tareasFrecuentes/TareasFrecuentesPage'
 import { UsuariosPage } from './features/usuarios/UsuariosPage'
+import { HistorialVehiculoPage } from './features/vehiculos/HistorialVehiculoPage'
 import { VehiculosPage } from './features/vehiculos/VehiculosPage'
 import { CatalogoRepuestosPage } from './features/repuestos/CatalogoRepuestosPage'
 import { RepuestosPorProveedorPage } from './features/repuestos/RepuestosPorProveedorPage'
@@ -96,6 +97,14 @@ function App() {
             element={
               <RequireAuth roles={['administrador']}>
                 <VehiculosPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="vehiculos/:id/historial"
+            element={
+              <RequireAuth roles={['administrador']}>
+                <HistorialVehiculoPage />
               </RequireAuth>
             }
           />

@@ -137,6 +137,7 @@ es:
               tareas_pendientes: Hay tareas pendientes sin tomar. Confirmá que se descartan para cerrar la orden
               total_parcial_no_disponible: El total parcial solo se calcula en órdenes abiertas
               presupuesto_no_disponible: El presupuesto solo se calcula en órdenes abiertas
+              comprobante_no_disponible: El comprobante solo se genera a partir de una orden cerrada
         repuesto:
           attributes:
             estado:

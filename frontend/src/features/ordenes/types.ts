@@ -89,6 +89,13 @@ export interface Presupuesto {
   total_aseguradora: string
 }
 
+export interface ComprobanteOrden extends ResumenCierre {
+  cliente: { id: number; nombre: string; telefono: string; email: string | null }
+  vehiculo: VehiculoOrden
+  cerrada_en: string | null
+  cerrada_por: { id: number; nombre: string } | null
+}
+
 export const ESTADO_ORDEN_LABELS: Record<EstadoOrden, string> = {
   abierta: 'Abierta',
   cerrada: 'Cerrada',

@@ -81,6 +81,7 @@ Rails.application.routes.draw do
       get :resumen_cierre
       get :total_parcial
       get :presupuesto
+      get :comprobante
     end
   end
 end

@@ -737,6 +737,8 @@ button.peligro:focus-visible {
 .usuarios,
 .clientes,
 .vehiculos,
+.casos,
+.aseguradoras,
 .repuestos,
 .adelantos,
 .configuracion,
@@ -1030,6 +1032,38 @@ button.peligro:focus-visible {
 
 .item.inactivo .item-datos {
   opacity: 0.6;
+}
+
+.casos .item,
+.aseguradoras .item {
+  grid-template-columns: 1fr auto;
+}
+
+.aseguradoras .item-acciones {
+  display: grid;
+  grid-template-columns: repeat(3, 8.25rem);
+}
+
+.item-insignias {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+@media (max-width: 600px) {
+  .casos .item,
+  .aseguradoras .item {
+    grid-template-columns: 1fr;
+  }
+
+  .aseguradoras .item-acciones {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .item-insignias {
+    justify-content: flex-start;
+  }
 }
 
 .insignia-desactivado {
@@ -2022,21 +2056,65 @@ label.boton-archivo:has(input:disabled) {
   box-shadow: inset 4px 0 0 var(--tinta);
 }
 
+.menu-toggle {
+  display: none;
+}
+
 @media (max-width: 899px) {
-  .barra nav {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    scrollbar-width: none;
+  .sesion {
+    order: 1;
   }
 
-  .barra nav::-webkit-scrollbar {
+  .menu-toggle {
+    order: 2;
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
+    margin-right: 12px;
+    padding: 0;
+    border: 1px solid var(--regla);
+    border-radius: 0;
+    background: var(--superficie);
+    color: var(--tinta);
+  }
+
+  .menu-toggle:hover:not(:disabled) {
+    background: var(--control);
+  }
+
+  .menu-toggle svg {
+    width: 22px;
+    height: 22px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .barra nav {
     display: none;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    max-height: calc(100svh - 70px);
+    overflow-y: auto;
+  }
+
+  .barra.menu-abierto nav {
+    display: flex;
   }
 
   .barra nav a {
     display: flex;
     align-items: center;
     min-height: 44px;
+  }
+
+  .barra nav a.active {
+    box-shadow: inset 2px 0 0 var(--tinta);
   }
 }
 

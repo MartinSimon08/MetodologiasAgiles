@@ -198,7 +198,7 @@ Escala: `display` solo en el login de escritorio, `headline` para el h1 de cada 
 
 - **Móvil primero.** Breakpoints en uso: `600px` (acciones al ancho completo por debajo), `640px` (más padding lateral), `900px` (pasa a layout de escritorio).
 - **Escritorio (≥900px)**: grilla de dos columnas, barra lateral fija de 232px a la izquierda y contenido a la derecha.
-- **Móvil (<900px)**: la barra pasa arriba, sticky, con la navegación en una fila horizontal que hace wrap.
+- **Móvil (<900px)**: la barra pasa arriba, sticky, y la navegación se abre en una columna desde el botón de menú.
 - **Contenido**: ancho máximo 1080px centrado, padding 28px arriba y 16px (28px desde 640px) a los costados.
 - Espaciado vertical entre bloques de 1rem a 1.25rem; dentro de formularios 0.9rem.
 - Todo elemento interactivo mide al menos 44px de alto (`touch-target`).

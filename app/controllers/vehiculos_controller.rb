@@ -27,7 +27,35 @@ class VehiculosController < ApplicationController
     render json: serialize(vehiculo)
   end
 
+  def historial
+    vehiculo = Vehiculo.includes(:cliente).find(params[:id])
+    ordenes, meta = paginar(VehiculoHistorial.call(vehiculo: vehiculo))
+    render json: {
+      vehiculo: serialize(vehiculo),
+      ordenes: ordenes.map { |orden| serialize_historial(VehiculoHistorial.detallar(orden)) },
+      meta: meta
+    }
+  end
+
   private
+
+  def serialize_historial(entrada)
+    orden = entrada.orden
+    orden.as_json(only: %i[id motivo created_at cerrada_en]).merge(
+      "cliente" => orden.cliente.as_json(only: %i[id nombre]),
+      "cerrada_por" => orden.cerrada_por.as_json(only: %i[id nombre]),
+      "total" => orden.total_cerrado.to_s("F"),
+      "mecanicos" => entrada.mecanicos.map { |mecanico| mecanico.as_json(only: %i[id nombre]) },
+      "tareas" => entrada.tareas.map do |tarea|
+        tarea.as_json(only: %i[id descripcion terminada_en]).merge(
+          "precio" => tarea.precio&.to_s("F"), "mecanico" => tarea.mecanico&.as_json(only: %i[id nombre])
+        )
+      end,
+      "repuestos" => entrada.repuestos.map do |repuesto|
+        repuesto.as_json(only: %i[id descripcion cantidad]).merge("precio_cliente" => repuesto.precio_vigente&.to_s("F"))
+      end
+    )
+  end
 
   def vehiculo_params
     params.require(:vehiculo).permit(:cliente_id, :patente, :marca, :modelo, :anio, :kilometraje)

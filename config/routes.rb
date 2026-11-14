@@ -35,6 +35,7 @@ Rails.application.routes.draw do
     end
     member do
       patch :cambiar_duenio
+      get :historial
     end
   end
   resources :repuestos_catalogo, only: %i[index create update destroy]

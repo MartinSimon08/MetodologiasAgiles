@@ -9,6 +9,8 @@ class TareaCompletar
       tarea.update!(estado: :terminada, terminada_en: Time.current)
     end
 
+    CasoAvisarListoParaRetirar.call(orden: tarea.orden)
+
     tarea
   end
 end

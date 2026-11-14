@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { NavLink, Outlet, useMatch } from 'react-router-dom'
 import { useAuth } from '../features/auth/AuthContext'
 import { ROL_LABELS } from '../features/auth/types'
+import { NotificacionesRecepcion } from '../features/casos/NotificacionesRecepcion'
 import { NotificacionesTareas } from '../features/tareas/NotificacionesTareas'
 
 export function Layout() {
@@ -93,6 +94,7 @@ export function Layout() {
         </div>
       </header>
       <NotificacionesTareas />
+      <NotificacionesRecepcion />
       <main className="contenido">
         <Outlet />
       </main>

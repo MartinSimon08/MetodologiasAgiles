@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { errorMessage, fieldErrors } from '../../lib/api'
 import { fechaHora, importe } from '../../lib/formato'
 import { useAuth } from '../auth/AuthContext'
@@ -113,6 +114,11 @@ function OrdenCerrada({ orden, esAdministrador }: { orden: Orden; esAdministrado
         {orden.cerrada_por && ` por ${orden.cerrada_por.nombre}`}
       </strong>
       <span>El total quedó congelado. Las tareas y los repuestos son de solo lectura.</span>
+      {esAdministrador && (
+        <Link to={`/ordenes/${orden.id}/comprobante`} className="comprobante-enlace">
+          Ver comprobante
+        </Link>
+      )}
       {esAdministrador && resumen.data && <Resumen resumen={resumen.data} />}
     </div>
   )

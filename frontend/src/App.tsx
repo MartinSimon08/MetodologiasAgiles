@@ -8,6 +8,7 @@ import { ClientesPage } from './features/clientes/ClientesPage'
 import { ConfiguracionPage } from './features/configuracion/ConfiguracionPage'
 import { LoginPage } from './features/auth/LoginPage'
 import { RequireAuth } from './features/auth/RequireAuth'
+import { ComprobanteOrdenPage } from './features/ordenes/ComprobanteOrdenPage'
 import { OrdenDetallePage } from './features/ordenes/OrdenDetallePage'
 import { OrdenesPage } from './features/ordenes/OrdenesPage'
 import { TareasFrecuentesPage } from './features/tareasFrecuentes/TareasFrecuentesPage'
@@ -44,6 +45,14 @@ function App() {
           />
           <Route path="ordenes" element={<OrdenesPage />} />
           <Route path="ordenes/:id" element={<OrdenDetallePage />} />
+          <Route
+            path="ordenes/:id/comprobante"
+            element={
+              <RequireAuth roles={['administrador']}>
+                <ComprobanteOrdenPage />
+              </RequireAuth>
+            }
+          />
           <Route
             path="repuestos"
             element={

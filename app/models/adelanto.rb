@@ -1,8 +1,11 @@
 class Adelanto < ApplicationRecord
+  MEDIOS = %w[efectivo transferencia tarjeta].freeze
+
   belongs_to :orden
   belongs_to :registrado_por, class_name: "Usuario"
 
   validates :importe, numericality: { greater_than: 0 }, allow_nil: false
+  validates :medio, inclusion: { in: MEDIOS }
   validates :registrado_en, presence: true
   validate :orden_abierta
   validate :importe_dentro_del_monto_final

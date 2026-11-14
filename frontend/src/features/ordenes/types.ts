@@ -53,6 +53,8 @@ export interface ResumenCierre {
   total: string
   adelantado: string
   saldo: string
+  franquicia: string | null
+  saldo_a_facturar: string
 }
 
 export interface TotalParcial {

@@ -1,5 +1,13 @@
 import { api, type MetaPaginacion } from '../../lib/api'
-import type { EstadoOrden, Orden, OrdenCancelada, Presupuesto, ResumenCierre, TotalParcial } from './types'
+import type {
+  ComprobanteOrden,
+  EstadoOrden,
+  Orden,
+  OrdenCancelada,
+  Presupuesto,
+  ResumenCierre,
+  TotalParcial,
+} from './types'
 
 export interface PaginaOrdenes {
   ordenes: Orden[]
@@ -41,7 +49,15 @@ export async function obtenerPresupuesto(id: number) {
   return data
 }
 
-export async function cerrarOrden(id: number, descartarPendientes: boolean) {
-  const { data } = await api.patch<Orden>(`/ordenes/${id}/cerrar`, { descartar_pendientes: descartarPendientes })
+export async function cerrarOrden(id: number, descartarPendientes: boolean, franquicia?: string) {
+  const { data } = await api.patch<Orden>(`/ordenes/${id}/cerrar`, {
+    descartar_pendientes: descartarPendientes,
+    franquicia: franquicia?.trim() ? franquicia.trim() : null,
+  })
+  return data
+}
+
+export async function obtenerComprobante(id: number) {
+  const { data } = await api.get<ComprobanteOrden>(`/ordenes/${id}/comprobante`)
   return data
 }

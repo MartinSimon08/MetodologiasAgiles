@@ -4,6 +4,7 @@ export interface Adelanto {
   id: number
   orden_id: number
   importe: string
+  medio: string
   registrado_en: string
   created_at: string
   updated_at: string
@@ -14,14 +15,27 @@ export interface AdelantosOrden {
   saldo: string
 }
 
+export const MEDIOS_PAGO = ['efectivo', 'transferencia', 'tarjeta'] as const
+export type MedioPago = (typeof MEDIOS_PAGO)[number]
+
+export const MEDIO_PAGO_LABELS: Record<MedioPago, string> = {
+  efectivo: 'Efectivo',
+  transferencia: 'Transferencia',
+  tarjeta: 'Tarjeta',
+}
+
+export function etiquetaMedio(medio: string) {
+  return MEDIO_PAGO_LABELS[medio as MedioPago] ?? medio
+}
+
 export async function listarAdelantos(ordenId: number) {
   const { data } = await api.get<AdelantosOrden>(`/ordenes/${ordenId}/adelantos`)
   return data
 }
 
-export async function registrarAdelanto(ordenId: number, importe: string) {
+export async function registrarAdelanto(ordenId: number, importe: string, medio: MedioPago) {
   const { data } = await api.post<Adelanto>(`/ordenes/${ordenId}/adelantos`, {
-    adelanto: { importe },
+    adelanto: { importe, medio },
   })
   return data
 }

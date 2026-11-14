@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_28_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_13_000100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "unaccent"
@@ -50,9 +50,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_28_120000) do
     t.bigint "registrado_por_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "medio", default: "efectivo", null: false
     t.index ["orden_id"], name: "index_adelantos_on_orden_id"
     t.index ["registrado_por_id"], name: "index_adelantos_on_registrado_por_id"
     t.check_constraint "importe > 0::numeric", name: "adelantos_importe_positivo"
+    t.check_constraint "medio::text = ANY (ARRAY['efectivo'::character varying, 'transferencia'::character varying, 'tarjeta'::character varying]::text[])", name: "adelantos_medio_valido"
   end
 
   create_table "ajustes_repuesto", force: :cascade do |t|
@@ -134,12 +136,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_28_120000) do
     t.datetime "cerrada_en"
     t.bigint "cerrada_por_id"
     t.decimal "total_cerrado", precision: 24, scale: 2
+    t.decimal "franquicia", precision: 24, scale: 2
     t.index ["cerrada_por_id"], name: "index_ordenes_on_cerrada_por_id"
     t.index ["cliente_id"], name: "index_ordenes_on_cliente_id"
     t.index ["vehiculo_id"], name: "index_ordenes_on_vehiculo_id"
     t.index ["vehiculo_id"], name: "index_ordenes_on_vehiculo_id_abierta", unique: true, where: "((estado)::text = 'abierta'::text)"
     t.check_constraint "(estado::text = 'cancelada'::text) = (cancelada_en IS NOT NULL)", name: "ordenes_cancelada_en_consistente"
     t.check_constraint "(estado::text = 'cerrada'::text) = (cerrada_en IS NOT NULL AND cerrada_por_id IS NOT NULL AND total_cerrado IS NOT NULL)", name: "ordenes_cierre_consistente"
+    t.check_constraint "franquicia IS NULL OR franquicia >= 0::numeric AND estado::text = 'cerrada'::text AND franquicia <= total_cerrado", name: "ordenes_franquicia_valida"
   end
 
   create_table "repuestos", force: :cascade do |t|
@@ -163,7 +167,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_28_120000) do
     t.index ["registrado_por_id"], name: "index_repuestos_on_registrado_por_id"
     t.index ["repuesto_catalogo_id"], name: "index_repuestos_on_repuesto_catalogo_id"
     t.check_constraint "(quitado_en IS NULL) = (quitado_por_id IS NULL)", name: "repuestos_quitado_consistente"
-    t.check_constraint "aprobacion::text = ANY (ARRAY['pendiente'::character varying, 'aprobado'::character varying, 'rechazado'::character varying]::text[])", name: "repuestos_aprobacion_valida"
+    t.check_constraint "aprobacion::text = ANY (ARRAY['pendiente'::character varying::text, 'aprobado'::character varying::text, 'rechazado'::character varying::text])", name: "repuestos_aprobacion_valida"
     t.check_constraint "cantidad > 0", name: "repuestos_cantidad_positiva"
     t.check_constraint "costo_unitario >= 0::numeric", name: "repuestos_costo_no_negativo"
     t.check_constraint "estado::text <> 'valorizado'::text OR costo_unitario IS NOT NULL AND margen IS NOT NULL AND precio_cliente IS NOT NULL", name: "repuestos_valorizado_completo"
@@ -203,7 +207,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_28_120000) do
     t.index ["mecanico_id"], name: "index_tareas_on_mecanico_id"
     t.index ["orden_id", "estado"], name: "index_tareas_on_orden_id_and_estado"
     t.index ["orden_id"], name: "index_tareas_on_orden_id"
-    t.check_constraint "aprobacion::text = ANY (ARRAY['pendiente'::character varying, 'aprobada'::character varying, 'rechazada'::character varying]::text[])", name: "tareas_aprobacion_valida"
+    t.check_constraint "aprobacion::text = ANY (ARRAY['pendiente'::character varying::text, 'aprobada'::character varying::text, 'rechazada'::character varying::text])", name: "tareas_aprobacion_valida"
   end
 
   create_table "tareas_frecuentes", force: :cascade do |t|

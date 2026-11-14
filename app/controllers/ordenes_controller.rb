@@ -1,7 +1,8 @@
 class OrdenesController < ApplicationController
   include Paginable
 
-  before_action :require_administrador!, only: %i[create cancelar cerrar resumen_cierre total_parcial presupuesto]
+  before_action :require_administrador!,
+                only: %i[create cancelar cerrar resumen_cierre total_parcial presupuesto comprobante]
 
   def index
     ordenes = Orden.includes(:cliente, :vehiculo, :cerrada_por).order(created_at: :desc, id: :desc)
@@ -29,7 +30,8 @@ class OrdenesController < ApplicationController
   def cerrar
     orden = OrdenCerrar.call(
       orden: Orden.find(params[:id]), cerrada_por: current_usuario,
-      descartar_pendientes: ActiveModel::Type::Boolean.new.cast(params[:descartar_pendientes]) == true
+      descartar_pendientes: ActiveModel::Type::Boolean.new.cast(params[:descartar_pendientes]) == true,
+      franquicia: params[:franquicia]
     )
     render json: serialize(orden)
   end
@@ -44,6 +46,11 @@ class OrdenesController < ApplicationController
 
   def presupuesto
     render json: serialize_presupuesto(OrdenCalcularPresupuesto.call(orden: Orden.find(params[:id])))
+  end
+
+  def comprobante
+    orden = Orden.includes(:cliente, :vehiculo, :cerrada_por).find(params[:id])
+    render json: serialize_comprobante(OrdenGenerarComprobante.call(orden: orden))
   end
 
   private
@@ -75,7 +82,9 @@ class OrdenesController < ApplicationController
       total_repuestos: resumen.total_repuestos.to_s("F"),
       total: resumen.total.to_s("F"),
       adelantado: resumen.adelantado.to_s("F"),
-      saldo: resumen.saldo.to_s("F")
+      saldo: resumen.saldo.to_s("F"),
+      franquicia: resumen.franquicia&.to_s("F"),
+      saldo_a_facturar: resumen.saldo_a_facturar.to_s("F")
     }
   end
 
@@ -108,6 +117,15 @@ class OrdenesController < ApplicationController
       presupuesto: presupuesto.presupuesto.to_s("F"),
       total_aseguradora: presupuesto.total_aseguradora.to_s("F")
     }
+  end
+
+  def serialize_comprobante(comprobante)
+    serialize_resumen(comprobante).merge(
+      cliente: comprobante.orden.cliente.as_json(only: %i[id nombre telefono email]),
+      vehiculo: comprobante.orden.vehiculo.as_json(only: %i[id patente marca modelo anio]),
+      cerrada_en: comprobante.orden.cerrada_en,
+      cerrada_por: comprobante.orden.cerrada_por&.as_json(only: %i[id nombre])
+    )
   end
 
   def precio_de_linea(repuesto)

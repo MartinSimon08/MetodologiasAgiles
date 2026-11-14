@@ -205,4 +205,71 @@ RSpec.describe "Vehiculos", type: :request do
       expect(response).to have_http_status(:forbidden)
     end
   end
+
+  describe "GET /vehiculos/:id/historial" do
+    let(:vehiculo) { create(:vehiculo, patente: "AB123CD", cliente: cliente) }
+
+    def cerrar(orden)
+      OrdenCerrar.call(orden: orden.reload, cerrada_por: admin)
+    end
+
+    it "lista las órdenes cerradas con tareas, mecánicos, repuestos y total" do
+      juan = create(:usuario, nombre: "Juan")
+      orden = create(:orden, vehiculo: vehiculo, motivo: "Service de 10.000 km")
+      create(:tarea, :terminada, orden: orden, descripcion: "Cambio de aceite", mecanico: juan, precio: 15_000)
+      RepuestoAgregar.call(orden: orden, registrado_por: admin, descripcion: "Filtro de aceite",
+                           cantidad: 2, costo_unitario: "1000", margen: 50)
+      cerrar(orden)
+
+      get "/vehiculos/#{vehiculo.id}/historial", headers: auth_headers(admin)
+
+      expect(response).to have_http_status(:ok)
+      body = response.parsed_body
+      expect(body["vehiculo"]).to include("id" => vehiculo.id, "patente" => "AB123CD")
+      expect(body["meta"]).to include("total" => 1)
+      expect(body["ordenes"].sole).to include(
+        "id" => orden.id, "motivo" => "Service de 10.000 km", "total" => "18000.0",
+        "cliente" => { "id" => cliente.id, "nombre" => "Ana Gómez" },
+        "cerrada_por" => { "id" => admin.id, "nombre" => admin.nombre },
+        "mecanicos" => [ { "id" => juan.id, "nombre" => "Juan" } ]
+      )
+      expect(body["ordenes"].sole["tareas"].sole).to include(
+        "descripcion" => "Cambio de aceite", "precio" => "15000.0", "mecanico" => { "id" => juan.id, "nombre" => "Juan" }
+      )
+      expect(body["ordenes"].sole["repuestos"].sole).to include(
+        "descripcion" => "Filtro de aceite", "cantidad" => 2, "precio_cliente" => "3000.0"
+      )
+    end
+
+    it "ordena las órdenes de la más reciente a la más antigua" do
+      vieja = create(:orden, vehiculo: vehiculo)
+      travel_to(1.week.ago) { cerrar(vieja) }
+      nueva = create(:orden, vehiculo: vehiculo)
+      cerrar(nueva)
+      create(:orden, vehiculo: vehiculo)
+
+      get "/vehiculos/#{vehiculo.id}/historial", headers: auth_headers(admin)
+
+      expect(response.parsed_body["ordenes"].pluck("id")).to eq([ nueva.id, vieja.id ])
+    end
+
+    it "devuelve una lista vacía si el vehículo no tiene órdenes cerradas" do
+      get "/vehiculos/#{vehiculo.id}/historial", headers: auth_headers(admin)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body["ordenes"]).to eq([])
+    end
+
+    it "responde 404 si el vehículo no existe" do
+      get "/vehiculos/0/historial", headers: auth_headers(admin)
+
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it "prohíbe el historial a un mecánico" do
+      get "/vehiculos/#{vehiculo.id}/historial", headers: auth_headers(mecanico)
+
+      expect(response).to have_http_status(:forbidden)
+    end
+  end
 end

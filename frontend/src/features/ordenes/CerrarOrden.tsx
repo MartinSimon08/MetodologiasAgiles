@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { errorMessage, fieldErrors } from '../../lib/api'
 import { fechaHora, importe } from '../../lib/formato'
 import { useAuth } from '../auth/AuthContext'
+import { superaSaldo } from '../adelantos/api'
 import { cerrarOrden, obtenerResumenCierre } from './api'
 import type { Orden, ResumenCierre } from './types'
 
@@ -81,6 +82,18 @@ function Resumen({ resumen }: { resumen: ResumenCierre }) {
           <dt>Total</dt>
           <dd>$ {importe(resumen.total)}</dd>
         </div>
+        {Number(resumen.franquicia) > 0 && (
+          <>
+            <div>
+              <dt>Franquicia del asegurado</dt>
+              <dd>$ {importe(resumen.franquicia ?? 0)}</dd>
+            </div>
+            <div>
+              <dt>Saldo a facturar a la aseguradora</dt>
+              <dd>$ {importe(resumen.saldo_a_facturar)}</dd>
+            </div>
+          </>
+        )}
         {Number(resumen.adelantado) > 0 && (
           <>
             <div>
@@ -124,6 +137,7 @@ export function CerrarOrden({ orden }: Props) {
   const esAdministrador = usuario?.rol === 'administrador'
   const [revisando, setRevisando] = useState(false)
   const [descartar, setDescartar] = useState(false)
+  const [franquicia, setFranquicia] = useState('')
 
   const resumen = useQuery({
     queryKey: ['resumen-cierre', orden.id],
@@ -133,9 +147,10 @@ export function CerrarOrden({ orden }: Props) {
   })
 
   const mutation = useMutation({
-    mutationFn: () => cerrarOrden(orden.id, descartar),
+    mutationFn: () => cerrarOrden(orden.id, descartar, franquicia),
     onSuccess: () => {
       setRevisando(false)
+      setFranquicia('')
       queryClient.invalidateQueries({ queryKey: ['orden', orden.id] })
       queryClient.invalidateQueries({ queryKey: ['ordenes'] })
       queryClient.invalidateQueries({ queryKey: ['tareas', orden.id] })
@@ -157,6 +172,7 @@ export function CerrarOrden({ orden }: Props) {
           onClick={() => {
             mutation.reset()
             setDescartar(false)
+            setFranquicia('')
             setRevisando(true)
           }}
         >
@@ -171,8 +187,10 @@ export function CerrarOrden({ orden }: Props) {
   const pendientes = datos?.tareas.filter((tarea) => tarea.estado === 'pendiente') ?? []
   const sinValorizar = datos?.repuestos.filter((repuesto) => repuesto.estado === 'pendiente_de_valorizar') ?? []
   const bloqueada = enCurso.length > 0 || sinValorizar.length > 0
-  const puedeCerrar = datos != null && !bloqueada && (pendientes.length === 0 || descartar)
-  const errores = fieldErrors(mutation.error).base
+  const excedeFranquicia = datos != null && franquicia.trim() !== '' && superaSaldo(franquicia, datos.total)
+  const puedeCerrar = datos != null && !bloqueada && !excedeFranquicia && (pendientes.length === 0 || descartar)
+  const errores = fieldErrors(mutation.error)
+  const mensajesError = [...(errores.base ?? []), ...(errores.franquicia ?? [])]
 
   return (
     <div className="tarjeta formulario cerrar-orden" role="group" aria-label="Cerrar la orden">
@@ -228,6 +246,30 @@ export function CerrarOrden({ orden }: Props) {
             </label>
           )}
 
+          <label>
+            <span>Franquicia del asegurado ($)</span>
+            <input
+              className={excedeFranquicia ? 'invalido' : undefined}
+              type="number"
+              inputMode="decimal"
+              min="0"
+              step="0.01"
+              value={franquicia}
+              onChange={(event) => setFranquicia(event.target.value)}
+              disabled={mutation.isPending}
+              aria-invalid={excedeFranquicia}
+              aria-describedby={excedeFranquicia ? 'franquicia-excede-total' : undefined}
+            />
+            <small>
+              Opcional. Es la parte que paga el asegurado. El resto queda como saldo a facturar a la aseguradora.
+            </small>
+            {excedeFranquicia && (
+              <span id="franquicia-excede-total" className="error" role="alert">
+                La franquicia no puede superar el total ($ {importe(datos.total)}).
+              </span>
+            )}
+          </label>
+
           <p className="advertencia">
             Al cerrar, el total queda congelado y la orden pasa a ser de solo lectura. No se puede deshacer.
           </p>
@@ -236,7 +278,7 @@ export function CerrarOrden({ orden }: Props) {
 
       {mutation.isError && (
         <p className="error" role="alert">
-          {errores?.join('. ') ?? errorMessage(mutation.error, 'No se pudo cerrar la orden.')}
+          {mensajesError.length > 0 ? mensajesError.join('. ') : errorMessage(mutation.error, 'No se pudo cerrar la orden.')}
         </p>
       )}
 

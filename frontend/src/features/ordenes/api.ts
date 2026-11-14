@@ -41,7 +41,10 @@ export async function obtenerPresupuesto(id: number) {
   return data
 }
 
-export async function cerrarOrden(id: number, descartarPendientes: boolean) {
-  const { data } = await api.patch<Orden>(`/ordenes/${id}/cerrar`, { descartar_pendientes: descartarPendientes })
+export async function cerrarOrden(id: number, descartarPendientes: boolean, franquicia?: string) {
+  const { data } = await api.patch<Orden>(`/ordenes/${id}/cerrar`, {
+    descartar_pendientes: descartarPendientes,
+    franquicia: franquicia?.trim() ? franquicia.trim() : null,
+  })
   return data
 }

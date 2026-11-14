@@ -19,6 +19,6 @@ module SerializaAjusteRepuesto
   end
 
   def dinero(valor)
-    valor.to_d.to_s("F")
+    Dinero.importe(valor)
   end
 end

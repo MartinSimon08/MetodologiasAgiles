@@ -88,25 +88,19 @@ RSpec.describe ConsultaCasosAseguradora do
     expect(fila.saldo_pendiente).to eq("120.0")
   end
 
-  it "deja el saldo facturado en cero en una orden abierta y en una cerrada" do
-    abierta = caso_el(Time.zone.local(2026, 4, 8, 12))
-    orden_abierta = vincular(abierta, precio: "1000", adelantos: [ "250" ])
-    cerrada = caso_el(Time.zone.local(2026, 4, 10, 12))
-    orden_cerrada = vincular(cerrada, precio: "800", adelantos: [ "100" ], terminar: true)
-    OrdenCerrar.call(orden: orden_cerrada, cerrada_por: admin, franquicia: "300")
-    consulta = described_class.new(aseguradora_id: aseguradora.id, desde: "2026-04-01", hasta: "2026-04-30")
+  it "calcula una sola vez el total de una orden abierta" do
+    caso = caso_el(Time.zone.local(2026, 4, 8, 12))
+    vincular(caso, precio: "1000", adelantos: [ "250" ])
+    consultas = []
+    consulta = nil
+    ActiveSupport::Notifications.subscribed(
+      ->(_name, _start, _finish, _id, payload) { consultas << payload[:sql] },
+      "sql.active_record"
+    ) { consulta = consultar }
 
-    expect(consulta.send(:particion, orden_abierta.reload)).to have_attributes(
-      total_autorizado: BigDecimal("1000"),
-      franquicia_cobrada: 0,
-      saldo_facturado: 0,
-      saldo_pendiente: BigDecimal("1000")
-    )
-    expect(consulta.send(:particion, orden_cerrada.reload)).to have_attributes(
-      total_autorizado: BigDecimal("800"),
-      franquicia_cobrada: BigDecimal("300"),
-      saldo_facturado: 0,
-      saldo_pendiente: BigDecimal("500")
+    expect(consultas.count { |sql| sql.include?("SUM(") }).to eq(3)
+    expect(consulta.filas.sole).to have_attributes(
+      total_autorizado: "1000.0", franquicia_cobrada: "0.0", saldo_pendiente: "1000.0"
     )
   end
 

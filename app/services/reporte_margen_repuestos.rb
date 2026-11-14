@@ -17,10 +17,6 @@ class ReporteMargenRepuestos
     new(desde:, hasta:).resultado
   end
 
-  def self.importe(valor)
-    valor.to_d.to_s("F")
-  end
-
   def initialize(desde:, hasta:)
     @errors = {}
     @desde = requerir_fecha(desde, :desde)
@@ -33,7 +29,7 @@ class ReporteMargenRepuestos
   def resultado
     return Resultado.new(errors: @errors, margen_total: "0.0") if @errors.any?
 
-    Resultado.new(errors: @errors, margen_total: self.class.importe(repuestos_del_periodo.sum(MARGEN_LINEA)))
+    Resultado.new(errors: @errors, margen_total: Dinero.importe(repuestos_del_periodo.sum(MARGEN_LINEA)))
   end
 
   private

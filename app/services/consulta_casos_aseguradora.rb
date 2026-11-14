@@ -1,7 +1,7 @@
 class ConsultaCasosAseguradora
   Fila = Data.define(:caso, :total_autorizado, :franquicia_cobrada, :saldo_pendiente)
   Totales = Data.define(:total_autorizado, :franquicia_cobrada, :saldo_pendiente)
-  Particion = Data.define(:total_autorizado, :franquicia_cobrada, :saldo_facturado, :saldo_pendiente)
+  Particion = Data.define(:total_autorizado, :franquicia_cobrada, :saldo_pendiente)
   Resultado = Data.define(:errors, :filas, :totales) do
     def valid?
       errors.empty?
@@ -14,10 +14,6 @@ class ConsultaCasosAseguradora
 
   def self.call(aseguradora_id: nil, desde: nil, hasta: nil)
     new(aseguradora_id:, desde:, hasta:).resultado
-  end
-
-  def self.importe(valor)
-    valor.to_d.to_s("F")
   end
 
   def initialize(aseguradora_id:, desde:, hasta:)
@@ -49,30 +45,32 @@ class ConsultaCasosAseguradora
     montos = caso.orden ? particion(caso.orden) : particion_en_cero
     Fila.new(
       caso: caso,
-      total_autorizado: self.class.importe(montos.total_autorizado),
-      franquicia_cobrada: self.class.importe(montos.franquicia_cobrada),
-      saldo_pendiente: self.class.importe(montos.saldo_pendiente)
+      total_autorizado: Dinero.importe(montos.total_autorizado),
+      franquicia_cobrada: Dinero.importe(montos.franquicia_cobrada),
+      saldo_pendiente: Dinero.importe(montos.saldo_pendiente)
     )
   end
 
   def particion_en_cero
-    Particion.new(total_autorizado: 0, franquicia_cobrada: 0, saldo_facturado: 0, saldo_pendiente: 0)
+    Particion.new(total_autorizado: 0, franquicia_cobrada: 0, saldo_pendiente: 0)
   end
 
   def particion(orden)
     total_autorizado = (orden.cerrada? ? orden.total_cerrado : orden.total).to_d
     franquicia_cobrada = orden.franquicia.to_d
-    saldo_facturado = 0.to_d
-    saldo_pendiente = orden.saldo_a_facturar
 
-    Particion.new(total_autorizado:, franquicia_cobrada:, saldo_facturado:, saldo_pendiente:)
+    Particion.new(
+      total_autorizado:,
+      franquicia_cobrada:,
+      saldo_pendiente: total_autorizado - franquicia_cobrada
+    )
   end
 
   def totales_de(filas)
     Totales.new(
-      total_autorizado: self.class.importe(filas.sum { |fila| fila.total_autorizado.to_d }),
-      franquicia_cobrada: self.class.importe(filas.sum { |fila| fila.franquicia_cobrada.to_d }),
-      saldo_pendiente: self.class.importe(filas.sum { |fila| fila.saldo_pendiente.to_d })
+      total_autorizado: Dinero.importe(filas.sum { |fila| fila.total_autorizado.to_d }),
+      franquicia_cobrada: Dinero.importe(filas.sum { |fila| fila.franquicia_cobrada.to_d }),
+      saldo_pendiente: Dinero.importe(filas.sum { |fila| fila.saldo_pendiente.to_d })
     )
   end
 

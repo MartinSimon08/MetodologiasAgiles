@@ -365,6 +365,26 @@ RSpec.describe "Ordenes", type: :request do
 
       expect(response).to have_http_status(:forbidden)
     end
+
+    it "expone la franquicia del asegurado y el saldo a facturar a la aseguradora" do
+      create(:tarea, :terminada, orden: orden, precio: 15_000)
+      orden.update!(estado: :cerrada, cerrada_en: Time.current, cerrada_por: administrador,
+                    total_cerrado: 15_000, franquicia: 5_000)
+
+      get "/ordenes/#{orden.id}/resumen_cierre", headers: auth_headers(administrador)
+
+      expect(response.parsed_body).to include(
+        "total" => "15000.0", "franquicia" => "5000.0", "saldo_a_facturar" => "10000.0"
+      )
+    end
+
+    it "sin franquicia, el saldo a facturar es el total" do
+      create(:tarea, :terminada, orden: orden, precio: 15_000)
+
+      get "/ordenes/#{orden.id}/resumen_cierre", headers: auth_headers(administrador)
+
+      expect(response.parsed_body).to include("franquicia" => nil, "saldo_a_facturar" => "15000.0")
+    end
   end
 
   describe "GET /ordenes/:id/total_parcial" do
@@ -487,6 +507,27 @@ RSpec.describe "Ordenes", type: :request do
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body["total_cerrado"]).to eq("0.0")
       expect(tarea.reload).to be_cancelada
+    end
+
+    it "registra la franquicia del asegurado al cerrar" do
+      create(:tarea, :terminada, orden: orden, precio: 15_000)
+
+      patch "/ordenes/#{orden.id}/cerrar", params: { franquicia: "5000" }, headers: auth_headers(administrador)
+
+      expect(response).to have_http_status(:ok)
+      expect(orden.reload.franquicia).to eq(5_000)
+    end
+
+    it "rechaza una franquicia mayor al total sin cerrar la orden" do
+      create(:tarea, :terminada, orden: orden, precio: 1_000)
+
+      patch "/ordenes/#{orden.id}/cerrar", params: { franquicia: "1000.01" }, headers: auth_headers(administrador)
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body["errors"]["franquicia"]).to include(
+        "Franquicia del asegurado no puede ser mayor al total de la orden"
+      )
+      expect(orden.reload).to be_abierta
     end
 
     it "no devuelve el total al mecánico" do

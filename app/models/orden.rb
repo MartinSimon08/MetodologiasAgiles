@@ -18,8 +18,11 @@ class Orden < ApplicationRecord
   validates :cancelada_en, absence: true, unless: :cancelada?
   validates :cerrada_en, :cerrada_por, :total_cerrado, presence: true, if: :cerrada?
   validates :cerrada_en, :cerrada_por, :total_cerrado, absence: true, unless: :cerrada?
+  validates :franquicia, numericality: { greater_than_or_equal_to: 0 }, allow_nil: true
   validates :vehiculo, uniqueness: { conditions: -> { abierta }, message: :con_orden_abierta }, if: :abierta?
   validate :sin_repuestos_pendientes_de_valorizar, if: :cerrada?
+  validate :franquicia_solo_en_orden_cerrada
+  validate :franquicia_dentro_del_total
 
   def total
     return total_cerrado if cerrada?
@@ -45,6 +48,10 @@ class Orden < ApplicationRecord
 
   def saldo
     total - adelantos.sum(:importe).to_d
+  end
+
+  def saldo_a_facturar
+    total - franquicia.to_d
   end
 
   def total_reemplazando(repuesto, precio:, incluir_ajustes_del_repuesto: true)
@@ -75,5 +82,18 @@ class Orden < ApplicationRecord
   def sin_repuestos_pendientes_de_valorizar
     pendientes = repuestos.vigentes.where.not(aprobacion: :rechazado).pendiente_de_valorizar
     errors.add(:base, :repuestos_pendientes) if pendientes.exists?
+  end
+
+  def franquicia_solo_en_orden_cerrada
+    return if franquicia.nil? || cerrada?
+
+    errors.add(:franquicia, :en_orden_abierta)
+  end
+
+  def franquicia_dentro_del_total
+    return if franquicia.nil? || total_cerrado.nil?
+    return if franquicia <= total_cerrado
+
+    errors.add(:franquicia, :mayor_al_total)
   end
 end

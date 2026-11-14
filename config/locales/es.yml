@@ -47,9 +47,11 @@ es:
         cerrada_en: Fecha de cierre
         cerrada_por: Cerrada por
         total_cerrado: Total al cierre
+        franquicia: Franquicia del asegurado
       adelanto:
         orden: Orden
         importe: Importe
+        medio: Medio de pago
         registrado_en: Fecha de registro
       tarea:
         orden: Orden
@@ -123,10 +125,15 @@ es:
               must_be_open: debe estar abierta
             importe:
               mayor_que_monto_final: no puede ser mayor al monto final de la orden
+            medio:
+              inclusion: no es un medio de pago válido
         orden:
           attributes:
             vehiculo:
               con_orden_abierta: ya tiene una orden abierta
+            franquicia:
+              mayor_al_total: no puede ser mayor al total de la orden
+              en_orden_abierta: solo se registra al cerrar la orden
             base:
               repuestos_pendientes: No se puede cerrar la orden porque tiene repuestos pendientes de valorizar
               ya_cancelada: La orden ya está cancelada

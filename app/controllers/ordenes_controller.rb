@@ -29,7 +29,8 @@ class OrdenesController < ApplicationController
   def cerrar
     orden = OrdenCerrar.call(
       orden: Orden.find(params[:id]), cerrada_por: current_usuario,
-      descartar_pendientes: ActiveModel::Type::Boolean.new.cast(params[:descartar_pendientes]) == true
+      descartar_pendientes: ActiveModel::Type::Boolean.new.cast(params[:descartar_pendientes]) == true,
+      franquicia: params[:franquicia]
     )
     render json: serialize(orden)
   end
@@ -75,7 +76,9 @@ class OrdenesController < ApplicationController
       total_repuestos: resumen.total_repuestos.to_s("F"),
       total: resumen.total.to_s("F"),
       adelantado: resumen.adelantado.to_s("F"),
-      saldo: resumen.saldo.to_s("F")
+      saldo: resumen.saldo.to_s("F"),
+      franquicia: resumen.franquicia&.to_s("F"),
+      saldo_a_facturar: resumen.saldo_a_facturar.to_s("F")
     }
   end
 

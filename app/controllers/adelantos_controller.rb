@@ -22,7 +22,7 @@ class AdelantosController < ApplicationController
   end
 
   def adelanto_params
-    params.require(:adelanto).permit(:importe)
+    params.require(:adelanto).permit(:importe, :medio)
   end
 
   def serialize_adelantos
@@ -30,6 +30,6 @@ class AdelantosController < ApplicationController
   end
 
   def serialize_adelanto(adelanto)
-    adelanto.as_json(only: %i[id orden_id importe registrado_en created_at updated_at])
+    adelanto.as_json(only: %i[id orden_id importe medio registrado_en created_at updated_at])
   end
 end

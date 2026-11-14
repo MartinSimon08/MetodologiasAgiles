@@ -40,9 +40,9 @@ RSpec.describe ConsultaCasosAseguradora do
     expect(consulta).to be_valid
     expect(consulta.filas.map(&:caso)).to eq([ con_adelantos, sin_cobro, sin_orden ])
     expect(consulta.filas.map { |fila| [ fila.total_autorizado, fila.franquicia_cobrada, fila.saldo_pendiente ] })
-      .to eq([ %w[1000.0 250.0 750.0], %w[400.0 0.0 400.0], %w[0.0 0.0 0.0] ])
+      .to eq([ %w[1000.0 0.0 1000.0], %w[400.0 0.0 400.0], %w[0.0 0.0 0.0] ])
     expect(consulta.totales).to have_attributes(
-      total_autorizado: "1400.0", franquicia_cobrada: "250.0", saldo_pendiente: "1150.0"
+      total_autorizado: "1400.0", franquicia_cobrada: "0.0", saldo_pendiente: "1400.0"
     )
   end
 
@@ -54,20 +54,20 @@ RSpec.describe ConsultaCasosAseguradora do
     expect(consultar.filas.map(&:caso)).to eq([ inicio, fin ])
   end
 
-  it "usa el total cerrado y no lo suma como otro cobro" do
+  it "usa el total cerrado y la franquicia registrada, sin descontar los adelantos" do
     caso = caso_el(Time.zone.local(2026, 4, 10, 12))
     orden = vincular(caso, precio: "800", adelantos: [ "100" ], terminar: true)
-    OrdenCerrar.call(orden: orden, cerrada_por: admin)
+    OrdenCerrar.call(orden: orden, cerrada_por: admin, franquicia: "250")
     orden.update_column(:total_cerrado, BigDecimal("650"))
 
     fila = consultar.filas.sole
 
     expect(fila.total_autorizado).to eq("650.0")
-    expect(fila.franquicia_cobrada).to eq("100.0")
-    expect(fila.saldo_pendiente).to eq("550.0")
+    expect(fila.franquicia_cobrada).to eq("250.0")
+    expect(fila.saldo_pendiente).to eq("400.0")
   end
 
-  it "mueve solo el saldo pendiente cuando un ajuste cambia el total de la orden" do
+  it "en una orden abierta deja la franquicia en cero y el saldo pendiente igual al total" do
     caso = caso_el(Time.zone.local(2026, 4, 10, 12))
     orden = create(:orden, cliente: caso.asegurado, vehiculo: caso.vehiculo)
     repuesto = RepuestoAgregar.call(
@@ -84,34 +84,30 @@ RSpec.describe ConsultaCasosAseguradora do
     fila = consultar.filas.sole
 
     expect(fila.total_autorizado).to eq("120.0")
-    expect(fila.franquicia_cobrada).to eq("40.0")
-    expect(fila.saldo_pendiente).to eq("80.0")
+    expect(fila.franquicia_cobrada).to eq("0.0")
+    expect(fila.saldo_pendiente).to eq("120.0")
   end
 
-  it "deja en cero la franquicia y el saldo a la aseguradora cuando la orden no tiene caso" do
-    orden = create(:orden)
-    create(:tarea, orden: orden, precio: "400")
-    create(:adelanto, orden: orden, importe: "100", registrado_por: admin)
-    particion = described_class.new(aseguradora_id: aseguradora.id, desde: "2026-04-01", hasta: "2026-04-30")
-                               .send(:particion_provisoria, orden)
+  it "deja el saldo facturado en cero en una orden abierta y en una cerrada" do
+    abierta = caso_el(Time.zone.local(2026, 4, 8, 12))
+    orden_abierta = vincular(abierta, precio: "1000", adelantos: [ "250" ])
+    cerrada = caso_el(Time.zone.local(2026, 4, 10, 12))
+    orden_cerrada = vincular(cerrada, precio: "800", adelantos: [ "100" ], terminar: true)
+    OrdenCerrar.call(orden: orden_cerrada, cerrada_por: admin, franquicia: "300")
+    consulta = described_class.new(aseguradora_id: aseguradora.id, desde: "2026-04-01", hasta: "2026-04-30")
 
-    expect(particion).to have_attributes(
-      total_autorizado: BigDecimal("400"),
+    expect(consulta.send(:particion, orden_abierta.reload)).to have_attributes(
+      total_autorizado: BigDecimal("1000"),
       franquicia_cobrada: 0,
       saldo_facturado: 0,
-      saldo_pendiente: 0
+      saldo_pendiente: BigDecimal("1000")
     )
-  end
-
-  it "deja el saldo facturado en cero mientras no exista la partición real" do
-    caso = caso_el(Time.zone.local(2026, 4, 10, 12))
-    orden = vincular(caso, precio: "1000", adelantos: [ "250" ])
-    particion = described_class.new(aseguradora_id: aseguradora.id, desde: "2026-04-01", hasta: "2026-04-30")
-                               .send(:particion_provisoria, orden.reload)
-
-    expect(particion.saldo_facturado).to eq(0)
-    expect(particion.franquicia_cobrada).to eq(BigDecimal("250"))
-    expect(particion.saldo_pendiente).to eq(BigDecimal("750"))
+    expect(consulta.send(:particion, orden_cerrada.reload)).to have_attributes(
+      total_autorizado: BigDecimal("800"),
+      franquicia_cobrada: BigDecimal("300"),
+      saldo_facturado: 0,
+      saldo_pendiente: BigDecimal("500")
+    )
   end
 
   it "consulta una aseguradora desactivada" do

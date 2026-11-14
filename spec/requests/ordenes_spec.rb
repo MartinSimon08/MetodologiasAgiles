@@ -365,6 +365,26 @@ RSpec.describe "Ordenes", type: :request do
 
       expect(response).to have_http_status(:forbidden)
     end
+
+    it "expone la franquicia del asegurado y el saldo a facturar a la aseguradora" do
+      create(:tarea, :terminada, orden: orden, precio: 15_000)
+      orden.update!(estado: :cerrada, cerrada_en: Time.current, cerrada_por: administrador,
+                    total_cerrado: 15_000, franquicia: 5_000)
+
+      get "/ordenes/#{orden.id}/resumen_cierre", headers: auth_headers(administrador)
+
+      expect(response.parsed_body).to include(
+        "total" => "15000.0", "franquicia" => "5000.0", "saldo_a_facturar" => "10000.0"
+      )
+    end
+
+    it "sin franquicia, el saldo a facturar es el total" do
+      create(:tarea, :terminada, orden: orden, precio: 15_000)
+
+      get "/ordenes/#{orden.id}/resumen_cierre", headers: auth_headers(administrador)
+
+      expect(response.parsed_body).to include("franquicia" => nil, "saldo_a_facturar" => "15000.0")
+    end
   end
 
   describe "GET /ordenes/:id/total_parcial" do
@@ -435,6 +455,58 @@ RSpec.describe "Ordenes", type: :request do
     end
   end
 
+  describe "GET /ordenes/:id/comprobante" do
+    let(:orden) { create(:orden) }
+    let(:carlos) { create(:usuario, nombre: "Carlos") }
+
+    it "devuelve el detalle del trabajo, los datos del cliente y el total congelado" do
+      create(:tarea, :terminada, orden: orden, descripcion: "Cambio de aceite", mecanico: carlos, precio: 15_000)
+      create(:tarea, orden: orden, descripcion: "Alineación", precio: 8_000)
+      RepuestoAgregar.call(orden: orden, registrado_por: administrador, descripcion: "Filtro de aceite", cantidad: 2,
+                           costo_unitario: "1000", margen: 50)
+      create(:adelanto, orden: orden, importe: "5000")
+      OrdenCerrar.call(orden: orden, cerrada_por: administrador, descartar_pendientes: true)
+
+      get "/ordenes/#{orden.id}/comprobante", headers: auth_headers(administrador)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body["cliente"]).to include("id" => orden.cliente_id, "nombre" => orden.cliente.nombre)
+      expect(response.parsed_body["vehiculo"]).to include("id" => orden.vehiculo_id, "patente" => orden.vehiculo.patente)
+      expect(response.parsed_body["cerrada_en"]).to be_present
+      expect(response.parsed_body["tareas"]).to match([
+        a_hash_including("descripcion" => "Cambio de aceite", "precio" => "15000.0",
+                         "mecanico" => { "id" => carlos.id, "nombre" => "Carlos" })
+      ])
+      expect(response.parsed_body["repuestos"]).to match([
+        a_hash_including("descripcion" => "Filtro de aceite", "cantidad" => 2, "precio_cliente" => "3000.0")
+      ])
+      expect(response.parsed_body).to include(
+        "mano_de_obra" => "15000.0", "total_repuestos" => "3000.0", "total" => "18000.0",
+        "adelantado" => "5000.0", "saldo" => "13000.0"
+      )
+    end
+
+    it "rechaza generar el comprobante de una orden abierta" do
+      get "/ordenes/#{orden.id}/comprobante", headers: auth_headers(administrador)
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body["errors"]["base"]).to include("El comprobante solo se genera a partir de una orden cerrada")
+    end
+
+    it "prohíbe ver el comprobante a un mecánico" do
+      get "/ordenes/#{orden.id}/comprobante", headers: auth_headers(mecanico)
+
+      expect(response).to have_http_status(:forbidden)
+      expect(response.body).to be_empty
+    end
+
+    it "responde 404 si la orden no existe" do
+      get "/ordenes/0/comprobante", headers: auth_headers(administrador)
+
+      expect(response).to have_http_status(:not_found)
+    end
+  end
+
   describe "PATCH /ordenes/:id/cerrar" do
     let!(:orden) { create(:orden) }
 
@@ -487,6 +559,27 @@ RSpec.describe "Ordenes", type: :request do
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body["total_cerrado"]).to eq("0.0")
       expect(tarea.reload).to be_cancelada
+    end
+
+    it "registra la franquicia del asegurado al cerrar" do
+      create(:tarea, :terminada, orden: orden, precio: 15_000)
+
+      patch "/ordenes/#{orden.id}/cerrar", params: { franquicia: "5000" }, headers: auth_headers(administrador)
+
+      expect(response).to have_http_status(:ok)
+      expect(orden.reload.franquicia).to eq(5_000)
+    end
+
+    it "rechaza una franquicia mayor al total sin cerrar la orden" do
+      create(:tarea, :terminada, orden: orden, precio: 1_000)
+
+      patch "/ordenes/#{orden.id}/cerrar", params: { franquicia: "1000.01" }, headers: auth_headers(administrador)
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body["errors"]["franquicia"]).to include(
+        "Franquicia del asegurado no puede ser mayor al total de la orden"
+      )
+      expect(orden.reload).to be_abierta
     end
 
     it "no devuelve el total al mecánico" do

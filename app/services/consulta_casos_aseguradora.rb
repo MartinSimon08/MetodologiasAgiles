@@ -40,13 +40,13 @@ class ConsultaCasosAseguradora
   def filas_del_periodo
     rango = @desde.beginning_of_day..@hasta.end_of_day
     Caso.where(aseguradora: @aseguradora, created_at: rango)
-        .includes(:asegurado, :vehiculo, orden: :adelantos)
+        .includes(:asegurado, :vehiculo, :orden)
         .order(created_at: :asc, id: :asc)
         .map { |caso| fila_de(caso) }
   end
 
   def fila_de(caso)
-    montos = caso.orden ? particion_provisoria(caso.orden) : particion_en_cero
+    montos = caso.orden ? particion(caso.orden) : particion_en_cero
     Fila.new(
       caso: caso,
       total_autorizado: self.class.importe(montos.total_autorizado),
@@ -59,18 +59,11 @@ class ConsultaCasosAseguradora
     Particion.new(total_autorizado: 0, franquicia_cobrada: 0, saldo_facturado: 0, saldo_pendiente: 0)
   end
 
-  def particion_provisoria(orden)
-    # Provisorio hasta HU28. Reemplazar cuando exista la partición real de franquicia y saldo a la aseguradora.
+  def particion(orden)
     total_autorizado = (orden.cerrada? ? orden.total_cerrado : orden.total).to_d
-    if orden.caso
-      franquicia_cobrada = orden.adelantos.sum(:importe).to_d
-      saldo_facturado = 0.to_d
-      saldo_pendiente = total_autorizado - franquicia_cobrada
-    else
-      franquicia_cobrada = 0.to_d
-      saldo_facturado = 0.to_d
-      saldo_pendiente = 0.to_d
-    end
+    franquicia_cobrada = orden.franquicia.to_d
+    saldo_facturado = 0.to_d
+    saldo_pendiente = orden.saldo_a_facturar
 
     Particion.new(total_autorizado:, franquicia_cobrada:, saldo_facturado:, saldo_pendiente:)
   end

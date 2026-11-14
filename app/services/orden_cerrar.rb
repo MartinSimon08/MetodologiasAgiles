@@ -1,5 +1,5 @@
 class OrdenCerrar
-  def self.call(orden:, cerrada_por:, descartar_pendientes: false)
+  def self.call(orden:, cerrada_por:, descartar_pendientes: false, franquicia: nil)
     orden.with_lock do
       unless orden.abierta?
         orden.errors.add(:base, orden.cerrada? ? :ya_cerrada : :cancelada_no_cerrable)
@@ -16,7 +16,7 @@ class OrdenCerrar
 
       pendientes.each { |tarea| tarea.update!(estado: :cancelada) }
       orden.update!(estado: :cerrada, cerrada_en: Time.current, cerrada_por: cerrada_por,
-                    total_cerrado: orden.total_a_cobrar)
+                    total_cerrado: orden.total_a_cobrar, franquicia: franquicia.presence)
       orden
     end
   end

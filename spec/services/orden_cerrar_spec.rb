@@ -29,6 +29,53 @@ RSpec.describe OrdenCerrar do
     end
   end
 
+  describe "franquicia del asegurado" do
+    it "registra la franquicia y deja el resto como saldo a facturar a la aseguradora" do
+      create(:tarea, :terminada, orden: orden, precio: 15_000)
+
+      described_class.call(orden: orden, cerrada_por: administrador, franquicia: "5000")
+
+      expect(orden.reload).to have_attributes(franquicia: BigDecimal("5000"), total_cerrado: 15_000)
+      expect(orden.saldo_a_facturar).to eq(10_000)
+    end
+
+    it "sin franquicia, todo el total queda a facturar a la aseguradora" do
+      create(:tarea, :terminada, orden: orden, precio: 15_000)
+
+      described_class.call(orden: orden, cerrada_por: administrador)
+
+      expect(orden.reload.franquicia).to be_nil
+      expect(orden.saldo_a_facturar).to eq(15_000)
+    end
+
+    it "acepta una franquicia igual al total" do
+      create(:tarea, :terminada, orden: orden, precio: 10_000)
+
+      described_class.call(orden: orden, cerrada_por: administrador, franquicia: "10000")
+
+      expect(orden.reload).to be_cerrada
+      expect(orden.saldo_a_facturar).to eq(0)
+    end
+
+    it "ignora una franquicia en blanco" do
+      create(:tarea, :terminada, orden: orden, precio: 10_000)
+
+      described_class.call(orden: orden, cerrada_por: administrador, franquicia: "")
+
+      expect(orden.reload.franquicia).to be_nil
+    end
+
+    it "rechaza una franquicia mayor al total sin cerrar la orden" do
+      create(:tarea, :terminada, orden: orden, precio: 10_000)
+
+      expect { described_class.call(orden: orden, cerrada_por: administrador, franquicia: "10000.01") }
+        .to raise_error(ActiveRecord::RecordInvalid) { |error|
+          expect(error.record.errors[:franquicia]).to include("no puede ser mayor al total de la orden")
+        }
+      expect(orden.reload).to be_abierta
+    end
+  end
+
   it "rechaza cerrar con tareas en curso" do
     en_curso = create(:tarea, :en_curso, orden: orden, mecanico: mecanico)
 

@@ -9,6 +9,7 @@ import { ClientesPage } from './features/clientes/ClientesPage'
 import { ConfiguracionPage } from './features/configuracion/ConfiguracionPage'
 import { LoginPage } from './features/auth/LoginPage'
 import { RequireAuth } from './features/auth/RequireAuth'
+import { ComprobanteOrdenPage } from './features/ordenes/ComprobanteOrdenPage'
 import { OrdenDetallePage } from './features/ordenes/OrdenDetallePage'
 import { OrdenesPage } from './features/ordenes/OrdenesPage'
 import { TareasFrecuentesPage } from './features/tareasFrecuentes/TareasFrecuentesPage'
@@ -16,9 +17,11 @@ import { UsuariosPage } from './features/usuarios/UsuariosPage'
 import { VehiculosPage } from './features/vehiculos/VehiculosPage'
 import { CatalogoRepuestosPage } from './features/repuestos/CatalogoRepuestosPage'
 import { RepuestosPorProveedorPage } from './features/repuestos/RepuestosPorProveedorPage'
+import { ReporteOrdenesPorPeriodoPage } from './features/reportes/ReporteOrdenesPorPeriodoPage'
 import { ReporteMargenRepuestosPage } from './features/reportes/ReporteMargenRepuestosPage'
 import { ReporteTareasPorMecanicoPage } from './features/reportes/ReporteTareasPorMecanicoPage'
 import { MisTareasPage } from './features/tareas/MisTareasPage'
+import { ReporteTareasFrecuentesPage } from './features/reportes/ReporteTareasFrecuentesPage'
 
 function App() {
   return (
@@ -44,6 +47,14 @@ function App() {
           <Route path="ordenes" element={<OrdenesPage />} />
           <Route path="ordenes/:id" element={<OrdenDetallePage />} />
           <Route
+            path="ordenes/:id/comprobante"
+            element={
+              <RequireAuth roles={['administrador']}>
+                <ComprobanteOrdenPage />
+              </RequireAuth>
+            }
+          />
+          <Route
             path="repuestos"
             element={
               <RequireAuth roles={['administrador']}>
@@ -60,6 +71,14 @@ function App() {
             }
           />
           <Route
+            path="reportes/ordenes-por-periodo"
+            element={
+              <RequireAuth roles={['administrador']}>
+                <ReporteOrdenesPorPeriodoPage />
+              </RequireAuth>
+            }
+          />
+          <Route
             path="reportes/margen-repuestos"
             element={
               <RequireAuth roles={['administrador']}>
@@ -72,6 +91,14 @@ function App() {
             element={
               <RequireAuth roles={['administrador']}>
                 <RepuestosPorProveedorPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="reportes/tareas-frecuentes"
+            element={
+              <RequireAuth roles={['administrador']}>
+                <ReporteTareasFrecuentesPage />
               </RequireAuth>
             }
           />

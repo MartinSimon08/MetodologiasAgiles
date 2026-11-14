@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { errorMessage } from '../../lib/api'
 import { fechaHora, importe } from '../../lib/formato'
 import { useAuth } from '../auth/AuthContext'
-import { listarAdelantos, totalAdelantado } from './api'
+import { listarAdelantos, etiquetaMedio, totalAdelantado } from './api'
 import { NuevoAdelantoForm } from './NuevoAdelantoForm'
 import { Cargando } from '../../components/Cargando'
 
@@ -26,7 +26,7 @@ export function AdelantosPanel({ ordenId, ordenAbierta }: { ordenId: number; ord
       <header className="encabezado">
         <div>
           <h2>Adelantos</h2>
-          <p className="bajada">Señas a cuenta de esta orden. Descuentan el saldo y no la cierran.</p>
+          <p className="bajada">Señas y franquicia del asegurado a cuenta de esta orden. Descuentan el saldo y no la cierran.</p>
         </div>
         {ordenAbierta && !creando && (
           <button
@@ -81,7 +81,9 @@ export function AdelantosPanel({ ordenId, ordenAbierta }: { ordenId: number; ord
               {consulta.data.adelantos.map((adelanto) => (
                 <li key={adelanto.id} className="tarjeta item-datos">
                   <strong>$ {importe(adelanto.importe)}</strong>
-                  <span>{fechaHora(adelanto.registrado_en)}</span>
+                  <span>
+                    {etiquetaMedio(adelanto.medio)} · {fechaHora(adelanto.registrado_en)}
+                  </span>
                 </li>
               ))}
             </ul>

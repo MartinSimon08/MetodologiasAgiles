@@ -17,11 +17,12 @@ import { HistorialVehiculoPage } from './features/vehiculos/HistorialVehiculoPag
 import { VehiculosPage } from './features/vehiculos/VehiculosPage'
 import { CatalogoRepuestosPage } from './features/repuestos/CatalogoRepuestosPage'
 import { RepuestosPorProveedorPage } from './features/repuestos/RepuestosPorProveedorPage'
-import { ReporteOrdenesPorPeriodoPage } from './features/reportes/ReporteOrdenesPorPeriodoPage'
+import { ReporteIngresosPage } from './features/reportes/ReporteIngresosPage'
 import { ReporteMargenRepuestosPage } from './features/reportes/ReporteMargenRepuestosPage'
+import { ReporteOrdenesPorPeriodoPage } from './features/reportes/ReporteOrdenesPorPeriodoPage'
+import { ReporteTareasFrecuentesPage } from './features/reportes/ReporteTareasFrecuentesPage'
 import { ReporteTareasPorMecanicoPage } from './features/reportes/ReporteTareasPorMecanicoPage'
 import { MisTareasPage } from './features/tareas/MisTareasPage'
-import { ReporteTareasFrecuentesPage } from './features/reportes/ReporteTareasFrecuentesPage'
 
 function App() {
   return (
@@ -83,6 +84,14 @@ function App() {
             element={
               <RequireAuth roles={['administrador']}>
                 <ReporteMargenRepuestosPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="reportes/ingresos"
+            element={
+              <RequireAuth roles={['administrador']}>
+                <ReporteIngresosPage />
               </RequireAuth>
             }
           />

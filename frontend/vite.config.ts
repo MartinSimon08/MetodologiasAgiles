@@ -18,6 +18,7 @@ const rutasSpa = [
   /^\/vehiculos$/,
   /^\/vehiculos\/[^/]+\/historial$/,
   /^\/casos$/,
+  /^\/turnera$/,
   /^\/aseguradoras$/,
   /^\/usuarios$/,
   /^\/tareas-frecuentes$/,

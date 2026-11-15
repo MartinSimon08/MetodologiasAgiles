@@ -19,6 +19,24 @@ RSpec.describe CasoAvisarListoParaRetirar do
     )
   end
 
+  it "notifica al asegurado cuando el caso queda listo para retirar" do
+    orden = create(:orden)
+    caso = create(:caso, orden: orden)
+    create(:tarea, :terminada, orden: orden)
+
+    expect { described_class.call(orden: orden) }.to change(NotificacionAsegurado, :count).by(1)
+    expect(NotificacionAsegurado.last.caso).to eq(caso)
+  end
+
+  it "no notifica al asegurado si todavía queda una tarea pendiente o en curso" do
+    orden = create(:orden)
+    create(:caso, orden: orden)
+    create(:tarea, :terminada, orden: orden)
+    create(:tarea, orden: orden)
+
+    expect { described_class.call(orden: orden) }.not_to change(NotificacionAsegurado, :count)
+  end
+
   it "incluye el vehículo de la orden en el aviso" do
     orden = create(:orden)
     create(:caso, orden: orden)

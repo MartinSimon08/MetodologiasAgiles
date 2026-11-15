@@ -45,6 +45,15 @@ RSpec.describe TareaCompletar do
     )
   end
 
+  it "notifica al asegurado cuando completa la última tarea de la orden de un caso" do
+    orden = create(:orden)
+    caso = create(:caso, orden: orden)
+    tarea = create(:tarea, :en_curso, orden: orden)
+
+    expect { described_class.call(tarea: tarea) }.to change(NotificacionAsegurado, :count).by(1)
+    expect(NotificacionAsegurado.last.caso).to eq(caso)
+  end
+
   it "no avisa a recepción si quedan otras tareas sin terminar" do
     orden = create(:orden)
     create(:caso, orden: orden)

@@ -8,6 +8,8 @@ class CasoAvisarListoParaRetirar
     caso = orden.caso
     return unless caso
 
+    CasoNotificarAsegurado.call(caso: caso)
+
     ActionCable.server.broadcast(RecepcionChannel::STREAM, {
       tipo: "caso_listo_para_retirar",
       caso_id: caso.id,

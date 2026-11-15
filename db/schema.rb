@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_13_000100) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_14_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "unaccent"
@@ -123,6 +123,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_000100) do
     t.check_constraint "cupo_diario > 0", name: "configuraciones_taller_cupo_diario_valido"
     t.check_constraint "margen_repuestos >= 0::numeric AND margen_repuestos <= 100::numeric", name: "configuraciones_taller_margen_repuestos_valido"
     t.check_constraint "registro_unico = true", name: "configuraciones_taller_registro_unico"
+  end
+
+  create_table "notificacion_asegurados", force: :cascade do |t|
+    t.bigint "caso_id", null: false
+    t.string "medio", null: false
+    t.text "contenido", null: false
+    t.datetime "enviada_en", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["caso_id"], name: "index_notificacion_asegurados_on_caso_id"
   end
 
   create_table "ordenes", force: :cascade do |t|
@@ -253,6 +263,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_000100) do
   add_foreign_key "casos", "clientes", column: "asegurado_id"
   add_foreign_key "casos", "ordenes"
   add_foreign_key "casos", "vehiculos"
+  add_foreign_key "notificacion_asegurados", "casos"
   add_foreign_key "ordenes", "clientes"
   add_foreign_key "ordenes", "usuarios", column: "cerrada_por_id"
   add_foreign_key "ordenes", "vehiculos"

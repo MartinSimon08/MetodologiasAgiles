@@ -1,4 +1,6 @@
 class ReporteMargenRepuestos
+  include ValidaPeriodo
+
   Resultado = Data.define(:errors, :margen_total) do
     def valid?
       errors.empty?
@@ -19,11 +21,7 @@ class ReporteMargenRepuestos
 
   def initialize(desde:, hasta:)
     @errors = {}
-    @desde = requerir_fecha(desde, :desde)
-    @hasta = requerir_fecha(hasta, :hasta)
-    if @desde && @hasta && @desde > @hasta
-      agregar_error(:hasta, "debe ser posterior o igual a la fecha desde")
-    end
+    requerir_periodo(desde, hasta)
   end
 
   def resultado
@@ -39,22 +37,5 @@ class ReporteMargenRepuestos
     Repuesto.valorizado.vigentes.where.not(aprobacion: :rechazado)
       .joins(:orden)
       .merge(Orden.where(created_at: rango).where.not(estado: :cancelada))
-  end
-
-  def requerir_fecha(valor, campo)
-    if valor.blank?
-      agregar_error(campo, "no puede estar en blanco")
-      return nil
-    end
-
-    Date.iso8601(valor.to_s)
-  rescue Date::Error
-    agregar_error(campo, "no es una fecha válida")
-    nil
-  end
-
-  def agregar_error(campo, mensaje)
-    @errors[campo] ||= []
-    @errors[campo] << mensaje
   end
 end

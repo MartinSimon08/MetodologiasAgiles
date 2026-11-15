@@ -1,4 +1,6 @@
 class RepuestoResumirPorProveedor
+  include ValidaPeriodo
+
   Resultado = Data.define(:errors, :repuestos, :resumen, :total_comprado) do
     def valid?
       errors.empty?
@@ -80,11 +82,6 @@ class RepuestoResumirPorProveedor
   rescue Date::Error
     agregar_error(campo, "no es una fecha válida")
     nil
-  end
-
-  def agregar_error(campo, mensaje)
-    @errors[campo] ||= []
-    @errors[campo] << mensaje
   end
 
   def serializar_proveedor(fila)

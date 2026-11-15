@@ -1,8 +1,10 @@
-class ConsultaCasosAseguradora
+class CasoConsultarPorAseguradora
+  include ValidaPeriodo
+
   Fila = Data.define(:caso, :total_autorizado, :franquicia_cobrada, :saldo_pendiente)
   Totales = Data.define(:total_autorizado, :franquicia_cobrada, :saldo_pendiente)
   Particion = Data.define(:total_autorizado, :franquicia_cobrada, :saldo_pendiente)
-  Resultado = Data.define(:errors, :filas, :totales) do
+  Resultado = Data.define(:errors, :aseguradora, :filas, :totales) do
     def valid?
       errors.empty?
     end
@@ -19,16 +21,12 @@ class ConsultaCasosAseguradora
   def initialize(aseguradora_id:, desde:, hasta:)
     @errors = {}
     @aseguradora = requerir_aseguradora(aseguradora_id)
-    @desde = requerir_fecha(desde, :desde)
-    @hasta = requerir_fecha(hasta, :hasta)
-    if @desde && @hasta && @desde > @hasta
-      agregar_error(:hasta, "debe ser posterior o igual a la fecha desde")
-    end
+    requerir_periodo(desde, hasta)
   end
 
   def resultado
     filas = @errors.any? ? [] : filas_del_periodo
-    Resultado.new(errors: @errors, filas: filas, totales: totales_de(filas))
+    Resultado.new(errors: @errors, aseguradora: @aseguradora, filas: filas, totales: totales_de(filas))
   end
 
   private
@@ -42,7 +40,7 @@ class ConsultaCasosAseguradora
   end
 
   def fila_de(caso)
-    montos = caso.orden ? particion(caso.orden) : particion_en_cero
+    montos = caso.orden.nil? || caso.orden.cancelada? ? particion_en_cero : particion(caso.orden)
     Fila.new(
       caso: caso,
       total_autorizado: Dinero.importe(montos.total_autorizado),
@@ -56,13 +54,12 @@ class ConsultaCasosAseguradora
   end
 
   def particion(orden)
-    total_autorizado = (orden.cerrada? ? orden.total_cerrado : orden.total).to_d
-    franquicia_cobrada = orden.franquicia.to_d
+    total_autorizado = orden.total
 
     Particion.new(
       total_autorizado:,
-      franquicia_cobrada:,
-      saldo_pendiente: total_autorizado - franquicia_cobrada
+      franquicia_cobrada: orden.franquicia.to_d,
+      saldo_pendiente: orden.saldo_a_facturar(total: total_autorizado)
     )
   end
 
@@ -86,22 +83,5 @@ class ConsultaCasosAseguradora
 
     agregar_error(:aseguradora, "no es válida")
     nil
-  end
-
-  def requerir_fecha(valor, campo)
-    if valor.blank?
-      agregar_error(campo, "no puede estar en blanco")
-      return nil
-    end
-
-    Date.iso8601(valor.to_s)
-  rescue Date::Error
-    agregar_error(campo, "no es una fecha válida")
-    nil
-  end
-
-  def agregar_error(campo, mensaje)
-    @errors[campo] ||= []
-    @errors[campo] << mensaje
   end
 end

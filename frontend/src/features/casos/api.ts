@@ -1,4 +1,5 @@
 import { api, type MetaPaginacion } from '../../lib/api'
+import type { Aseguradora } from '../aseguradoras/api'
 
 export const NUMERO_SINIESTRO_MAXIMO = 50
 export const DESCRIPCION_MAXIMA = 1000
@@ -42,6 +43,7 @@ export interface CasoAseguradora {
   id: number
   numero_siniestro: string
   orden_id: number | null
+  orden_estado: 'abierta' | 'cerrada' | 'cancelada' | null
   created_at: string
   asegurado: { id: number; nombre: string }
   vehiculo: { id: number; patente: string; marca: string | null; modelo: string | null }
@@ -57,6 +59,7 @@ export interface TotalesCasosAseguradora {
 }
 
 export interface ConsultaCasosAseguradora {
+  aseguradora: Aseguradora
   casos: CasoAseguradora[]
   totales: TotalesCasosAseguradora
 }

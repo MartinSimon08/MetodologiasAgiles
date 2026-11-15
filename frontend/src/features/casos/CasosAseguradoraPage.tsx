@@ -1,27 +1,19 @@
 import { useQuery } from '@tanstack/react-query'
-import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Cargando } from '../../components/Cargando'
 import { EncabezadoPagina } from '../../components/EncabezadoPagina'
 import { ErroresCampo } from '../../components/ErroresCampo'
 import { errorMessage, fieldErrors } from '../../lib/api'
+import { hoyIso, primerDiaDelMesIso } from '../../lib/fechas'
 import { fechaHora, importe } from '../../lib/formato'
 import { AseguradoraSelector } from '../aseguradoras/AseguradoraSelector'
 import { consultarCasosAseguradora, type CasoAseguradora, type TotalesCasosAseguradora } from './api'
 import { CasosNav } from './CasosNav'
 
-function hoyIso() {
-  return new Date().toISOString().slice(0, 10)
-}
-
-function primerDiaDelMesIso() {
-  const hoy = new Date()
-  return new Date(hoy.getFullYear(), hoy.getMonth(), 1).toISOString().slice(0, 10)
-}
-
 export function CasosAseguradoraPage() {
   const [searchParams, setSearchParams] = useSearchParams()
-  const [aseguradoraId, setAseguradoraId] = useState<number | null>(null)
+  const aseguradoraParam = Number(searchParams.get('aseguradora'))
+  const aseguradoraId = Number.isInteger(aseguradoraParam) && aseguradoraParam > 0 ? aseguradoraParam : null
   const desde = searchParams.get('desde') ?? primerDiaDelMesIso()
   const hasta = searchParams.get('hasta') ?? hoyIso()
 
@@ -33,11 +25,13 @@ export function CasosAseguradoraPage() {
 
   const errores = fieldErrors(consulta.error)
 
-  function actualizar(valores: { desde?: string; hasta?: string }) {
+  function actualizar(valores: { aseguradora?: number | null; desde?: string; hasta?: string }) {
+    const aseguradora = valores.aseguradora === undefined ? aseguradoraId : valores.aseguradora
     const params: Record<string, string> = {
       desde: valores.desde ?? desde,
       hasta: valores.hasta ?? hasta,
     }
+    if (aseguradora !== null) params.aseguradora = String(aseguradora)
     setSearchParams(params, { replace: true })
   }
 
@@ -52,7 +46,9 @@ export function CasosAseguradoraPage() {
       <AseguradoraSelector
         etiqueta="Aseguradora"
         valor={aseguradoraId}
-        onCambiar={setAseguradoraId}
+        inicial={consulta.data?.aseguradora}
+        incluirDesactivadas
+        onCambiar={(id) => actualizar({ aseguradora: id })}
         errores={errores.aseguradora}
       />
 
@@ -121,6 +117,7 @@ function CasoAseguradoraItem({ caso }: { caso: CasoAseguradora }) {
         </span>
         <span>Abierto el {fechaHora(caso.created_at)}</span>
         {caso.orden_id === null && <span className="insignia insignia-desactivado">Sin orden</span>}
+        {caso.orden_estado === 'cancelada' && <span className="insignia insignia-desactivado">Orden cancelada</span>}
       </div>
       <Importes
         totalAutorizado={caso.total_autorizado}

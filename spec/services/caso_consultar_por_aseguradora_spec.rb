@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe ConsultaCasosAseguradora do
+RSpec.describe CasoConsultarPorAseguradora do
   let(:admin) { create(:usuario, :administrador) }
   let(:aseguradora) { create(:aseguradora, nombre: "Sancor") }
 
@@ -101,6 +101,19 @@ RSpec.describe ConsultaCasosAseguradora do
     expect(consultas.count { |sql| sql.include?("SUM(") }).to eq(3)
     expect(consulta.filas.sole).to have_attributes(
       total_autorizado: "1000.0", franquicia_cobrada: "0.0", saldo_pendiente: "1000.0"
+    )
+  end
+
+  it "deja en cero los importes de un caso con la orden cancelada" do
+    caso = caso_el(Time.zone.local(2026, 4, 10, 12))
+    orden = vincular(caso, precio: "700")
+    OrdenCancelar.call(orden: orden)
+
+    expect(consultar.filas.sole).to have_attributes(
+      caso: caso, total_autorizado: "0.0", franquicia_cobrada: "0.0", saldo_pendiente: "0.0"
+    )
+    expect(consultar.totales).to have_attributes(
+      total_autorizado: "0.0", franquicia_cobrada: "0.0", saldo_pendiente: "0.0"
     )
   end
 

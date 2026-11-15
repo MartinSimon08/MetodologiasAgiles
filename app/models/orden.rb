@@ -51,8 +51,8 @@ class Orden < ApplicationRecord
     total - adelantos.sum(:importe).to_d
   end
 
-  def saldo_a_facturar
-    total - franquicia.to_d
+  def saldo_a_facturar(total: self.total)
+    total.to_d - franquicia.to_d
   end
 
   def total_reemplazando(repuesto, precio:, incluir_ajustes_del_repuesto: true)

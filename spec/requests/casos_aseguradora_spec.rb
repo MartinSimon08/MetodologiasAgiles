@@ -38,6 +38,7 @@ RSpec.describe "Casos de una aseguradora", type: :request do
     expect(cuerpo["casos"].first).to include(
       "numero_siniestro" => "SIN-10",
       "orden_id" => orden_abierta.id,
+      "orden_estado" => "abierta",
       "total_autorizado" => "1000.0",
       "franquicia_cobrada" => "0.0",
       "saldo_pendiente" => "1000.0",
@@ -47,12 +48,13 @@ RSpec.describe "Casos de una aseguradora", type: :request do
     expect(cuerpo["casos"].second).to include(
       "numero_siniestro" => "SIN-11",
       "orden_id" => orden_cerrada.id,
+      "orden_estado" => "cerrada",
       "total_autorizado" => "800.0",
       "franquicia_cobrada" => "300.0",
       "saldo_pendiente" => "500.0"
     )
     expect(cuerpo["casos"].third).to include(
-      "orden_id" => nil, "total_autorizado" => "0.0", "franquicia_cobrada" => "0.0", "saldo_pendiente" => "0.0"
+      "orden_id" => nil, "orden_estado" => nil, "total_autorizado" => "0.0", "franquicia_cobrada" => "0.0", "saldo_pendiente" => "0.0"
     )
     expect(cuerpo["totales"]).to eq(
       "total_autorizado" => "1800.0", "franquicia_cobrada" => "300.0", "saldo_pendiente" => "1500.0"
@@ -64,6 +66,7 @@ RSpec.describe "Casos de una aseguradora", type: :request do
 
     expect(response).to have_http_status(:ok)
     expect(response.parsed_body).to eq(
+      "aseguradora" => aseguradora.as_json(only: %i[id nombre telefono email activa created_at]),
       "casos" => [],
       "totales" => { "total_autorizado" => "0.0", "franquicia_cobrada" => "0.0", "saldo_pendiente" => "0.0" }
     )

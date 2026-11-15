@@ -21,6 +21,7 @@ interface Props<T extends { id: number }> {
   cargar: (pagina: number, q: string) => Promise<{ items: T[]; meta: MetaPaginacion }>
   describir: (item: T) => ReactNode
   valor: number | null
+  inicial?: T | null
   onCambiar: (id: number | null) => void
   excluirId?: number
   errores?: string[]
@@ -36,6 +37,7 @@ export function SelectorBuscable<T extends { id: number }>({
   cargar,
   describir,
   valor,
+  inicial,
   onCambiar,
   excluirId,
   errores,
@@ -60,7 +62,7 @@ export function SelectorBuscable<T extends { id: number }>({
 
   const buscando = valor === null && q !== ''
   const opciones = (buscando && consulta.data?.items.filter((item) => item.id !== excluirId)) || []
-  const elegido = valor !== null && seleccionado?.id === valor ? seleccionado : null
+  const elegido = valor === null ? null : [seleccionado, inicial].find((item) => item?.id === valor) ?? null
   const sinResultados =
     buscando && Boolean(consulta.data) && !consulta.isPending && !consulta.isPlaceholderData && opciones.length === 0
 

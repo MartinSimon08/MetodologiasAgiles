@@ -482,7 +482,19 @@ RSpec.describe "Ordenes", type: :request do
       ])
       expect(response.parsed_body).to include(
         "mano_de_obra" => "15000.0", "total_repuestos" => "3000.0", "total" => "18000.0",
-        "adelantado" => "5000.0", "saldo" => "13000.0"
+        "adelantado" => "5000.0", "saldo" => "13000.0", "franquicia" => nil, "saldo_a_facturar" => "18000.0"
+      )
+    end
+
+    it "incluye la franquicia del asegurado y el saldo a facturar a la aseguradora" do
+      create(:tarea, :terminada, orden: orden, precio: 15_000)
+      OrdenCerrar.call(orden: orden, cerrada_por: administrador, franquicia: "5000")
+
+      get "/ordenes/#{orden.id}/comprobante", headers: auth_headers(administrador)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body).to include(
+        "total" => "15000.0", "franquicia" => "5000.0", "saldo_a_facturar" => "10000.0"
       )
     end
 

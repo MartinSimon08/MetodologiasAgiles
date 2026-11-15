@@ -61,6 +61,20 @@ RSpec.describe OrdenGenerarComprobante do
     expect(comprobante.total).to eq(12_000)
   end
 
+  it "informa la franquicia del asegurado y el saldo a facturar a la aseguradora" do
+    create(:tarea, :terminada, orden: orden, precio: 15_000)
+    OrdenCerrar.call(orden: orden, cerrada_por: administrador, franquicia: "5000")
+
+    expect(comprobante).to have_attributes(total: 15_000, franquicia: 5_000, saldo_a_facturar: 10_000)
+  end
+
+  it "sin franquicia, el saldo a facturar es el total" do
+    create(:tarea, :terminada, orden: orden, precio: 15_000)
+    marcar_cerrada(orden)
+
+    expect(comprobante).to have_attributes(franquicia: nil, saldo_a_facturar: 15_000)
+  end
+
   it "rechaza generar el comprobante de una orden abierta" do
     expect { described_class.call(orden: orden) }.to raise_error(ActiveRecord::RecordInvalid) { |error|
       expect(error.record.errors[:base]).to include("El comprobante solo se genera a partir de una orden cerrada")

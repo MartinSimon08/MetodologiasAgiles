@@ -1,5 +1,6 @@
 class OrdenGenerarComprobante
-  Comprobante = Data.define(:orden, :tareas, :repuestos, :mano_de_obra, :total_repuestos, :total, :adelantado, :saldo)
+  Comprobante = Data.define(:orden, :tareas, :repuestos, :mano_de_obra, :total_repuestos, :total, :adelantado,
+                            :saldo, :franquicia, :saldo_a_facturar)
 
   def self.call(orden:)
     unless orden.cerrada?
@@ -17,7 +18,8 @@ class OrdenGenerarComprobante
     Comprobante.new(
       orden: orden, tareas: tareas, repuestos: repuestos,
       mano_de_obra: orden.mano_de_obra, total_repuestos: orden.total_repuestos,
-      total: total, adelantado: adelantado, saldo: total - adelantado
+      total: total, adelantado: adelantado, saldo: total - adelantado,
+      franquicia: orden.franquicia, saldo_a_facturar: total - orden.franquicia.to_d
     )
   end
 end

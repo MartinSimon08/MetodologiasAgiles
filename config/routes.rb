@@ -23,6 +23,9 @@ Rails.application.routes.draw do
 
   resources :clientes, only: %i[index create]
   resources :casos, only: %i[index create] do
+    member do
+      post :ingresar
+    end
     collection do
       get :aseguradora
     end

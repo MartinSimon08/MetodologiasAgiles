@@ -70,3 +70,8 @@ export async function consultarCasosAseguradora(filtros: { aseguradoraId: number
   })
   return data
 }
+
+export async function ingresarCaso(id: number) {
+  const { data } = await api.post<Caso>(`/casos/${id}/ingresar`)
+  return data
+}

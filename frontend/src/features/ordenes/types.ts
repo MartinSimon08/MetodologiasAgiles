@@ -53,6 +53,8 @@ export interface ResumenCierre {
   total: string
   adelantado: string
   saldo: string
+  franquicia: string | null
+  saldo_a_facturar: string
 }
 
 export interface TotalParcial {
@@ -87,6 +89,13 @@ export interface Presupuesto {
   }[]
   presupuesto: string
   total_aseguradora: string
+}
+
+export interface ComprobanteOrden extends ResumenCierre {
+  cliente: { id: number; nombre: string; telefono: string; email: string | null }
+  vehiculo: VehiculoOrden
+  cerrada_en: string | null
+  cerrada_por: { id: number; nombre: string } | null
 }
 
 export const ESTADO_ORDEN_LABELS: Record<EstadoOrden, string> = {

@@ -1,6 +1,6 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { BotonNuevo } from '../../components/BotonNuevo'
 import { Buscador } from '../../components/Buscador'
 import { EncabezadoPagina } from '../../components/EncabezadoPagina'
@@ -21,6 +21,7 @@ export function VehiculosPage() {
   const [cambiandoId, setCambiandoId] = useState<number | null>(null)
   const [aviso, setAviso] = useState<string | null>(null)
 
+  const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const pagina = Math.max(1, Number(searchParams.get('pagina')) || 1)
   const busqueda = searchParams.get('q') ?? ''
@@ -126,15 +127,20 @@ export function VehiculosPage() {
                   onCancelar={() => setCambiandoId(null)}
                 />
               ) : (
-                <button
-                  className="secundario"
-                  onClick={() => {
-                    setAviso(null)
-                    setCambiandoId(vehiculo.id)
-                  }}
-                >
-                  Cambiar dueño
-                </button>
+                <div className="item-acciones">
+                  <button className="secundario" onClick={() => navigate(`/vehiculos/${vehiculo.id}/historial`)}>
+                    Ver historial
+                  </button>
+                  <button
+                    className="secundario"
+                    onClick={() => {
+                      setAviso(null)
+                      setCambiandoId(vehiculo.id)
+                    }}
+                  >
+                    Cambiar dueño
+                  </button>
+                </div>
               )}
             </li>
           ))}

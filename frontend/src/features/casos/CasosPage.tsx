@@ -39,18 +39,7 @@ export function CasosPage() {
 
   return (
     <section className="casos">
-      <EncabezadoPagina titulo="Casos" bajada="Siniestros de aseguradoras para planificar antes de que el vehículo ingrese.">
-        {!abriendo && (
-          <BotonNuevo
-            onClick={() => {
-              setAviso(null)
-              setAbriendo(true)
-            }}
-          >
-            Nuevo caso
-          </BotonNuevo>
-        )}
-      </EncabezadoPagina>
+      <EncabezadoPagina titulo="Casos" bajada="Siniestros de aseguradoras para planificar antes de que el vehículo ingrese." />
 
       {aviso && (
         <p className="aviso" role="status">
@@ -82,6 +71,18 @@ export function CasosPage() {
           setBusqueda(valor)
           setPagina(1)
         }}
+        accion={
+          abriendo ? undefined : (
+            <BotonNuevo
+              onClick={() => {
+                setAviso(null)
+                setAbriendo(true)
+              }}
+            >
+              Nuevo caso
+            </BotonNuevo>
+          )
+        }
       />
 
       {casos.isPending && <Cargando />}
@@ -112,28 +113,30 @@ export function CasosPage() {
                   {caso.descripcion && <span>{caso.descripcion}</span>}
                   <span>Abierto el {fechaHora(caso.created_at)}</span>
                 </div>
-                {caso.fecha_turno === null && <span className="insignia insignia-pendiente">Sin turno</span>}
-                {caso.orden_id === null ? (
-                  <>
-                    <span className="insignia insignia-desactivado">Sin orden</span>
-                    {caso.fecha_turno !== null && (
-                      <button
-                        type="button"
-                        disabled={ingresar.isPending}
-                        onClick={() => {
-                          setAviso(null)
-                          ingresar.mutate(caso)
-                        }}
-                      >
-                        Ingresar vehículo
-                      </button>
-                    )}
-                  </>
-                ) : (
-                  <Link to={`/ordenes/${caso.orden_id}`} className="insignia insignia-abierta">
-                    Ingresado · orden #{caso.orden_id}
-                  </Link>
-                )}
+                <div className="item-insignias">
+                  {caso.fecha_turno === null && <span className="insignia insignia-pendiente">Sin turno</span>}
+                  {caso.orden_id === null ? (
+                    <>
+                      <span className="insignia insignia-desactivado">Sin orden</span>
+                      {caso.fecha_turno !== null && (
+                        <button
+                          type="button"
+                          disabled={ingresar.isPending}
+                          onClick={() => {
+                            setAviso(null)
+                            ingresar.mutate(caso)
+                          }}
+                        >
+                          Ingresar vehículo
+                        </button>
+                      )}
+                    </>
+                  ) : (
+                    <Link to={`/ordenes/${caso.orden_id}`} className="insignia insignia-abierta">
+                      Ingresado · orden #{caso.orden_id}
+                    </Link>
+                  )}
+                </div>
               </li>
             ))}
           </ul>

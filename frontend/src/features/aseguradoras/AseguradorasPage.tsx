@@ -63,19 +63,7 @@ export function AseguradorasPage() {
 
   return (
     <section className="aseguradoras">
-      <EncabezadoPagina titulo="Aseguradoras" bajada="Compañías con las que trabaja el taller para asociarles los casos.">
-        {editando === undefined && (
-          <BotonNuevo
-            disabled={ocupado}
-            onClick={() => {
-              iniciar()
-              setEditando(null)
-            }}
-          >
-            Nueva aseguradora
-          </BotonNuevo>
-        )}
-      </EncabezadoPagina>
+      <EncabezadoPagina titulo="Aseguradoras" bajada="Compañías con las que trabaja el taller para asociarles los casos." />
 
       {aviso && (
         <p className="aviso" role="status">
@@ -108,6 +96,19 @@ export function AseguradorasPage() {
           setBusqueda(valor)
           setPagina(1)
         }}
+        accion={
+          editando === undefined ? (
+            <BotonNuevo
+              disabled={ocupado}
+              onClick={() => {
+                iniciar()
+                setEditando(null)
+              }}
+            >
+              Nueva aseguradora
+            </BotonNuevo>
+          ) : undefined
+        }
       />
 
       {aseguradoras.isPending && <Cargando />}
@@ -133,8 +134,8 @@ export function AseguradorasPage() {
                   <span>
                     {[aseguradora.telefono, aseguradora.email].filter(Boolean).join(' · ') || 'Sin contacto cargado'}
                   </span>
+                  {!aseguradora.activa && <span className="insignia insignia-desactivado">Desactivada</span>}
                 </div>
-                {!aseguradora.activa && <span className="insignia insignia-desactivado">Desactivada</span>}
                 <div className="item-acciones">
                   <button
                     type="button"
@@ -150,7 +151,7 @@ export function AseguradorasPage() {
                   </button>
                   <button
                     type="button"
-                    className={aseguradora.activa ? 'secundario peligro' : 'secundario'}
+                    className="secundario"
                     disabled={ocupado}
                     onClick={() => {
                       iniciar()
@@ -162,7 +163,7 @@ export function AseguradorasPage() {
                   </button>
                   <button
                     type="button"
-                    className="peligro"
+                    className="secundario peligro"
                     disabled={ocupado}
                     onClick={() => confirmarEliminacion(aseguradora)}
                     aria-label={`Eliminar ${aseguradora.nombre}`}

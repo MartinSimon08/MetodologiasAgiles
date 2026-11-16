@@ -28,6 +28,21 @@ export async function obtenerReporteMargenRepuestos(filtros: { desde: string; ha
   return data
 }
 
+export interface ReporteIngresos {
+  franquicia_cobrada: string
+  saldo_facturado_aseguradoras: string
+  saldo_pendiente_aseguradoras: string
+  ingresos_clientes_directos: string
+  total_ingresos: string
+}
+
+export async function obtenerReporteIngresos(filtros: { desde: string; hasta: string }) {
+  const { data } = await api.get<ReporteIngresos>('/reportes/ingresos', {
+    params: { desde: filtros.desde, hasta: filtros.hasta },
+  })
+  return data
+}
+
 export interface FilaTareaFrecuente {
   descripcion: string
   cantidad: number
@@ -39,5 +54,17 @@ export interface ReporteTareasFrecuentes {
 
 export async function obtenerReporteTareasFrecuentes() {
   const { data } = await api.get<ReporteTareasFrecuentes>('/reportes/tareas_frecuentes')
+  return data
+}
+
+export interface ReporteOrdenesPorPeriodo {
+  abiertas: number
+  cerradas: number
+}
+
+export async function obtenerReporteOrdenesPorPeriodo(filtros: { desde: string; hasta: string }) {
+  const { data } = await api.get<ReporteOrdenesPorPeriodo>('/reportes/ordenes_por_periodo', {
+    params: { desde: filtros.desde, hasta: filtros.hasta },
+  })
   return data
 }

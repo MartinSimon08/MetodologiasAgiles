@@ -15,8 +15,28 @@ class ReportesController < ApplicationController
     render json: { margen_total: resultado.margen_total }
   end
 
+  def ingresos
+    resultado = ReporteIngresos.call(desde: params[:desde], hasta: params[:hasta])
+    return render json: { errors: resultado.errors }, status: :unprocessable_content if resultado.invalid?
+
+    render json: {
+      franquicia_cobrada: resultado.franquicia_cobrada,
+      saldo_facturado_aseguradoras: resultado.saldo_facturado_aseguradoras,
+      saldo_pendiente_aseguradoras: resultado.saldo_pendiente_aseguradoras,
+      ingresos_clientes_directos: resultado.ingresos_clientes_directos,
+      total_ingresos: resultado.total_ingresos
+    }
+  end
+
   def tareas_frecuentes
     render json: { tareas: ReporteTareasFrecuentes.call.map { |fila| serialize_frecuente(fila) } }
+  end
+
+  def ordenes_por_periodo
+    resultado = ReporteOrdenesPorPeriodo.call(desde: params[:desde], hasta: params[:hasta])
+    return render json: { errors: resultado.errors }, status: :unprocessable_content if resultado.invalid?
+
+    render json: { abiertas: resultado.abiertas, cerradas: resultado.cerradas }
   end
 
   private

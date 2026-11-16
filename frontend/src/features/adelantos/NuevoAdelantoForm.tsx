@@ -3,7 +3,7 @@ import { useState, type FormEvent } from 'react'
 import { ErroresCampo } from '../../components/ErroresCampo'
 import { errorMessage, fieldErrors } from '../../lib/api'
 import { importe as formatearImporte } from '../../lib/formato'
-import { registrarAdelanto, superaSaldo } from './api'
+import { MEDIO_PAGO_LABELS, MEDIOS_PAGO, registrarAdelanto, superaSaldo, type MedioPago } from './api'
 
 interface Props {
   ordenId: number
@@ -17,9 +17,10 @@ const IMPORTE_MAXIMO = '9999999999.99'
 export function NuevoAdelantoForm({ ordenId, saldo, onGuardado, onCancelar }: Props) {
   const queryClient = useQueryClient()
   const [importe, setImporte] = useState('')
+  const [medio, setMedio] = useState<MedioPago>('efectivo')
   const excedeSaldo = saldo !== undefined && superaSaldo(importe, saldo)
   const mutation = useMutation({
-    mutationFn: () => registrarAdelanto(ordenId, importe),
+    mutationFn: () => registrarAdelanto(ordenId, importe, medio),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adelantos', ordenId] })
       onGuardado()
@@ -60,6 +61,22 @@ export function NuevoAdelantoForm({ ordenId, saldo, onGuardado, onCancelar }: Pr
           </span>
         )}
         <ErroresCampo errores={errores.importe} />
+      </label>
+      <label>
+        Medio de pago
+        <select
+          value={medio}
+          onChange={(event) => setMedio(event.target.value as MedioPago)}
+          disabled={mutation.isPending}
+        >
+          {MEDIOS_PAGO.map((opcion) => (
+            <option key={opcion} value={opcion}>
+              {MEDIO_PAGO_LABELS[opcion]}
+            </option>
+          ))}
+        </select>
+        <small>Queda registrado junto al cobro. Puede ser la franquicia del asegurado.</small>
+        <ErroresCampo errores={errores.medio} />
       </label>
       <ErroresCampo errores={errores.orden} />
       {mutation.isError && Object.keys(errores).length === 0 && (

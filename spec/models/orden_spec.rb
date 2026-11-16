@@ -268,4 +268,52 @@ RSpec.describe Orden, type: :model do
     expect(orden.update(estado: :cerrada, cerrada_en: Time.current, cerrada_por: admin,
                         total_cerrado: orden.total_a_cobrar)).to be true
   end
+
+  describe "franquicia del asegurado" do
+    it "guarda la franquicia al cerrar y calcula el saldo a facturar a la aseguradora" do
+      orden = create(:orden, :cerrada, total_cerrado: 100_000, franquicia: 30_000)
+
+      expect(orden.franquicia).to eq(30_000)
+      expect(orden.saldo_a_facturar).to eq(70_000)
+    end
+
+    it "sin franquicia, todo el total queda a facturar a la aseguradora" do
+      orden = create(:orden, :cerrada, total_cerrado: 100_000)
+
+      expect(orden.franquicia).to be_nil
+      expect(orden.saldo_a_facturar).to eq(100_000)
+    end
+
+    it "acepta una franquicia igual al total" do
+      expect(build(:orden, :cerrada, total_cerrado: 1_000, franquicia: 1_000)).to be_valid
+    end
+
+    it "rechaza una franquicia mayor al total" do
+      orden = build(:orden, :cerrada, total_cerrado: 1_000, franquicia: 1_000.01)
+
+      expect(orden).not_to be_valid
+      expect(orden.errors[:franquicia]).to include("no puede ser mayor al total de la orden")
+    end
+
+    it "rechaza una franquicia negativa" do
+      orden = build(:orden, :cerrada, total_cerrado: 1_000, franquicia: -1)
+
+      expect(orden).not_to be_valid
+      expect(orden.errors[:franquicia]).to include("debe ser mayor o igual que 0")
+    end
+
+    it "solo permite registrar la franquicia al cerrar la orden" do
+      orden = build(:orden, franquicia: 500)
+
+      expect(orden).not_to be_valid
+      expect(orden.errors[:franquicia]).to include("solo se registra al cerrar la orden")
+    end
+
+    it "la base rechaza una franquicia mayor al total aunque se saltee la validación" do
+      orden = create(:orden, :cerrada, total_cerrado: 1_000)
+
+      expect { orden.update_column(:franquicia, 2_000) }
+        .to raise_error(ActiveRecord::StatementInvalid, /ordenes_franquicia_valida/)
+    end
+  end
 end

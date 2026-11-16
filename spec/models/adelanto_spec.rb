@@ -80,4 +80,27 @@ RSpec.describe Adelanto, type: :model do
 
     expect(orden.saldo).to eq(BigDecimal("3_500.00"))
   end
+
+  describe "medio de pago" do
+    let(:orden) { create(:orden) }
+
+    before { create(:tarea, orden: orden, precio: 3_000) }
+
+    it "nace con medio efectivo por defecto" do
+      expect(create(:adelanto, orden: orden).medio).to eq("efectivo")
+    end
+
+    it "acepta los medios de pago válidos" do
+      Adelanto::MEDIOS.each do |medio|
+        expect(build(:adelanto, orden: orden, medio: medio)).to be_valid
+      end
+    end
+
+    it "rechaza un medio de pago desconocido" do
+      adelanto = build(:adelanto, orden: orden, medio: "cheque")
+
+      expect(adelanto).not_to be_valid
+      expect(adelanto.errors[:medio]).to include("no es un medio de pago válido")
+    end
+  end
 end

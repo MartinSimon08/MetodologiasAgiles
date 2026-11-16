@@ -39,6 +39,7 @@ Rails.application.routes.draw do
     end
     member do
       patch :cambiar_duenio
+      get :historial
     end
   end
   resources :repuestos_catalogo, only: %i[index create update destroy]
@@ -49,7 +50,9 @@ Rails.application.routes.draw do
 
   get "reportes/tareas_por_mecanico", to: "reportes#tareas_por_mecanico"
   get "reportes/margen_repuestos", to: "reportes#margen_repuestos"
+  get "reportes/ingresos", to: "reportes#ingresos"
   get "reportes/tareas_frecuentes", to: "reportes#tareas_frecuentes"
+  get "reportes/ordenes_por_periodo", to: "reportes#ordenes_por_periodo"
 
   resources :ordenes, only: %i[index show create] do
     resources :adelantos, only: %i[index create]
@@ -84,6 +87,7 @@ Rails.application.routes.draw do
       get :resumen_cierre
       get :total_parcial
       get :presupuesto
+      get :comprobante
     end
   end
 end

@@ -2426,3 +2426,11 @@ label.boton-archivo:has(input:disabled) {
     grid-template-columns: 1fr;
   }
 }
+
+.turno-form {
+  grid-column: 1 / -1;
+}
+
+.cambio-turno {
+  color: var(--tinta-suave);
+}

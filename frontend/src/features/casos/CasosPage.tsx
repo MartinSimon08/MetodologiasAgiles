@@ -9,12 +9,14 @@ import { Paginacion } from '../../components/Paginacion'
 import { errorMessage } from '../../lib/api'
 import { fechaHora } from '../../lib/formato'
 import { useDebounce } from '../../lib/useDebounce'
-import { ingresarCaso, listarCasos, type Caso } from './api'
+import { fechaCorta, ingresarCaso, listarCasos, type Caso } from './api'
 import { CasosNav } from './CasosNav'
 import { NuevoCasoForm } from './NuevoCasoForm'
+import { TurnoForm } from './TurnoForm'
 
 export function CasosPage() {
   const [abriendo, setAbriendo] = useState(false)
+  const [turnoId, setTurnoId] = useState<number | null>(null)
   const [aviso, setAviso] = useState<string | null>(null)
   const [busqueda, setBusqueda] = useState('')
   const [pagina, setPagina] = useState(1)
@@ -114,12 +116,33 @@ export function CasosPage() {
                   </span>
                   {caso.descripcion && <span>{caso.descripcion}</span>}
                   <span>Abierto el {fechaHora(caso.created_at)}</span>
+                  {caso.fecha_turno !== null && <span>Turno: {fechaCorta(caso.fecha_turno)}</span>}
+                  {caso.cambios_turno
+                    .filter((cambio) => cambio.fecha_anterior !== null)
+                    .map((cambio) => (
+                      <small key={cambio.id} className="cambio-turno">
+                        Reprogramado del {fechaCorta(cambio.fecha_anterior!)} al {fechaCorta(cambio.fecha_nueva)} por{' '}
+                        {cambio.registrado_por.nombre} el {fechaHora(cambio.created_at)}
+                      </small>
+                    ))}
                 </div>
                 <div className="item-insignias">
                   {caso.fecha_turno === null && <span className="insignia insignia-pendiente">Sin turno</span>}
                   {caso.orden_id === null ? (
                     <>
                       <span className="insignia insignia-desactivado">Sin orden</span>
+                      {turnoId !== caso.id && (
+                        <button
+                          type="button"
+                          className="secundario"
+                          onClick={() => {
+                            setAviso(null)
+                            setTurnoId(caso.id)
+                          }}
+                        >
+                          {caso.fecha_turno === null ? 'Asignar turno' : 'Reprogramar'}
+                        </button>
+                      )}
                       {caso.fecha_turno !== null && (
                         <button
                           type="button"
@@ -139,6 +162,20 @@ export function CasosPage() {
                     </Link>
                   )}
                 </div>
+                {turnoId === caso.id && (
+                  <TurnoForm
+                    casoId={caso.id}
+                    numeroSiniestro={caso.numero_siniestro}
+                    fechaActual={caso.fecha_turno}
+                    onCancelar={() => setTurnoId(null)}
+                    onListo={(actualizado) => {
+                      setTurnoId(null)
+                      setAviso(
+                        `${caso.fecha_turno === null ? 'Se asignó' : 'Se reprogramó'} el turno del caso ${actualizado.numero_siniestro} para el ${fechaCorta(actualizado.fecha_turno!)}.`,
+                      )
+                    }}
+                  />
+                )}
               </li>
             ))}
           </ul>

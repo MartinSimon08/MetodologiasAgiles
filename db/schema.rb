@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_14_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_15_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "unaccent"
@@ -123,6 +123,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_14_120000) do
     t.check_constraint "cupo_diario > 0", name: "configuraciones_taller_cupo_diario_valido"
     t.check_constraint "margen_repuestos >= 0::numeric AND margen_repuestos <= 100::numeric", name: "configuraciones_taller_margen_repuestos_valido"
     t.check_constraint "registro_unico = true", name: "configuraciones_taller_registro_unico"
+  end
+
+  create_table "correcciones_orden", force: :cascade do |t|
+    t.bigint "orden_id", null: false
+    t.bigint "usuario_id", null: false
+    t.string "campo", null: false
+    t.decimal "valor_anterior", precision: 24, scale: 2
+    t.decimal "valor_nuevo", precision: 24, scale: 2
+    t.text "motivo", null: false
+    t.boolean "revision_confirmada", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["orden_id"], name: "index_correcciones_orden_on_orden_id"
+    t.index ["usuario_id"], name: "index_correcciones_orden_on_usuario_id"
+    t.check_constraint "campo::text = ANY (ARRAY['total_cerrado'::character varying::text, 'franquicia'::character varying::text])", name: "correcciones_orden_campo_valido"
   end
 
   create_table "notificacion_asegurados", force: :cascade do |t|
@@ -263,6 +278,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_14_120000) do
   add_foreign_key "casos", "clientes", column: "asegurado_id"
   add_foreign_key "casos", "ordenes"
   add_foreign_key "casos", "vehiculos"
+  add_foreign_key "correcciones_orden", "ordenes"
+  add_foreign_key "correcciones_orden", "usuarios"
   add_foreign_key "notificacion_asegurados", "casos"
   add_foreign_key "ordenes", "clientes"
   add_foreign_key "ordenes", "usuarios", column: "cerrada_por_id"

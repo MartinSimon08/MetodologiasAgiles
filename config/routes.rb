@@ -88,6 +88,7 @@ Rails.application.routes.draw do
       get :total_parcial
       get :presupuesto
       get :comprobante
+      post :enviar_presupuesto
     end
   end
 end

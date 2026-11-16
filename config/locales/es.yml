@@ -145,6 +145,12 @@ es:
               total_parcial_no_disponible: El total parcial solo se calcula en órdenes abiertas
               presupuesto_no_disponible: El presupuesto solo se calcula en órdenes abiertas
               comprobante_no_disponible: El comprobante solo se genera a partir de una orden cerrada
+              sin_caso: La orden no está vinculada a un caso
+              sin_contacto: La aseguradora no tiene cargado el contacto para ese medio
+        envio_presupuesto:
+          attributes:
+            medio:
+              inclusion: no es un medio de envío válido
         repuesto:
           attributes:
             estado:

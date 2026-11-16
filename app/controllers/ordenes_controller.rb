@@ -2,7 +2,8 @@ class OrdenesController < ApplicationController
   include Paginable
 
   before_action :require_administrador!,
-                only: %i[create cancelar cerrar resumen_cierre total_parcial presupuesto comprobante]
+                only: %i[create cancelar cerrar resumen_cierre total_parcial presupuesto comprobante
+                         enviar_presupuesto]
 
   def index
     ordenes = Orden.includes(:cliente, :vehiculo, :cerrada_por).order(created_at: :desc, id: :desc)
@@ -51,6 +52,12 @@ class OrdenesController < ApplicationController
   def comprobante
     orden = Orden.includes(:cliente, :vehiculo, :cerrada_por).find(params[:id])
     render json: serialize_comprobante(OrdenGenerarComprobante.call(orden: orden))
+  end
+
+  def enviar_presupuesto
+    envio = PresupuestoEnviar.call(orden: Orden.find(params[:id]), medio: params[:medio],
+                                   enviado_por: current_usuario)
+    render json: serialize_envio(envio), status: :created
   end
 
   private
@@ -106,6 +113,7 @@ class OrdenesController < ApplicationController
   end
 
   def serialize_presupuesto(presupuesto)
+    caso = Caso.find_by(orden_id: presupuesto.orden.id)
     {
       orden_id: presupuesto.orden.id,
       tareas: presupuesto.tareas.map { |tarea| serialize_linea_tarea(tarea) },
@@ -114,9 +122,20 @@ class OrdenesController < ApplicationController
           "precio_cliente" => precio_de_linea(repuesto)
         )
       end,
-      presupuesto: presupuesto.presupuesto.to_s("F"),
-      total_aseguradora: presupuesto.total_aseguradora.to_s("F")
+      presupuesto: presupuesto.presupuesto.to_d.to_s("F"),
+      total_aseguradora: presupuesto.total_aseguradora.to_d.to_s("F"),
+      caso: caso&.as_json(only: %i[id numero_siniestro]),
+      aseguradora: caso&.aseguradora&.as_json(only: %i[id nombre email telefono]),
+      envios: EnvioPresupuesto.where(orden_id: presupuesto.orden.id)
+                              .order(created_at: :desc, id: :desc).map { |envio| serialize_envio(envio) }
     }
+  end
+
+  def serialize_envio(envio)
+    envio.as_json(only: %i[id medio destinatario enviado_en]).merge(
+      "aseguradora" => envio.aseguradora.as_json(only: %i[id nombre]),
+      "enviado_por" => envio.enviado_por.as_json(only: %i[id nombre])
+    )
   end
 
   def serialize_comprobante(comprobante)

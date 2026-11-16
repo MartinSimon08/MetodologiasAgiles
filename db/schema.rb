@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_14_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_15_000000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "unaccent"
@@ -54,7 +54,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_14_120000) do
     t.index ["orden_id"], name: "index_adelantos_on_orden_id"
     t.index ["registrado_por_id"], name: "index_adelantos_on_registrado_por_id"
     t.check_constraint "importe > 0::numeric", name: "adelantos_importe_positivo"
-    t.check_constraint "medio::text = ANY (ARRAY['efectivo'::character varying, 'transferencia'::character varying, 'tarjeta'::character varying]::text[])", name: "adelantos_medio_valido"
+    t.check_constraint "medio::text = ANY (ARRAY['efectivo'::character varying::text, 'transferencia'::character varying::text, 'tarjeta'::character varying::text])", name: "adelantos_medio_valido"
   end
 
   create_table "ajustes_repuesto", force: :cascade do |t|
@@ -123,6 +123,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_14_120000) do
     t.check_constraint "cupo_diario > 0", name: "configuraciones_taller_cupo_diario_valido"
     t.check_constraint "margen_repuestos >= 0::numeric AND margen_repuestos <= 100::numeric", name: "configuraciones_taller_margen_repuestos_valido"
     t.check_constraint "registro_unico = true", name: "configuraciones_taller_registro_unico"
+  end
+
+  create_table "envios_presupuesto", force: :cascade do |t|
+    t.bigint "orden_id", null: false
+    t.bigint "aseguradora_id", null: false
+    t.bigint "enviado_por_id", null: false
+    t.string "medio", null: false
+    t.string "destinatario", null: false
+    t.datetime "enviado_en", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["aseguradora_id"], name: "index_envios_presupuesto_on_aseguradora_id"
+    t.index ["enviado_por_id"], name: "index_envios_presupuesto_on_enviado_por_id"
+    t.index ["orden_id"], name: "index_envios_presupuesto_on_orden_id"
+    t.check_constraint "medio::text = ANY (ARRAY['email'::character varying, 'whatsapp'::character varying]::text[])", name: "envios_presupuesto_medio_valido"
   end
 
   create_table "notificacion_asegurados", force: :cascade do |t|
@@ -263,6 +278,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_14_120000) do
   add_foreign_key "casos", "clientes", column: "asegurado_id"
   add_foreign_key "casos", "ordenes"
   add_foreign_key "casos", "vehiculos"
+  add_foreign_key "envios_presupuesto", "aseguradoras"
+  add_foreign_key "envios_presupuesto", "ordenes"
+  add_foreign_key "envios_presupuesto", "usuarios", column: "enviado_por_id"
   add_foreign_key "notificacion_asegurados", "casos"
   add_foreign_key "ordenes", "clientes"
   add_foreign_key "ordenes", "usuarios", column: "cerrada_por_id"

@@ -46,9 +46,8 @@ class TurneraArmar
 
   def turnos(rango)
     Caso.includes(:aseguradora, :asegurado, :vehiculo, orden: :tareas)
-        .left_joins(:orden)
+        .ocupan_cupo
         .where(fecha_turno: rango)
-        .where("casos.orden_id IS NULL OR ordenes.estado = ?", Orden.estados[:abierta])
         .order(:fecha_turno, :id)
         .map { |caso| Turno.new(caso: caso, estado: estado(caso)) }
   end

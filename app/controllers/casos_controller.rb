@@ -4,7 +4,7 @@ class CasosController < ApplicationController
   before_action :require_administrador!
 
   def index
-    casos = Caso.includes(:aseguradora, :asegurado, :vehiculo).order(created_at: :desc, id: :desc)
+    casos = Caso.includes(:aseguradora, :asegurado, :vehiculo, cambios_turno: :registrado_por).order(created_at: :desc, id: :desc)
     if params[:buscar].present?
       termino = "%#{ActiveRecord::Base.sanitize_sql_like(params[:buscar].to_s.squish)}%"
       casos = casos.joins(:aseguradora, :asegurado, :vehiculo)
@@ -22,6 +22,12 @@ class CasosController < ApplicationController
 
   def ingresar
     caso = CasoIngresar.call(caso_id: params[:id])
+    render json: serialize(caso)
+  end
+
+  def turno
+    caso = CasoAsignarTurno.call(caso_id: params[:id], fecha_turno: params.require(:caso)[:fecha_turno],
+                                 registrado_por: current_usuario)
     render json: serialize(caso)
   end
 
@@ -50,8 +56,14 @@ class CasosController < ApplicationController
         .merge(
           aseguradora: caso.aseguradora.as_json(only: %i[id nombre]),
           asegurado: caso.asegurado.as_json(only: %i[id nombre telefono]),
-          vehiculo: caso.vehiculo.as_json(only: %i[id patente marca modelo])
+          vehiculo: caso.vehiculo.as_json(only: %i[id patente marca modelo]),
+          cambios_turno: caso.cambios_turno.map { |cambio| serialize_cambio_turno(cambio) }
         )
+  end
+
+  def serialize_cambio_turno(cambio)
+    cambio.as_json(only: %i[id fecha_anterior fecha_nueva created_at])
+          .merge(registrado_por: cambio.registrado_por.as_json(only: %i[id nombre]))
   end
 
   def serialize_aseguradora(fila)

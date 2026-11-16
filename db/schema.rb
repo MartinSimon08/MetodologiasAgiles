@@ -138,6 +138,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_15_120000) do
     t.index ["orden_id"], name: "index_correcciones_orden_on_orden_id"
     t.index ["usuario_id"], name: "index_correcciones_orden_on_usuario_id"
     t.check_constraint "campo::text = ANY (ARRAY['total_cerrado'::character varying::text, 'franquicia'::character varying::text])", name: "correcciones_orden_campo_valido"
+  end
+
   create_table "envios_presupuesto", force: :cascade do |t|
     t.bigint "orden_id", null: false
     t.bigint "aseguradora_id", null: false

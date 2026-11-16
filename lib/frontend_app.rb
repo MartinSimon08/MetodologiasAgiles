@@ -18,6 +18,7 @@ class FrontendApp
     %r{\A/vehiculos\z},
     %r{\A/vehiculos/[^/]+/historial\z},
     %r{\A/casos\z},
+    %r{\A/casos/aseguradora\z},
     %r{\A/turnera\z},
     %r{\A/aseguradoras\z},
     %r{\A/usuarios\z},

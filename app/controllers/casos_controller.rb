@@ -20,6 +20,19 @@ class CasosController < ApplicationController
     render json: serialize(caso), status: :created
   end
 
+  def aseguradora
+    resultado = CasoConsultarPorAseguradora.call(
+      aseguradora_id: params[:aseguradora_id], desde: params[:desde], hasta: params[:hasta]
+    )
+    return render json: { errors: resultado.errors }, status: :unprocessable_content if resultado.invalid?
+
+    render json: {
+      aseguradora: resultado.aseguradora.as_json(only: %i[id nombre telefono email activa created_at]),
+      casos: resultado.filas.map { |fila| serialize_aseguradora(fila) },
+      totales: totales_aseguradora(resultado.totales)
+    }
+  end
+
   private
 
   def caso_params
@@ -34,5 +47,24 @@ class CasosController < ApplicationController
           asegurado: caso.asegurado.as_json(only: %i[id nombre telefono]),
           vehiculo: caso.vehiculo.as_json(only: %i[id patente marca modelo])
         )
+  end
+
+  def serialize_aseguradora(fila)
+    fila.caso.as_json(only: %i[id numero_siniestro orden_id created_at]).merge(
+      asegurado: fila.caso.asegurado.as_json(only: %i[id nombre]),
+      vehiculo: fila.caso.vehiculo.as_json(only: %i[id patente marca modelo]),
+      orden_estado: fila.caso.orden&.estado,
+      total_autorizado: fila.total_autorizado,
+      franquicia_cobrada: fila.franquicia_cobrada,
+      saldo_pendiente: fila.saldo_pendiente
+    )
+  end
+
+  def totales_aseguradora(totales)
+    {
+      total_autorizado: totales.total_autorizado,
+      franquicia_cobrada: totales.franquicia_cobrada,
+      saldo_pendiente: totales.saldo_pendiente
+    }
   end
 end

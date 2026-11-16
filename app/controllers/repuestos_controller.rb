@@ -107,10 +107,10 @@ class RepuestosController < ApplicationController
       datos.merge!(repuesto.as_json(only: %i[costo_unitario margen precio_cliente proveedor quitado_en]))
       datos["ganancia"] = repuesto.valorizado? ? ganancia(repuesto) : nil
       datos[:quitado_por] = repuesto.quitado_por&.as_json(only: %i[id nombre])
-      datos[:precio_vigente] = repuesto.precio_vigente && dinero(repuesto.precio_vigente)
-      datos[:costo_vigente] = repuesto.costo_vigente && dinero(repuesto.costo_vigente)
+      datos[:precio_vigente] = repuesto.precio_vigente && Dinero.importe(repuesto.precio_vigente)
+      datos[:costo_vigente] = repuesto.costo_vigente && Dinero.importe(repuesto.costo_vigente)
       datos[:ganancia_vigente] = if repuesto.precio_vigente
-        dinero(repuesto.precio_vigente - repuesto.costo_vigente)
+        Dinero.importe(repuesto.precio_vigente - repuesto.costo_vigente)
       end
       datos[:cantidad_disponible] = repuesto.cantidad_disponible
       datos[:ajustes] = ajustes_de(repuesto).map { |ajuste| serialize_ajuste(ajuste) }

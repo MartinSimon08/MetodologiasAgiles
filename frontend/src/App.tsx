@@ -3,6 +3,7 @@ import { InicioPage } from './components/InicioPage'
 import { NoEncontrado } from './components/NoEncontrado'
 import { Layout } from './components/Layout'
 import { AseguradorasPage } from './features/aseguradoras/AseguradorasPage'
+import { CasosAseguradoraPage } from './features/casos/CasosAseguradoraPage'
 import { CasosPage } from './features/casos/CasosPage'
 import { ClientesPage } from './features/clientes/ClientesPage'
 import { ConfiguracionPage } from './features/configuracion/ConfiguracionPage'
@@ -141,6 +142,14 @@ function App() {
             element={
               <RequireAuth roles={['administrador']}>
                 <CasosPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="casos/aseguradora"
+            element={
+              <RequireAuth roles={['administrador']}>
+                <CasosAseguradoraPage />
               </RequireAuth>
             }
           />

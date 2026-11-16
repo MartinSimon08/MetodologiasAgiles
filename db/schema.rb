@@ -54,7 +54,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_15_120000) do
     t.index ["orden_id"], name: "index_adelantos_on_orden_id"
     t.index ["registrado_por_id"], name: "index_adelantos_on_registrado_por_id"
     t.check_constraint "importe > 0::numeric", name: "adelantos_importe_positivo"
-    t.check_constraint "medio::text = ANY (ARRAY['efectivo'::character varying, 'transferencia'::character varying, 'tarjeta'::character varying]::text[])", name: "adelantos_medio_valido"
+    t.check_constraint "medio::text = ANY (ARRAY['efectivo'::character varying::text, 'transferencia'::character varying::text, 'tarjeta'::character varying::text])", name: "adelantos_medio_valido"
   end
 
   create_table "ajustes_repuesto", force: :cascade do |t|
@@ -138,6 +138,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_15_120000) do
     t.index ["orden_id"], name: "index_correcciones_orden_on_orden_id"
     t.index ["usuario_id"], name: "index_correcciones_orden_on_usuario_id"
     t.check_constraint "campo::text = ANY (ARRAY['total_cerrado'::character varying::text, 'franquicia'::character varying::text])", name: "correcciones_orden_campo_valido"
+  end
+
+  create_table "envios_presupuesto", force: :cascade do |t|
+    t.bigint "orden_id", null: false
+    t.bigint "aseguradora_id", null: false
+    t.bigint "enviado_por_id", null: false
+    t.string "medio", null: false
+    t.string "destinatario", null: false
+    t.datetime "enviado_en", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["aseguradora_id"], name: "index_envios_presupuesto_on_aseguradora_id"
+    t.index ["enviado_por_id"], name: "index_envios_presupuesto_on_enviado_por_id"
+    t.index ["orden_id"], name: "index_envios_presupuesto_on_orden_id"
+    t.check_constraint "medio::text = ANY (ARRAY['email'::character varying, 'whatsapp'::character varying]::text[])", name: "envios_presupuesto_medio_valido"
   end
 
   create_table "notificacion_asegurados", force: :cascade do |t|
@@ -280,6 +295,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_15_120000) do
   add_foreign_key "casos", "vehiculos"
   add_foreign_key "correcciones_orden", "ordenes"
   add_foreign_key "correcciones_orden", "usuarios"
+  add_foreign_key "envios_presupuesto", "aseguradoras"
+  add_foreign_key "envios_presupuesto", "ordenes"
+  add_foreign_key "envios_presupuesto", "usuarios", column: "enviado_por_id"
   add_foreign_key "notificacion_asegurados", "casos"
   add_foreign_key "ordenes", "clientes"
   add_foreign_key "ordenes", "usuarios", column: "cerrada_por_id"

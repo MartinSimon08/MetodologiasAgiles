@@ -5,6 +5,7 @@ import { aprobarRepuesto, APROBACION_REPUESTO_LABELS, rechazarRepuesto } from '.
 import { aprobarTarea, rechazarTarea } from '../tareas/api'
 import { APROBACION_TAREA_LABELS, ESTADO_TAREA_LABELS } from '../tareas/types'
 import { obtenerPresupuesto } from './api'
+import { EnvioPresupuestoAseguradora } from './EnvioPresupuestoAseguradora'
 import { invalidarTotalesOrden } from './totales'
 import type { Presupuesto } from './types'
 
@@ -176,6 +177,8 @@ export function PresupuestoAseguradora({ ordenId }: { ordenId: number }) {
               El presupuesto incluye lo rechazado. El total para la aseguradora no.
             </p>
           )}
+
+          <EnvioPresupuestoAseguradora ordenId={ordenId} presupuesto={datos} />
         </>
       )}
     </section>

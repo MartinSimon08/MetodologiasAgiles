@@ -3,6 +3,7 @@ import { InicioPage } from './components/InicioPage'
 import { NoEncontrado } from './components/NoEncontrado'
 import { Layout } from './components/Layout'
 import { AseguradorasPage } from './features/aseguradoras/AseguradorasPage'
+import { CasosAseguradoraPage } from './features/casos/CasosAseguradoraPage'
 import { CasosPage } from './features/casos/CasosPage'
 import { ClientesPage } from './features/clientes/ClientesPage'
 import { ConfiguracionPage } from './features/configuracion/ConfiguracionPage'
@@ -23,6 +24,7 @@ import { ReporteOrdenesPorPeriodoPage } from './features/reportes/ReporteOrdenes
 import { ReporteTareasFrecuentesPage } from './features/reportes/ReporteTareasFrecuentesPage'
 import { ReporteTareasPorMecanicoPage } from './features/reportes/ReporteTareasPorMecanicoPage'
 import { MisTareasPage } from './features/tareas/MisTareasPage'
+import { TurneraPage } from './features/turnera/TurneraPage'
 
 function App() {
   return (
@@ -140,6 +142,22 @@ function App() {
             element={
               <RequireAuth roles={['administrador']}>
                 <CasosPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="casos/aseguradora"
+            element={
+              <RequireAuth roles={['administrador']}>
+                <CasosAseguradoraPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="turnera"
+            element={
+              <RequireAuth roles={['administrador']}>
+                <TurneraPage />
               </RequireAuth>
             }
           />

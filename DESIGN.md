@@ -231,11 +231,13 @@ El ícono del select se dibuja con gradientes CSS. Los íconos SVG son de trazo 
 - **Lista** (`.lista`): un solo contenedor con borde; las tarjetas internas pierden el borde propio y se separan con una línea inferior.
 - **Encabezado de página** (`.encabezado`): título a la izquierda, acción a la derecha, línea inferior en `outline`.
 - **Insignia de estado** (`.insignia-<estado>`): Plex Mono en mayúsculas con borde. Variantes:
-  - en curso: fondo `primary`.
-  - abierta, pendiente, pendiente de valorizar: fondo `attention`.
+  - en curso, ingresado: fondo `primary`.
+  - abierta, pendiente, pendiente de valorizar, listo para retirar: fondo `attention`.
   - cerrada, terminada, valorizado, desactivado: texto `text-muted`.
   - aprobada: borde `primary`.
-  - cancelada, rechazada: texto y borde `error`.
+  - cancelada, rechazada, supera el cupo: texto y borde `error`.
+  - turno asignado: insignia base, sin color.
+- **Turnera** (`.dias-turnera`): un bloque por día con encabezado (día, ingresos contra cupo) y una `.lista` de turnos. El día de hoy lleva la línea inferior en `primary`; un día que supera el cupo la lleva en `error`, con el conteo en `error` y la insignia "Supera el cupo".
 - **Avisos**: `.aviso` en `surface-note` para información; `.advertencia` en `attention` para algo que requiere atención; `.bloqueo-cierre` y `.orden-cancelada` en `error-container` con borde `error`.
 - **Totales** (`.totales-cierre`): filas etiqueta/monto separadas por líneas, borde superior en `primary` y total final a 18px peso 500.
 - **Navegación activa**: fondo `control` con indicador inset en `primary`.

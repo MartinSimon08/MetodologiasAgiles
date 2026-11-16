@@ -34,8 +34,22 @@ RSpec.describe FrontendApp do
     expect(respuesta.body).to include("root")
   end
 
+  it "sirve la consulta de casos por aseguradora" do
+    respuesta = request.get("/casos/aseguradora")
+
+    expect(respuesta.status).to eq(200)
+    expect(respuesta.body).to include("root")
+  end
+
   it "devuelve index.html en el historial de un vehículo" do
     respuesta = request.get("/vehiculos/42/historial")
+
+    expect(respuesta.status).to eq(200)
+    expect(respuesta.body).to include("root")
+  end
+
+  it "devuelve index.html en la turnera" do
+    respuesta = request.get("/turnera?fecha=2026-11-09")
 
     expect(respuesta.status).to eq(200)
     expect(respuesta.body).to include("root")

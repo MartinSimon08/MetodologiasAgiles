@@ -1,4 +1,6 @@
 class RepuestoResumirPorProveedor
+  include ValidaPeriodo
+
   Resultado = Data.define(:errors, :repuestos, :resumen, :total_comprado) do
     def valid?
       errors.empty?
@@ -18,12 +20,8 @@ class RepuestoResumirPorProveedor
     new(proveedor:, desde:, hasta:).resultado
   end
 
-  def self.importe(valor)
-    valor.to_d.to_s("F")
-  end
-
   def self.total_linea(repuesto)
-    importe(repuesto.costo_vigente)
+    Dinero.importe(repuesto.costo_vigente)
   end
 
   def initialize(proveedor:, desde:, hasta:)
@@ -45,7 +43,7 @@ class RepuestoResumirPorProveedor
       errors: @errors,
       repuestos: compras,
       resumen: resumen_proveedores,
-      total_comprado: self.class.importe(filtrados.sum(COSTO_LINEA))
+      total_comprado: Dinero.importe(filtrados.sum(COSTO_LINEA))
     )
   end
 
@@ -86,15 +84,10 @@ class RepuestoResumirPorProveedor
     nil
   end
 
-  def agregar_error(campo, mensaje)
-    @errors[campo] ||= []
-    @errors[campo] << mensaje
-  end
-
   def serializar_proveedor(fila)
     {
       proveedor: fila[:nombre],
-      total_comprado: self.class.importe(fila[:total_comprado]),
+      total_comprado: Dinero.importe(fila[:total_comprado]),
       cantidad_compras: fila[:cantidad_compras].to_i
     }
   end

@@ -27,6 +27,7 @@ Rails.application.routes.draw do
       get :aseguradora
     end
   end
+  resource :turnera, only: :show, controller: "turnera"
   resources :aseguradoras, only: %i[index create update destroy] do
     member do
       patch :desactivar

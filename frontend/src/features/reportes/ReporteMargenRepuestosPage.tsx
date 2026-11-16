@@ -4,18 +4,10 @@ import { Cargando } from '../../components/Cargando'
 import { EncabezadoPagina } from '../../components/EncabezadoPagina'
 import { ErroresCampo } from '../../components/ErroresCampo'
 import { errorMessage, fieldErrors } from '../../lib/api'
+import { hoyIso, primerDiaDelMesIso } from '../../lib/fechas'
 import { importe } from '../../lib/formato'
 import { obtenerReporteMargenRepuestos } from './api'
 import { ReportesNav } from './ReportesNav'
-
-function hoyIso() {
-  return new Date().toISOString().slice(0, 10)
-}
-
-function primerDiaDelMesIso() {
-  const hoy = new Date()
-  return new Date(hoy.getFullYear(), hoy.getMonth(), 1).toISOString().slice(0, 10)
-}
 
 export function ReporteMargenRepuestosPage() {
   const [searchParams, setSearchParams] = useSearchParams()

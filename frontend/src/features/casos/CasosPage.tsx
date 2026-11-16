@@ -10,6 +10,7 @@ import { errorMessage } from '../../lib/api'
 import { fechaHora } from '../../lib/formato'
 import { useDebounce } from '../../lib/useDebounce'
 import { ingresarCaso, listarCasos, type Caso } from './api'
+import { CasosNav } from './CasosNav'
 import { NuevoCasoForm } from './NuevoCasoForm'
 
 export function CasosPage() {
@@ -39,6 +40,7 @@ export function CasosPage() {
 
   return (
     <section className="casos">
+      <CasosNav />
       <EncabezadoPagina titulo="Casos" bajada="Siniestros de aseguradoras para planificar antes de que el vehículo ingrese." />
 
       {aviso && (

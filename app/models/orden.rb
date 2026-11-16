@@ -8,7 +8,7 @@ class Orden < ApplicationRecord
   has_many :repuestos, dependent: :restrict_with_error
   has_many :adelantos, dependent: :restrict_with_error
   has_many :ajustes_repuesto, through: :repuestos, source: :ajustes
-  has_one :caso, dependent: :nullify
+  has_one :caso, dependent: :nullify, inverse_of: :orden
 
   enum :estado, { abierta: "abierta", cerrada: "cerrada", cancelada: "cancelada" }, validate: true
 
@@ -51,8 +51,8 @@ class Orden < ApplicationRecord
     total - adelantos.sum(:importe).to_d
   end
 
-  def saldo_a_facturar
-    total - franquicia.to_d
+  def saldo_a_facturar(total: self.total)
+    total.to_d - franquicia.to_d
   end
 
   def total_reemplazando(repuesto, precio:, incluir_ajustes_del_repuesto: true)

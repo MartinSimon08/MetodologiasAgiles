@@ -26,7 +26,11 @@ Rails.application.routes.draw do
     member do
       post :ingresar
     end
+    collection do
+      get :aseguradora
+    end
   end
+  resource :turnera, only: :show, controller: "turnera"
   resources :aseguradoras, only: %i[index create update destroy] do
     member do
       patch :desactivar

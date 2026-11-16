@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_15_000000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_15_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "unaccent"
@@ -125,6 +125,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_15_000000) do
     t.check_constraint "registro_unico = true", name: "configuraciones_taller_registro_unico"
   end
 
+  create_table "correcciones_orden", force: :cascade do |t|
+    t.bigint "orden_id", null: false
+    t.bigint "usuario_id", null: false
+    t.string "campo", null: false
+    t.decimal "valor_anterior", precision: 24, scale: 2
+    t.decimal "valor_nuevo", precision: 24, scale: 2
+    t.text "motivo", null: false
+    t.boolean "revision_confirmada", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["orden_id"], name: "index_correcciones_orden_on_orden_id"
+    t.index ["usuario_id"], name: "index_correcciones_orden_on_usuario_id"
+    t.check_constraint "campo::text = ANY (ARRAY['total_cerrado'::character varying::text, 'franquicia'::character varying::text])", name: "correcciones_orden_campo_valido"
   create_table "envios_presupuesto", force: :cascade do |t|
     t.bigint "orden_id", null: false
     t.bigint "aseguradora_id", null: false
@@ -278,6 +291,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_15_000000) do
   add_foreign_key "casos", "clientes", column: "asegurado_id"
   add_foreign_key "casos", "ordenes"
   add_foreign_key "casos", "vehiculos"
+  add_foreign_key "correcciones_orden", "ordenes"
+  add_foreign_key "correcciones_orden", "usuarios"
   add_foreign_key "envios_presupuesto", "aseguradoras"
   add_foreign_key "envios_presupuesto", "ordenes"
   add_foreign_key "envios_presupuesto", "usuarios", column: "enviado_por_id"

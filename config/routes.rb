@@ -23,10 +23,14 @@ Rails.application.routes.draw do
 
   resources :clientes, only: %i[index create]
   resources :casos, only: %i[index create] do
+    member do
+      post :ingresar
+    end
     collection do
       get :aseguradora
     end
   end
+  resource :turnera, only: :show, controller: "turnera"
   resources :aseguradoras, only: %i[index create update destroy] do
     member do
       patch :desactivar
@@ -55,6 +59,7 @@ Rails.application.routes.draw do
   get "reportes/ordenes_por_periodo", to: "reportes#ordenes_por_periodo"
 
   resources :ordenes, only: %i[index show create] do
+    resources :correcciones, only: :index, controller: "correcciones_orden"
     resources :adelantos, only: %i[index create]
     resources :repuestos, only: %i[index create update destroy] do
       resources :ajustes, only: :create, controller: "ajustes_repuesto"
@@ -84,6 +89,7 @@ Rails.application.routes.draw do
     member do
       patch :cancelar
       patch :cerrar
+      patch :corregir
       get :resumen_cierre
       get :total_parcial
       get :presupuesto

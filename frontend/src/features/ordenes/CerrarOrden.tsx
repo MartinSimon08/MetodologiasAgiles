@@ -6,6 +6,7 @@ import { fechaHora, importe } from '../../lib/formato'
 import { useAuth } from '../auth/AuthContext'
 import { superaSaldo } from '../adelantos/api'
 import { cerrarOrden, obtenerResumenCierre } from './api'
+import { CorregirOrden } from './CorregirOrden'
 import type { Orden, ResumenCierre } from './types'
 
 interface Props {
@@ -133,6 +134,7 @@ function OrdenCerrada({ orden, esAdministrador }: { orden: Orden; esAdministrado
         </Link>
       )}
       {esAdministrador && resumen.data && <Resumen resumen={resumen.data} />}
+      {esAdministrador && resumen.data && <CorregirOrden ordenId={orden.id} resumen={resumen.data} />}
     </div>
   )
 }

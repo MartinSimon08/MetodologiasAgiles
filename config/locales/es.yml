@@ -8,6 +8,7 @@ es:
       tarea: Tarea
       repuesto: Repuesto
       ajuste_repuesto: Ajuste de repuesto
+      correccion_orden: Corrección de orden
       repuesto_catalogo: Repuesto del catálogo
       tarea_frecuente: Tarea frecuente
       vehiculo: Vehículo
@@ -48,6 +49,7 @@ es:
         cerrada_por: Cerrada por
         total_cerrado: Total al cierre
         franquicia: Franquicia del asegurado
+        motivo_correccion: Motivo de la corrección
       adelanto:
         orden: Orden
         importe: Importe
@@ -113,6 +115,9 @@ es:
               ya_desactivada: La aseguradora ya está desactivada
         caso:
           attributes:
+            base:
+              sin_turno: El caso no tiene turno asignado
+              ya_ingresado: El caso ya tiene una orden abierta
             aseguradora:
               desactivada: está desactivada
             vehiculo:
@@ -131,6 +136,8 @@ es:
           attributes:
             vehiculo:
               con_orden_abierta: ya tiene una orden abierta
+            total_cerrado:
+              menor_a_adelantos: no puede ser menor a los adelantos ya registrados
             franquicia:
               mayor_al_total: no puede ser mayor al total de la orden
               en_orden_abierta: solo se registra al cerrar la orden
@@ -147,6 +154,9 @@ es:
               comprobante_no_disponible: El comprobante solo se genera a partir de una orden cerrada
               sin_caso: La orden no está vinculada a un caso
               sin_contacto: La aseguradora no tiene cargado el contacto para ese medio
+              no_corregible: Solo se puede corregir una orden cerrada
+              sin_cambios: La corrección no cambia ningún valor de la orden
+              revision_requerida: La franquicia o el saldo a facturar de esta orden ya pudieron cobrarse o facturarse. Confirmá que los revisaste para corregir la orden
         envio_presupuesto:
           attributes:
             medio:

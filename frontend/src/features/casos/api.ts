@@ -1,4 +1,5 @@
 import { api, type MetaPaginacion } from '../../lib/api'
+import type { Aseguradora } from '../aseguradoras/api'
 
 export const NUMERO_SINIESTRO_MAXIMO = 50
 export const DESCRIPCION_MAXIMA = 1000
@@ -35,5 +36,42 @@ export async function listarCasos(buscar: string, pagina: number) {
 
 export async function abrirCaso(caso: NuevoCaso) {
   const { data } = await api.post<Caso>('/casos', { caso })
+  return data
+}
+
+export interface CasoAseguradora {
+  id: number
+  numero_siniestro: string
+  orden_id: number | null
+  orden_estado: 'abierta' | 'cerrada' | 'cancelada' | null
+  created_at: string
+  asegurado: { id: number; nombre: string }
+  vehiculo: { id: number; patente: string; marca: string | null; modelo: string | null }
+  total_autorizado: string
+  franquicia_cobrada: string
+  saldo_pendiente: string
+}
+
+export interface TotalesCasosAseguradora {
+  total_autorizado: string
+  franquicia_cobrada: string
+  saldo_pendiente: string
+}
+
+export interface ConsultaCasosAseguradora {
+  aseguradora: Aseguradora
+  casos: CasoAseguradora[]
+  totales: TotalesCasosAseguradora
+}
+
+export async function consultarCasosAseguradora(filtros: { aseguradoraId: number; desde: string; hasta: string }) {
+  const { data } = await api.get<ConsultaCasosAseguradora>('/casos/aseguradora', {
+    params: { aseguradora_id: filtros.aseguradoraId, desde: filtros.desde, hasta: filtros.hasta },
+  })
+  return data
+}
+
+export async function ingresarCaso(id: number) {
+  const { data } = await api.post<Caso>(`/casos/${id}/ingresar`)
   return data
 }

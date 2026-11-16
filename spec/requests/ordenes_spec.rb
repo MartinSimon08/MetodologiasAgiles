@@ -519,6 +519,84 @@ RSpec.describe "Ordenes", type: :request do
     end
   end
 
+  describe "PATCH /ordenes/:id/corregir" do
+    let!(:orden) { create(:orden, :cerrada, total_cerrado: 15_000) }
+
+    it "corrige el total de una orden cerrada y registra la auditoría" do
+      patch "/ordenes/#{orden.id}/corregir", params: { total_cerrado: "12000", motivo: "Precio mal cargado" },
+                                             headers: auth_headers(administrador)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body).to include("total_cerrado" => "12000.0", "franquicia" => nil)
+      correccion = orden.correcciones.sole
+      expect(correccion).to have_attributes(campo: "total_cerrado", valor_anterior: 15_000, valor_nuevo: 12_000,
+                                            usuario: administrador, motivo: "Precio mal cargado")
+    end
+
+    it "exige el motivo" do
+      patch "/ordenes/#{orden.id}/corregir", params: { total_cerrado: "12000" }, headers: auth_headers(administrador)
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body["errors"]["motivo_correccion"]).to include("Motivo de la corrección no puede estar en blanco")
+      expect(orden.reload.total_cerrado).to eq(15_000)
+    end
+
+    it "pide confirmar la revisión cuando la franquicia ya se cobró" do
+      orden.update!(franquicia: 1_000)
+
+      patch "/ordenes/#{orden.id}/corregir", params: { total_cerrado: "12000", motivo: "Error" },
+                                             headers: auth_headers(administrador)
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body["errors"]["base"].first).to include("Confirmá que los revisaste")
+
+      patch "/ordenes/#{orden.id}/corregir",
+            params: { total_cerrado: "12000", motivo: "Error", confirmar_revision: true },
+            headers: auth_headers(administrador)
+
+      expect(response).to have_http_status(:ok)
+      expect(orden.correcciones.sole.revision_confirmada).to be(true)
+    end
+
+    it "no la permite a un mecánico" do
+      patch "/ordenes/#{orden.id}/corregir", params: { total_cerrado: "1", motivo: "x" },
+                                             headers: auth_headers(mecanico)
+
+      expect(response).to have_http_status(:forbidden)
+    end
+
+    it "rechaza corregir una orden abierta" do
+      abierta = create(:orden)
+
+      patch "/ordenes/#{abierta.id}/corregir", params: { total_cerrado: "1", motivo: "x" },
+                                               headers: auth_headers(administrador)
+
+      expect(response).to have_http_status(:unprocessable_content)
+    end
+  end
+
+  describe "GET /ordenes/:id/correcciones" do
+    it "lista la auditoría de la orden con usuario, valores y motivo" do
+      orden = create(:orden, :cerrada, total_cerrado: 15_000)
+      OrdenCorregir.call(orden: orden, usuario: administrador, motivo: "Precio mal cargado", total_cerrado: "12000")
+
+      get "/ordenes/#{orden.id}/correcciones", headers: auth_headers(administrador)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body["correcciones"].sole).to include(
+        "campo" => "total_cerrado", "valor_anterior" => "15000.0", "valor_nuevo" => "12000.0",
+        "motivo" => "Precio mal cargado", "revision_confirmada" => false,
+        "usuario" => { "id" => administrador.id, "nombre" => administrador.nombre }
+      )
+    end
+
+    it "no la muestra a un mecánico" do
+      get "/ordenes/#{create(:orden, :cerrada).id}/correcciones", headers: auth_headers(mecanico)
+
+      expect(response).to have_http_status(:forbidden)
+    end
+  end
+
   describe "PATCH /ordenes/:id/cerrar" do
     let!(:orden) { create(:orden) }
 

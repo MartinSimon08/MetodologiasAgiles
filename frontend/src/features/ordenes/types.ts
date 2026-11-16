@@ -98,6 +98,22 @@ export interface ComprobanteOrden extends ResumenCierre {
   cerrada_por: { id: number; nombre: string } | null
 }
 
+export interface CorreccionOrden {
+  id: number
+  campo: 'total_cerrado' | 'franquicia'
+  valor_anterior: string | null
+  valor_nuevo: string | null
+  motivo: string
+  revision_confirmada: boolean
+  created_at: string
+  usuario: { id: number; nombre: string }
+}
+
+export const CAMPO_CORRECCION_LABELS: Record<CorreccionOrden['campo'], string> = {
+  total_cerrado: 'Total',
+  franquicia: 'Franquicia del asegurado',
+}
+
 export const ESTADO_ORDEN_LABELS: Record<EstadoOrden, string> = {
   abierta: 'Abierta',
   cerrada: 'Cerrada',

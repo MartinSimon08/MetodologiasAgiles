@@ -2,7 +2,7 @@ class OrdenesController < ApplicationController
   include Paginable
 
   before_action :require_administrador!,
-                only: %i[create cancelar cerrar resumen_cierre total_parcial presupuesto comprobante]
+                only: %i[create cancelar cerrar corregir resumen_cierre total_parcial presupuesto comprobante]
 
   def index
     ordenes = Orden.includes(:cliente, :vehiculo, :cerrada_por).order(created_at: :desc, id: :desc)
@@ -34,6 +34,15 @@ class OrdenesController < ApplicationController
       franquicia: params[:franquicia]
     )
     render json: serialize(orden)
+  end
+
+  def corregir
+    cambios = params.permit(:total_cerrado, :franquicia).to_h.symbolize_keys
+    orden = OrdenCorregir.call(
+      orden: Orden.find(params[:id]), usuario: current_usuario, motivo: params[:motivo],
+      confirmar_revision: ActiveModel::Type::Boolean.new.cast(params[:confirmar_revision]) == true, **cambios
+    )
+    render json: serialize(orden).merge(franquicia: orden.franquicia&.to_s("F"))
   end
 
   def resumen_cierre

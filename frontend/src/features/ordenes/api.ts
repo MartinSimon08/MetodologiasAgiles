@@ -1,6 +1,7 @@
 import { api, type MetaPaginacion } from '../../lib/api'
 import type {
   ComprobanteOrden,
+  CorreccionOrden,
   EstadoOrden,
   Orden,
   OrdenCancelada,
@@ -55,6 +56,28 @@ export async function cerrarOrden(id: number, descartarPendientes: boolean, fran
     franquicia: franquicia?.trim() ? franquicia.trim() : null,
   })
   return data
+}
+
+export interface DatosCorreccion {
+  motivo: string
+  totalCerrado?: string
+  franquicia?: string
+  confirmarRevision: boolean
+}
+
+export async function corregirOrden(id: number, datos: DatosCorreccion) {
+  const { data } = await api.patch<Orden>(`/ordenes/${id}/corregir`, {
+    motivo: datos.motivo,
+    total_cerrado: datos.totalCerrado,
+    franquicia: datos.franquicia,
+    confirmar_revision: datos.confirmarRevision,
+  })
+  return data
+}
+
+export async function listarCorrecciones(id: number) {
+  const { data } = await api.get<{ correcciones: CorreccionOrden[] }>(`/ordenes/${id}/correcciones`)
+  return data.correcciones
 }
 
 export async function obtenerComprobante(id: number) {

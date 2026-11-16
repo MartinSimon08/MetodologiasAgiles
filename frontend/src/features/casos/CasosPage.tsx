@@ -1,5 +1,6 @@
-import { keepPreviousData, useQuery } from '@tanstack/react-query'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { BotonNuevo } from '../../components/BotonNuevo'
 import { Buscador } from '../../components/Buscador'
 import { Cargando } from '../../components/Cargando'
@@ -8,7 +9,8 @@ import { Paginacion } from '../../components/Paginacion'
 import { errorMessage } from '../../lib/api'
 import { fechaHora } from '../../lib/formato'
 import { useDebounce } from '../../lib/useDebounce'
-import { listarCasos } from './api'
+import { ingresarCaso, listarCasos, type Caso } from './api'
+import { CasosNav } from './CasosNav'
 import { NuevoCasoForm } from './NuevoCasoForm'
 
 export function CasosPage() {
@@ -17,6 +19,7 @@ export function CasosPage() {
   const [busqueda, setBusqueda] = useState('')
   const [pagina, setPagina] = useState(1)
   const buscar = useDebounce(busqueda.trim())
+  const queryClient = useQueryClient()
 
   const casos = useQuery({
     queryKey: ['casos', buscar, pagina],
@@ -24,13 +27,31 @@ export function CasosPage() {
     placeholderData: keepPreviousData,
   })
 
+  const ingresar = useMutation({
+    mutationFn: (caso: Caso) => ingresarCaso(caso.id),
+    onSuccess: async (caso) => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['casos'] }),
+        queryClient.invalidateQueries({ queryKey: ['ordenes'] }),
+      ])
+      setAviso(`Ingresó el vehículo del caso ${caso.numero_siniestro} y se abrió su orden.`)
+    },
+  })
+
   return (
     <section className="casos">
+      <CasosNav />
       <EncabezadoPagina titulo="Casos" bajada="Siniestros de aseguradoras para planificar antes de que el vehículo ingrese." />
 
       {aviso && (
         <p className="aviso" role="status">
           {aviso}
+        </p>
+      )}
+
+      {ingresar.isError && (
+        <p className="error" role="alert">
+          {errorMessage(ingresar.error, 'No se pudo ingresar el vehículo.')}
         </p>
       )}
 
@@ -96,7 +117,27 @@ export function CasosPage() {
                 </div>
                 <div className="item-insignias">
                   {caso.fecha_turno === null && <span className="insignia insignia-pendiente">Sin turno</span>}
-                  {caso.orden_id === null && <span className="insignia insignia-desactivado">Sin orden</span>}
+                  {caso.orden_id === null ? (
+                    <>
+                      <span className="insignia insignia-desactivado">Sin orden</span>
+                      {caso.fecha_turno !== null && (
+                        <button
+                          type="button"
+                          disabled={ingresar.isPending}
+                          onClick={() => {
+                            setAviso(null)
+                            ingresar.mutate(caso)
+                          }}
+                        >
+                          Ingresar vehículo
+                        </button>
+                      )}
+                    </>
+                  ) : (
+                    <Link to={`/ordenes/${caso.orden_id}`} className="insignia insignia-abierta">
+                      Ingresado · orden #{caso.orden_id}
+                    </Link>
+                  )}
                 </div>
               </li>
             ))}

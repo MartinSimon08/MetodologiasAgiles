@@ -1,6 +1,7 @@
 import { api, type MetaPaginacion } from '../../lib/api'
 import type {
   ComprobanteOrden,
+  EnvioPresupuesto,
   EstadoOrden,
   Orden,
   OrdenCancelada,
@@ -46,6 +47,11 @@ export async function obtenerTotalParcial(id: number) {
 
 export async function obtenerPresupuesto(id: number) {
   const { data } = await api.get<Presupuesto>(`/ordenes/${id}/presupuesto`)
+  return data
+}
+
+export async function enviarPresupuesto(id: number, medio: 'email' | 'whatsapp') {
+  const { data } = await api.post<EnvioPresupuesto>(`/ordenes/${id}/enviar_presupuesto`, { medio })
   return data
 }
 

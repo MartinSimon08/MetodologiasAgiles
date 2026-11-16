@@ -76,6 +76,15 @@ export interface TotalParcial {
   a_cobrar_hoy: string
 }
 
+export interface EnvioPresupuesto {
+  id: number
+  medio: 'email' | 'whatsapp'
+  destinatario: string
+  enviado_en: string
+  aseguradora: { id: number; nombre: string }
+  enviado_por: { id: number; nombre: string }
+}
+
 export interface Presupuesto {
   orden_id: number
   tareas: ResumenCierre['tareas']
@@ -89,6 +98,9 @@ export interface Presupuesto {
   }[]
   presupuesto: string
   total_aseguradora: string
+  caso: { id: number; numero_siniestro: string } | null
+  aseguradora: { id: number; nombre: string; email: string | null; telefono: string | null } | null
+  envios: EnvioPresupuesto[]
 }
 
 export interface ComprobanteOrden extends ResumenCierre {

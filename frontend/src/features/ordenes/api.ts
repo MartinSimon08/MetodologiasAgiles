@@ -16,8 +16,8 @@ export interface PaginaOrdenes {
   meta: MetaPaginacion
 }
 
-export async function listarOrdenes(pagina: number, estado?: EstadoOrden) {
-  const { data } = await api.get<PaginaOrdenes>('/ordenes', { params: { pagina, estado } })
+export async function listarOrdenes(pagina: number, estado?: EstadoOrden, q?: string) {
+  const { data } = await api.get<PaginaOrdenes>('/ordenes', { params: { pagina, estado, q: q || undefined } })
   return data
 }
 

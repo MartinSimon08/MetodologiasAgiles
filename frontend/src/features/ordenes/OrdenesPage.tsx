@@ -2,10 +2,12 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { BotonNuevo } from '../../components/BotonNuevo'
+import { Buscador } from '../../components/Buscador'
 import { EncabezadoPagina } from '../../components/EncabezadoPagina'
 import { Paginacion } from '../../components/Paginacion'
 import { errorMessage } from '../../lib/api'
 import { fechaHora } from '../../lib/formato'
+import { useDebounce } from '../../lib/useDebounce'
 import { useAuth } from '../auth/AuthContext'
 import { listarOrdenes } from './api'
 import { NuevaOrdenForm } from './NuevaOrdenForm'
@@ -23,22 +25,28 @@ export function OrdenesPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const pagina = Math.max(1, Number(searchParams.get('pagina')) || 1)
   const estado = ESTADOS.find((valor) => valor === searchParams.get('estado'))
+  const busqueda = searchParams.get('q') ?? ''
+  const q = useDebounce(busqueda.trim())
 
   const ordenes = useQuery({
-    queryKey: ['ordenes', pagina, estado ?? 'todas'],
-    queryFn: () => listarOrdenes(pagina, estado),
+    queryKey: ['ordenes', pagina, estado ?? 'todas', q],
+    queryFn: () => listarOrdenes(pagina, estado, q),
     placeholderData: keepPreviousData,
   })
 
-  function navegar(nuevaPagina: number, nuevoEstado: EstadoOrden | undefined) {
-    setSearchParams({
-      ...(nuevoEstado ? { estado: nuevoEstado } : {}),
-      ...(nuevaPagina === 1 ? {} : { pagina: String(nuevaPagina) }),
-    })
+  function navegar(nuevaPagina: number, nuevoEstado: EstadoOrden | undefined, nuevaBusqueda: string) {
+    setSearchParams(
+      {
+        ...(nuevaBusqueda ? { q: nuevaBusqueda } : {}),
+        ...(nuevoEstado ? { estado: nuevoEstado } : {}),
+        ...(nuevaPagina === 1 ? {} : { pagina: String(nuevaPagina) }),
+      },
+      { replace: true },
+    )
   }
 
   function irAPagina(nueva: number) {
-    navegar(nueva, estado)
+    navegar(nueva, estado, busqueda)
     window.scrollTo({ top: 0 })
   }
 
@@ -57,20 +65,34 @@ export function OrdenesPage() {
         />
       )}
 
-      <label className="filtro-estado">
-        <span>Estado</span>
-        <select
-          value={estado ?? ''}
-          onChange={(e) => navegar(1, ESTADOS.find((valor) => valor === e.target.value))}
-        >
-          <option value="">Todas</option>
-          {ESTADOS.map((valor) => (
-            <option key={valor} value={valor}>
-              {ESTADO_ORDEN_LABELS[valor]}
-            </option>
-          ))}
-        </select>
-      </label>
+      <div className="filtros-ordenes">
+        <Buscador
+          etiqueta="Buscar orden"
+          placeholder="Cliente, teléfono, patente, marca o modelo"
+          valor={busqueda}
+          onCambiar={(valor) => navegar(1, estado, valor)}
+        />
+        <label className="filtro-estado">
+          <span>Estado</span>
+          <select
+            value={estado ?? ''}
+            onChange={(e) =>
+              navegar(
+                1,
+                ESTADOS.find((valor) => valor === e.target.value),
+                busqueda,
+              )
+            }
+          >
+            <option value="">Todas</option>
+            {ESTADOS.map((valor) => (
+              <option key={valor} value={valor}>
+                {ESTADO_ORDEN_LABELS[valor]}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
 
       {ordenes.isPending && <Cargando />}
       {ordenes.isError && (
@@ -80,11 +102,18 @@ export function OrdenesPage() {
       )}
 
       {ordenes.data && ordenes.data.ordenes.length === 0 &&
-        (estado ? (
+        (q || estado ? (
           <EstadoVacio
             busqueda
             titulo="Sin resultados"
-            descripcion={`No hay órdenes en estado ${ESTADO_ORDEN_LABELS[estado].toLowerCase()}.`}
+            descripcion={[
+              'No hay órdenes',
+              q && `que coincidan con “${q}”`,
+              estado && `en estado ${ESTADO_ORDEN_LABELS[estado].toLowerCase()}`,
+            ]
+              .filter(Boolean)
+              .join(' ')
+              .concat('.')}
           />
         ) : (
           <EstadoVacio

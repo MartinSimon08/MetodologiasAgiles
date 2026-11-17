@@ -37,6 +37,19 @@ RSpec.describe "Ordenes", type: :request do
       expect(response.parsed_body["meta"]["total"]).to eq(1)
     end
 
+    it "busca las órdenes por cliente o vehículo y combina con el estado" do
+      ana = create(:cliente, nombre: "Ana Gómez")
+      fiesta = create(:vehiculo, cliente: ana, patente: "AB123CD")
+      abierta = create(:orden, vehiculo: fiesta)
+      create(:orden, :cerrada, vehiculo: fiesta)
+      create(:orden, cliente: create(:cliente, nombre: "Bruno Díaz"))
+
+      get "/ordenes", params: { q: "ab123", estado: "abierta" }, headers: auth_headers(administrador)
+
+      expect(response.parsed_body["ordenes"].pluck("id")).to eq([ abierta.id ])
+      expect(response.parsed_body["meta"]["total"]).to eq(1)
+    end
+
     it "ignora un estado desconocido en el filtro" do
       create(:orden)
       create(:orden, :cancelada)

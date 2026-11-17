@@ -1153,6 +1153,21 @@ button.secundario.peligro:hover:not(:disabled) {
   max-width: 16rem;
 }
 
+.filtros-ordenes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.9rem;
+}
+
+.filtros-ordenes .buscador {
+  flex: 1 1 18rem;
+}
+
+.filtros-ordenes .filtro-estado {
+  flex: 0 1 16rem;
+}
+
 .orden-cancelada {
   display: flex;
   flex-direction: column;

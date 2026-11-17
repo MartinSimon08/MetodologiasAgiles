@@ -9,6 +9,7 @@ import { fechaHora } from '../../lib/formato'
 import { useAuth } from '../auth/AuthContext'
 import { listarOrdenes } from './api'
 import { NuevaOrdenForm } from './NuevaOrdenForm'
+import { TableroOrdenes } from './TableroOrdenes'
 import { describirVehiculo, ESTADO_ORDEN_LABELS, type EstadoOrden } from './types'
 import { Cargando } from '../../components/Cargando'
 
@@ -21,11 +22,13 @@ export function OrdenesPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const pagina = Math.max(1, Number(searchParams.get('pagina')) || 1)
   const estado = ESTADOS.find((valor) => valor === searchParams.get('estado'))
+  const enTablero = searchParams.get('vista') === 'tablero'
 
   const ordenes = useQuery({
     queryKey: ['ordenes', pagina, estado ?? 'todas'],
     queryFn: () => listarOrdenes(pagina, estado),
     placeholderData: keepPreviousData,
+    enabled: !enTablero,
   })
 
   function navegar(nuevaPagina: number, nuevoEstado: EstadoOrden | undefined) {
@@ -55,51 +58,76 @@ export function OrdenesPage() {
         />
       )}
 
-      <label className="filtro-estado">
-        <span>Estado</span>
-        <select
-          value={estado ?? ''}
-          onChange={(e) => navegar(1, ESTADOS.find((valor) => valor === e.target.value))}
+      <nav className="subnav" aria-label="Vista de órdenes">
+        <button
+          type="button"
+          className={enTablero ? undefined : 'active'}
+          aria-pressed={!enTablero}
+          onClick={() => setSearchParams({})}
         >
-          <option value="">Todas</option>
-          {ESTADOS.map((valor) => (
-            <option key={valor} value={valor}>
-              {ESTADO_ORDEN_LABELS[valor]}
-            </option>
-          ))}
-        </select>
-      </label>
+          Lista
+        </button>
+        <button
+          type="button"
+          className={enTablero ? 'active' : undefined}
+          aria-pressed={enTablero}
+          onClick={() => setSearchParams({ vista: 'tablero' })}
+        >
+          Tablero
+        </button>
+      </nav>
 
-      {ordenes.isPending && <Cargando />}
-      {ordenes.isError && (
-        <p className="error" role="alert">
-          {errorMessage(ordenes.error, 'No se pudieron cargar las órdenes.')}
-        </p>
-      )}
+      {enTablero ? (
+        <TableroOrdenes />
+      ) : (
+        <>
+          <label className="filtro-estado">
+            <span>Estado</span>
+            <select
+              value={estado ?? ''}
+              onChange={(e) => navegar(1, ESTADOS.find((valor) => valor === e.target.value))}
+            >
+              <option value="">Todas</option>
+              {ESTADOS.map((valor) => (
+                <option key={valor} value={valor}>
+                  {ESTADO_ORDEN_LABELS[valor]}
+                </option>
+              ))}
+            </select>
+          </label>
 
-      {ordenes.data && ordenes.data.ordenes.length === 0 && (
-        <p className="estado">{estado ? 'No hay órdenes en ese estado.' : 'Todavía no hay órdenes cargadas.'}</p>
-      )}
+          {ordenes.isPending && <Cargando />}
+          {ordenes.isError && (
+            <p className="error" role="alert">
+              {errorMessage(ordenes.error, 'No se pudieron cargar las órdenes.')}
+            </p>
+          )}
 
-      {ordenes.data && (
-        <ul className="lista" aria-busy={ordenes.isPlaceholderData}>
-          {ordenes.data.ordenes.map((orden) => (
-            <li key={orden.id} className="tarjeta fila-item">
-              <Link to={`/ordenes/${orden.id}`} className="item-datos">
-                <strong>{orden.cliente.nombre}</strong>
-                <span>{describirVehiculo(orden.vehiculo)}</span>
-                <span>Ingreso: {fechaHora(orden.created_at)}</span>
-              </Link>
-              <span className={`insignia insignia-${orden.estado}`}>
-                {ESTADO_ORDEN_LABELS[orden.estado]}
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
+          {ordenes.data && ordenes.data.ordenes.length === 0 && (
+            <p className="estado">{estado ? 'No hay órdenes en ese estado.' : 'Todavía no hay órdenes cargadas.'}</p>
+          )}
 
-      {ordenes.data && (
-        <Paginacion meta={ordenes.data.meta} cargando={ordenes.isPlaceholderData} onCambiar={irAPagina} />
+          {ordenes.data && (
+            <ul className="lista" aria-busy={ordenes.isPlaceholderData}>
+              {ordenes.data.ordenes.map((orden) => (
+                <li key={orden.id} className="tarjeta fila-item">
+                  <Link to={`/ordenes/${orden.id}`} className="item-datos">
+                    <strong>{orden.cliente.nombre}</strong>
+                    <span>{describirVehiculo(orden.vehiculo)}</span>
+                    <span>Ingreso: {fechaHora(orden.created_at)}</span>
+                  </Link>
+                  <span className={`insignia insignia-${orden.estado}`}>
+                    {ESTADO_ORDEN_LABELS[orden.estado]}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {ordenes.data && (
+            <Paginacion meta={ordenes.data.meta} cargando={ordenes.isPlaceholderData} onCambiar={irAPagina} />
+          )}
+        </>
       )}
     </section>
   )

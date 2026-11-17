@@ -167,7 +167,7 @@ export function CasosPage() {
                       {caso.fecha_turno === null ? (
                         <span className="insignia insignia-pendiente">Sin turno</span>
                       ) : (
-                        fechaCorta(caso.fecha_turno)
+                        <span className="fecha">{fechaCorta(caso.fecha_turno)}</span>
                       )}
                       {caso.cambios_turno
                         .filter((cambio) => cambio.fecha_anterior !== null)

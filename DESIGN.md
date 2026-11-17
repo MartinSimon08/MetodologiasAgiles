@@ -73,7 +73,7 @@ spacing:
   3xl: 48px
   touch-target: 44px
   sidebar: 232px
-  content-max: 1080px
+  content-max: 1440px
   grid: 120px
 components:
   button-primary:
@@ -199,7 +199,7 @@ Escala: `display` solo en el login de escritorio, `headline` para el h1 de cada 
 - **Móvil primero.** Breakpoints en uso: `600px` (acciones al ancho completo por debajo), `640px` (más padding lateral), `900px` (pasa a layout de escritorio).
 - **Escritorio (≥900px)**: grilla de dos columnas, barra lateral fija de 232px a la izquierda y contenido a la derecha.
 - **Móvil (<900px)**: la barra pasa arriba, sticky, y la navegación se abre en una columna desde el botón de menú.
-- **Contenido**: ancho máximo 1080px centrado, padding 28px arriba y 16px (28px desde 640px) a los costados.
+- **Contenido**: ancho máximo 1440px centrado, padding 28px arriba y 16px (28px desde 640px) a los costados.
 - Espaciado vertical entre bloques de 1rem a 1.25rem; dentro de formularios 0.9rem.
 - Todo elemento interactivo mide al menos 44px de alto (`touch-target`).
 
@@ -229,9 +229,9 @@ El ícono del select se dibuja con gradientes CSS. Los íconos SVG son de trazo 
 - **Label de formulario**: Plex Mono 12px en mayúsculas, color `text-muted`, arriba del campo. Las ayudas (`small`, `.bajada`) vuelven a Plex Sans 16px.
 - **Tarjeta** (`.tarjeta`): fondo `surface`, borde `outline`, padding 1.25rem.
 - **Lista** (`.lista`): un solo contenedor con borde; las tarjetas internas pierden el borde propio y se separan con una línea inferior.
-- **Tabla** (`Tabla`, `.tabla` dentro de `.tabla-contenedor`): la forma de mostrar las pantallas de índice (órdenes, clientes, vehículos, usuarios, aseguradoras, casos, catálogos y reportes con filas). Contenedor en `surface` con borde `outline` y scroll horizontal si no entra. Encabezados en Plex Mono 12px mayúsculas `text-muted`; celdas separadas por línea `outline`; hover de fila en `surface-note`. Montos y cantidades en columnas `.numero` alineadas a la derecha; fechas en `.fecha` sin cortar línea; datos secundarios de una celda en `.secundaria` (`text-muted`) y ausencias como "—" en `.sin-dato`. Filas inactivas (`tr.inactiva`) en `text-muted`. Totales en `tfoot` con línea superior en `primary`, 18px peso 500. Las vistas para mecánicos y los paneles dentro de una orden siguen como `.lista` de tarjetas.
+- **Tabla** (`Tabla`, `.tabla` dentro de `.tabla-contenedor`): la forma de mostrar las pantallas de índice (órdenes, clientes, vehículos, usuarios, aseguradoras, casos, catálogos y reportes con filas). Contenedor en `surface` con borde `outline` y scroll horizontal si no entra. Encabezados en Plex Mono 12px mayúsculas `text-muted`; celdas separadas por línea `outline`; hover de fila en `surface-note`. Montos y cantidades en columnas `.numero` alineadas a la derecha; fechas en `.fecha` sin cortar línea; datos secundarios de una celda en `.secundaria` (`text-muted`) y ausencias como "—" en `.sin-dato`. Filas inactivas (`tr.inactiva`) en `text-muted`. Totales en `tfoot` con línea superior en `primary`, 16px peso 500. Las vistas para mecánicos y los paneles dentro de una orden siguen como `.lista` de tarjetas.
 - **Menú de acciones** (`MenuAcciones`): botón "…" de 44px en la última columna (`.acciones-celda`) que abre una lista flotante con borde `primary`; ítems de 44px con hover en `control`, y los destructivos en `error` con hover en `error-container`. Se maneja con flechas y Escape. Las acciones que necesitan datos (editar, cambiar dueño, turno, resetear contraseña) abren un `Dialogo` en lugar de un formulario dentro de la fila.
-- **Estado vacío** (`EstadoVacio`): bloque centrado en `surface` con borde, ícono de trazo, título 18px peso 500 y descripción en `text-muted`. La variante de búsqueda (ícono de lupa) se usa cuando hay filtros sin resultados.
+- **Estado vacío** (`EstadoVacio`): bloque centrado en `surface` con borde, ícono de trazo, título 16px peso 500 y descripción en `text-muted`. La variante de búsqueda (ícono de lupa) se usa cuando hay filtros sin resultados.
 - **Encabezado de página** (`.encabezado`): título a la izquierda, acción a la derecha, línea inferior en `outline`.
 - **Insignia de estado** (`.insignia-<estado>`): Plex Mono en mayúsculas con borde. Variantes:
   - en curso, ingresado: fondo `primary`.

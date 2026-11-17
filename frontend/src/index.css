@@ -27,7 +27,7 @@
   --admin: var(--tinta);
   --mecanico: var(--tinta);
 
-  font: 400 18px/27px 'IBM Plex Sans', 'Segoe UI', sans-serif;
+  font: 400 16px/24px 'IBM Plex Sans', 'Segoe UI', sans-serif;
   color-scheme: light;
   color: var(--texto);
   background: var(--fondo);
@@ -99,7 +99,7 @@ h1 {
 }
 
 h2 {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 500;
   line-height: 28px;
 }
@@ -277,7 +277,7 @@ button.peligro:focus-visible {
 .formulario small,
 .bajada {
   font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 400;
   line-height: 24px;
   letter-spacing: 0;
@@ -412,7 +412,7 @@ button.peligro:focus-visible {
 .error {
   color: var(--peligro);
   font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 400;
   letter-spacing: 0;
   text-transform: none;
@@ -717,7 +717,7 @@ button.peligro:focus-visible {
 }
 
 .contenido {
-  width: min(100%, 1080px);
+  width: min(100%, 1440px);
   margin: 0 auto;
   padding: 28px 16px 64px;
   display: flex;
@@ -828,7 +828,7 @@ button.peligro:focus-visible {
 
 .campo-porcentaje > span {
   font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 500;
   letter-spacing: 0;
   text-transform: none;
@@ -896,7 +896,7 @@ button.peligro:focus-visible {
   min-width: 0;
   gap: 0.1rem;
   font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 400;
   letter-spacing: 0;
   text-transform: none;
@@ -1288,7 +1288,7 @@ button.secundario.peligro:hover:not(:disabled) {
 .totales-cierre .total {
   padding-top: 0.45rem;
   border-top: 1px solid var(--regla);
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 500;
 }
 
@@ -1317,7 +1317,7 @@ button.secundario.peligro:hover:not(:disabled) {
   align-items: center;
   gap: 0.5rem;
   font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
-  font-size: 18px;
+  font-size: 16px;
   letter-spacing: 0;
   text-transform: none;
   color: var(--tinta);
@@ -1419,7 +1419,7 @@ button.secundario.peligro:hover:not(:disabled) {
 .nueva-orden select,
 .nueva-orden textarea {
   font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 400;
   letter-spacing: 0;
   text-transform: none;
@@ -1606,7 +1606,7 @@ button.opcion:focus-visible {
 .filtro-estado select,
 .filtros-compras input {
   font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 400;
   letter-spacing: 0;
   text-transform: none;
@@ -2478,7 +2478,7 @@ label.boton-archivo:has(input:disabled) {
   border-top: 1px solid var(--tinta);
   color: var(--tinta);
   font-family: inherit;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 500;
   letter-spacing: 0;
   text-transform: none;
@@ -2606,7 +2606,7 @@ button.menu-acciones-disparador[aria-expanded='true'] {
 
 .estado-vacio strong {
   color: var(--tinta);
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 500;
 }
 

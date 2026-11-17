@@ -17,11 +17,11 @@ export function ReporteTareasFrecuentesPage() {
 
   return (
     <section className="reportes">
-      <ReportesNav />
       <EncabezadoPagina
         titulo="Tareas más frecuentes"
         bajada="Cuántas veces se realizó cada tarea o servicio, de más a menos frecuente."
       />
+      <ReportesNav />
 
       {reporte.isPending && <Cargando />}
       {reporte.isError && (

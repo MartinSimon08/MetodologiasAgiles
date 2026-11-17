@@ -56,11 +56,11 @@ export function RepuestosPorProveedorPage() {
 
   return (
     <section className="repuestos">
-      <RepuestosNav />
       <EncabezadoPagina
         titulo="Compras por proveedor"
         bajada="Filtrá las compras valorizadas para ver cuánto se le compró a cada proveedor."
       />
+      <RepuestosNav />
 
       <form className="filtros-compras" onSubmit={(event) => event.preventDefault()}>
         <label>

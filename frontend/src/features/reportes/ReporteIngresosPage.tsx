@@ -39,11 +39,11 @@ export function ReporteIngresosPage() {
 
   return (
     <section className="reportes">
-      <ReportesNav />
       <EncabezadoPagina
         titulo="Ingresos por período"
         bajada="Adelantos registrados en el período, separados entre franquicia, saldo facturado a aseguradoras y clientes directos."
       />
+      <ReportesNav />
 
       <form className="filtros-compras" onSubmit={(event) => event.preventDefault()}>
         <label>

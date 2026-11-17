@@ -39,11 +39,11 @@ export function CasosAseguradoraPage() {
 
   return (
     <section className="casos">
-      <CasosNav />
       <EncabezadoPagina
         titulo="Casos por aseguradora"
         bajada="Casos abiertos en el período, con el total autorizado de cada orden, la franquicia cobrada y el saldo pendiente de facturar."
       />
+      <CasosNav />
 
       <AseguradoraSelector
         etiqueta="Aseguradora"

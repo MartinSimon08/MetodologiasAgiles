@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { useState, type ReactNode } from 'react'
+import { useState } from 'react'
 import { Paginacion } from '../../components/Paginacion'
 import { errorMessage } from '../../lib/api'
 import { importe } from '../../lib/formato'
@@ -14,10 +14,9 @@ interface Props {
   onEditar?: (repuesto: RepuestoCatalogo) => void
   onEliminar?: (repuesto: RepuestoCatalogo) => void
   filtro?: string
-  accionNuevo?: ReactNode
 }
 
-export function CatalogoRepuestos({ onSeleccionar, onEditar, onEliminar, filtro, accionNuevo }: Props) {
+export function CatalogoRepuestos({ onSeleccionar, onEditar, onEliminar, filtro }: Props) {
   const [busqueda, setBuscar] = useState('')
   const buscar = filtro ?? busqueda
   const [pagina, setPagina] = useState(1)
@@ -29,16 +28,13 @@ export function CatalogoRepuestos({ onSeleccionar, onEditar, onEliminar, filtro,
   return (
     <section className="repuestos">
       {onSeleccionar && <h2>Sugerencias del catálogo</h2>}
-      {filtro === undefined && <div className="buscador-con-accion">
-        <label className="buscador">
-          <span>Buscar en el catálogo</span>
-          <input type="search" placeholder="Nombre del repuesto" value={buscar} onChange={(event) => {
-            setBuscar(event.target.value)
-            setPagina(1)
-          }} />
-        </label>
-        {accionNuevo}
-      </div>}
+      {filtro === undefined && <label className="buscador">
+        <span>Buscar en el catálogo</span>
+        <input type="search" placeholder="Nombre del repuesto" value={buscar} onChange={(event) => {
+          setBuscar(event.target.value)
+          setPagina(1)
+        }} />
+      </label>}
       {catalogo.isPending && <Cargando />}
       {catalogo.isError && <p className="error" role="alert">
         {errorMessage(catalogo.error, 'No se pudo cargar el catálogo.')}

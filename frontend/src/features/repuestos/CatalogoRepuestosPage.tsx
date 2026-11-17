@@ -43,11 +43,13 @@ export function CatalogoRepuestosPage() {
 
   return (
     <section className="repuestos">
-      <RepuestosNav />
       <EncabezadoPagina
         titulo="Catálogo de repuestos"
         bajada="Cargá repuestos y sus precios para autocompletar las órdenes."
-      />
+      >
+        {nuevo}
+      </EncabezadoPagina>
+      <RepuestosNav />
       {aviso && <p className="aviso" role="status">{aviso}</p>}
       {eliminar.isPending && <p className="estado" role="status">Eliminando repuesto…</p>}
       {eliminar.isError && <p className="error" role="alert">
@@ -63,7 +65,7 @@ export function CatalogoRepuestosPage() {
           setAviso('Repuesto guardado en el catálogo.')
         }} />
       </Dialogo>}
-      <CatalogoRepuestos accionNuevo={nuevo || undefined} onEditar={puedeGestionar ? (repuesto) => {
+      <CatalogoRepuestos onEditar={puedeGestionar ? (repuesto) => {
         setAviso('')
         eliminar.reset()
         setEditando(repuesto)

@@ -53,7 +53,9 @@ export function ClientesPage() {
 
   return (
     <section className="clientes">
-      <EncabezadoPagina titulo="Clientes" bajada="Personas que traen vehículos al taller." />
+      <EncabezadoPagina titulo="Clientes" bajada="Personas que traen vehículos al taller.">
+        {nuevo}
+      </EncabezadoPagina>
 
       {aviso && (
         <p className="aviso" role="status">
@@ -76,7 +78,6 @@ export function ClientesPage() {
         placeholder="Nombre, teléfono o patente"
         valor={busqueda}
         onCambiar={(valor) => actualizarFiltros(1, valor)}
-        accion={nuevo || undefined}
       />
 
       {clientes.isPending && <Cargando />}

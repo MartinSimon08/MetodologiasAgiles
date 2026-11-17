@@ -32,11 +32,11 @@ export function ReporteTareasPorMecanicoPage() {
 
   return (
     <section className="reportes">
-      <ReportesNav />
       <EncabezadoPagina
         titulo="Tareas por mecánico"
         bajada="Cantidad de tareas que tomó y completó cada mecánico en el período elegido."
       />
+      <ReportesNav />
 
       <form className="filtros-compras" onSubmit={(event) => event.preventDefault()}>
         <label>

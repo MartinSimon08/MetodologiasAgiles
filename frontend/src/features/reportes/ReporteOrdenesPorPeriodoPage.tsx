@@ -30,11 +30,11 @@ export function ReporteOrdenesPorPeriodoPage() {
 
   return (
     <section className="reportes">
-      <ReportesNav />
       <EncabezadoPagina
         titulo="Órdenes abiertas y cerradas"
         bajada="Cuántas órdenes se abrieron y cuántas se cerraron en el período, según las fechas registradas en cada orden."
       />
+      <ReportesNav />
 
       <form className="filtros-compras" onSubmit={(event) => event.preventDefault()}>
         <label>

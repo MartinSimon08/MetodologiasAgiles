@@ -67,7 +67,19 @@ export function AseguradorasPage() {
 
   return (
     <section className="aseguradoras">
-      <EncabezadoPagina titulo="Aseguradoras" bajada="Compañías con las que trabaja el taller para asociarles los casos." />
+      <EncabezadoPagina titulo="Aseguradoras" bajada="Compañías con las que trabaja el taller para asociarles los casos.">
+        {editando === undefined && (
+          <BotonNuevo
+            disabled={ocupado}
+            onClick={() => {
+              iniciar()
+              setEditando(null)
+            }}
+          >
+            Nueva aseguradora
+          </BotonNuevo>
+        )}
+      </EncabezadoPagina>
 
       {aviso && (
         <p className="aviso" role="status">
@@ -99,19 +111,6 @@ export function AseguradorasPage() {
           setBusqueda(valor)
           setPagina(1)
         }}
-        accion={
-          editando === undefined ? (
-            <BotonNuevo
-              disabled={ocupado}
-              onClick={() => {
-                iniciar()
-                setEditando(null)
-              }}
-            >
-              Nueva aseguradora
-            </BotonNuevo>
-          ) : undefined
-        }
       />
 
       {aseguradoras.isPending && <Cargando />}

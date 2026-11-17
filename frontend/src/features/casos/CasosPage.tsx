@@ -46,8 +46,19 @@ export function CasosPage() {
 
   return (
     <section className="casos">
+      <EncabezadoPagina titulo="Casos" bajada="Siniestros de aseguradoras para planificar antes de que el vehículo ingrese.">
+        {!abriendo && (
+          <BotonNuevo
+            onClick={() => {
+              setAviso(null)
+              setAbriendo(true)
+            }}
+          >
+            Nuevo caso
+          </BotonNuevo>
+        )}
+      </EncabezadoPagina>
       <CasosNav />
-      <EncabezadoPagina titulo="Casos" bajada="Siniestros de aseguradoras para planificar antes de que el vehículo ingrese." />
 
       {aviso && (
         <p className="aviso" role="status">
@@ -79,18 +90,6 @@ export function CasosPage() {
           setBusqueda(valor)
           setPagina(1)
         }}
-        accion={
-          abriendo ? undefined : (
-            <BotonNuevo
-              onClick={() => {
-                setAviso(null)
-                setAbriendo(true)
-              }}
-            >
-              Nuevo caso
-            </BotonNuevo>
-          )
-        }
       />
 
       {casos.isPending && <Cargando />}

@@ -63,7 +63,9 @@ export function VehiculosPage() {
 
   return (
     <section className="vehiculos">
-      <EncabezadoPagina titulo="Vehículos" bajada="Vehículos registrados y su dueño actual." />
+      <EncabezadoPagina titulo="Vehículos" bajada="Vehículos registrados y su dueño actual.">
+        {nuevo}
+      </EncabezadoPagina>
 
       {aviso && (
         <p className="aviso" role="status">
@@ -90,7 +92,6 @@ export function VehiculosPage() {
         placeholder="Patente, nombre o teléfono del dueño"
         valor={busqueda}
         onCambiar={(valor) => actualizarFiltros(1, valor)}
-        accion={nuevo || undefined}
       />
 
       {vehiculos.isPending && <Cargando />}

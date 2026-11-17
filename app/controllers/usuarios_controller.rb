@@ -4,7 +4,7 @@ class UsuariosController < ApplicationController
   before_action :require_administrador!
 
   def index
-    usuarios, meta = paginar(Usuario.order(:nombre, :id))
+    usuarios, meta = paginar(Usuario.buscar(params[:q]).order(:nombre, :id))
     tareas_en_curso = Tarea.en_curso.where(mecanico_id: usuarios.map(&:id)).group(:mecanico_id).count
     render json: {
       usuarios: usuarios.map { |usuario| serialize(usuario, tareas_en_curso: tareas_en_curso.fetch(usuario.id, 0)) },

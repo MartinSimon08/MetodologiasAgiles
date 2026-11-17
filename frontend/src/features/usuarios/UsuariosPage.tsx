@@ -7,36 +7,53 @@ import { Paginacion } from '../../components/Paginacion'
 import { errorMessage } from '../../lib/api'
 import { useAuth } from '../auth/AuthContext'
 import { ROL_LABELS } from '../auth/types'
-import { listarUsuarios, type UsuarioDesactivado } from './api'
+import { listarUsuarios, type UsuarioDesactivado, type UsuarioListado } from './api'
 import { DesactivarUsuario } from './DesactivarUsuario'
 import { NuevoUsuarioForm } from './NuevoUsuarioForm'
 import { ResetearPasswordForm } from './ResetearPasswordForm'
 import { Cargando } from '../../components/Cargando'
+import { Dialogo } from '../../components/Dialogo'
+import { MenuAcciones } from '../../components/MenuAcciones'
+import { Tabla } from '../../components/Tabla'
+import { usePorPagina } from '../../lib/paginacion'
+import { Buscador } from '../../components/Buscador'
+import { EstadoVacio } from '../../components/EstadoVacio'
+import { useDebounce } from '../../lib/useDebounce'
 
 export function UsuariosPage() {
   const { usuario: actual } = useAuth()
   const [creando, setCreando] = useState(false)
-  const [accion, setAccion] = useState<{ tipo: 'resetear' | 'desactivar'; id: number } | null>(null)
+  const [accion, setAccion] = useState<{ tipo: 'resetear' | 'desactivar'; usuario: UsuarioListado } | null>(null)
   const [aviso, setAviso] = useState<string | null>(null)
 
   const [searchParams, setSearchParams] = useSearchParams()
   const pagina = Math.max(1, Number(searchParams.get('pagina')) || 1)
+  const busqueda = searchParams.get('q') ?? ''
+  const q = useDebounce(busqueda.trim())
+  const [porPagina, setPorPagina] = usePorPagina()
 
   const usuarios = useQuery({
-    queryKey: ['usuarios', pagina],
-    queryFn: () => listarUsuarios(pagina),
+    queryKey: ['usuarios', pagina, q, porPagina],
+    queryFn: () => listarUsuarios(pagina, q, porPagina),
     placeholderData: keepPreviousData,
   })
 
-  function irAPagina(nueva: number) {
+  function actualizarFiltros(nuevaPagina: number, nuevaBusqueda: string) {
+    const params: Record<string, string> = {}
+    if (nuevaBusqueda) params.q = nuevaBusqueda
+    if (nuevaPagina > 1) params.pagina = String(nuevaPagina)
     setAccion(null)
-    setSearchParams(nueva === 1 ? {} : { pagina: String(nueva) })
+    setSearchParams(params, { replace: true })
+  }
+
+  function irAPagina(nueva: number) {
+    actualizarFiltros(nueva, busqueda)
     window.scrollTo({ top: 0 })
   }
 
-  function iniciar(tipo: 'resetear' | 'desactivar', id: number) {
+  function iniciar(tipo: 'resetear' | 'desactivar', usuario: UsuarioListado) {
     setAviso(null)
-    setAccion({ tipo, id })
+    setAccion({ tipo, usuario })
   }
 
   function avisarDesactivacion({ nombre, tareas_liberadas }: UsuarioDesactivado) {
@@ -81,6 +98,13 @@ export function UsuariosPage() {
         />
       )}
 
+      <Buscador
+        etiqueta="Buscar usuario"
+        placeholder="Nombre o email"
+        valor={busqueda}
+        onCambiar={(valor) => actualizarFiltros(1, valor)}
+      />
+
       {usuarios.isPending && <Cargando />}
       {usuarios.isError && (
         <p className="error" role="alert">
@@ -88,49 +112,86 @@ export function UsuariosPage() {
         </p>
       )}
 
-      {usuarios.data && (
-        <ul className="lista" aria-busy={usuarios.isPlaceholderData}>
-          {usuarios.data.usuarios.map((usuario) => (
-            <li key={usuario.id} className={`tarjeta item${usuario.activo ? '' : ' inactivo'}`}>
-              <div className="item-datos">
-                <strong>
-                  {usuario.nombre}
+      {usuarios.data?.usuarios.length === 0 && (
+        <EstadoVacio busqueda titulo="Sin resultados" descripcion={`No hay usuarios que coincidan con “${q}”.`} />
+      )}
+
+      {usuarios.data && usuarios.data.usuarios.length > 0 && (
+        <Tabla etiqueta="Usuarios" ocupada={usuarios.isPlaceholderData}>
+          <thead>
+            <tr>
+              <th scope="col">Nombre</th>
+              <th scope="col">Email</th>
+              <th scope="col">Rol</th>
+              <th scope="col">Estado</th>
+              <th scope="col" className="acciones-celda">
+                <span className="solo-lectores">Acciones</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {usuarios.data.usuarios.map((usuario) => (
+              <tr key={usuario.id} className={usuario.activo ? undefined : 'inactiva'}>
+                <td>
+                  <strong>{usuario.nombre}</strong>
                   {usuario.id === actual?.id && ' (vos)'}
-                </strong>
-                <span>{usuario.email}</span>
-              </div>
-              <span className={`rol rol-${usuario.rol}`}>{ROL_LABELS[usuario.rol]}</span>
-              {!usuario.activo ? (
-                <span className="insignia insignia-desactivado">Desactivado</span>
-              ) : accion?.id === usuario.id && accion.tipo === 'resetear' ? (
+                </td>
+                <td>{usuario.email}</td>
+                <td>
+                  <span className={`rol rol-${usuario.rol}`}>{ROL_LABELS[usuario.rol]}</span>
+                </td>
+                <td>
+                  {usuario.activo ? (
+                    'Activo'
+                  ) : (
+                    <span className="insignia insignia-desactivado">Desactivado</span>
+                  )}
+                </td>
+                <td className="acciones-celda">
+                  {usuario.activo && (
+                    <MenuAcciones
+                      etiqueta={`Acciones para ${usuario.nombre}`}
+                      acciones={[
+                        { etiqueta: 'Resetear contraseña', onSeleccionar: () => iniciar('resetear', usuario) },
+                        { etiqueta: 'Desactivar', peligro: true, onSeleccionar: () => iniciar('desactivar', usuario) },
+                      ]}
+                    />
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </Tabla>
+      )}
+
+      {accion && (
+        <Dialogo onCerrar={() => setAccion(null)}>
+          <div className="tarjeta">
+            {accion.tipo === 'resetear' ? (
+              <>
+                <h2>Resetear contraseña</h2>
                 <ResetearPasswordForm
-                  usuario={usuario}
+                  usuario={accion.usuario}
                   onListo={() => {
                     setAccion(null)
-                    setAviso(`Se actualizó la contraseña de ${usuario.nombre}.`)
+                    setAviso(`Se actualizó la contraseña de ${accion.usuario.nombre}.`)
                   }}
                   onCancelar={() => setAccion(null)}
                 />
-              ) : accion?.id === usuario.id && accion.tipo === 'desactivar' ? (
+              </>
+            ) : (
+              <>
+                <h2>Desactivar usuario</h2>
                 <DesactivarUsuario
-                  usuario={usuario}
-                  esActual={usuario.id === actual?.id}
+                  usuario={accion.usuario}
+                  esActual={accion.usuario.id === actual?.id}
                   onListo={avisarDesactivacion}
                   onCancelar={() => setAccion(null)}
                 />
-              ) : (
-                <div className="item-acciones">
-                  <button className="secundario" onClick={() => iniciar('resetear', usuario.id)}>
-                    Resetear contraseña
-                  </button>
-                  <button className="secundario peligro" onClick={() => iniciar('desactivar', usuario.id)}>
-                    Desactivar
-                  </button>
-                </div>
-              )}
-            </li>
-          ))}
-        </ul>
+              </>
+            )}
+          </div>
+        </Dialogo>
       )}
 
       {usuarios.data && (
@@ -138,6 +199,11 @@ export function UsuariosPage() {
           meta={usuarios.data.meta}
           cargando={usuarios.isPlaceholderData}
           onCambiar={irAPagina}
+          porPagina={porPagina}
+          onCambiarPorPagina={(valor) => {
+            setPorPagina(valor)
+            irAPagina(1)
+          }}
         />
       )}
     </section>

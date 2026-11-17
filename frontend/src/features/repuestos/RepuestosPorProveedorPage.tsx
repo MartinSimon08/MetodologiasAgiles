@@ -10,19 +10,24 @@ import { describirVehiculo } from '../ordenes/types'
 import { listarRepuestosPorProveedor, nombreProveedor } from './api'
 import { RepuestosNav } from './RepuestosNav'
 import { Cargando } from '../../components/Cargando'
+import { EstadoVacio } from '../../components/EstadoVacio'
+import { Tabla } from '../../components/Tabla'
+import { usePorPagina } from '../../lib/paginacion'
 
 export function RepuestosPorProveedorPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const pagina = Math.max(1, Number(searchParams.get('pagina')) || 1)
+  const [porPagina, setPorPagina] = usePorPagina()
   const proveedor = searchParams.get('proveedor') ?? ''
   const desde = searchParams.get('desde') ?? ''
   const hasta = searchParams.get('hasta') ?? ''
   const proveedorDebounced = useDebounce(proveedor.trim())
 
   const compras = useQuery({
-    queryKey: ['repuestos-por-proveedor', pagina, proveedorDebounced, desde, hasta],
+    queryKey: ['repuestos-por-proveedor', pagina, proveedorDebounced, desde, hasta, porPagina],
     queryFn: () => listarRepuestosPorProveedor({
       pagina,
+      porPagina,
       proveedor: proveedorDebounced || undefined,
       desde: desde || undefined,
       hasta: hasta || undefined,
@@ -54,11 +59,11 @@ export function RepuestosPorProveedorPage() {
 
   return (
     <section className="repuestos">
-      <RepuestosNav />
       <EncabezadoPagina
         titulo="Compras por proveedor"
         bajada="Filtrá las compras valorizadas para ver cuánto se le compró a cada proveedor."
       />
+      <RepuestosNav />
 
       <form className="filtros-compras" onSubmit={(event) => event.preventDefault()}>
         <label>
@@ -100,54 +105,102 @@ export function RepuestosPorProveedorPage() {
         </p>
       )}
 
-      {compras.data && compras.data.repuestos.length === 0 && (
-        <p className="estado">
-          {hayFiltros ? 'No hay compras valorizadas con esos filtros.' : 'Todavía no hay compras valorizadas.'}
-        </p>
-      )}
+      {compras.data && compras.data.repuestos.length === 0 &&
+        (hayFiltros ? (
+          <EstadoVacio busqueda titulo="Sin resultados" descripcion="No hay compras valorizadas con esos filtros." />
+        ) : (
+          <EstadoVacio
+            titulo="Todavía no hay compras valorizadas"
+            descripcion="Acá vas a ver lo comprado a cada proveedor cuando se valoricen repuestos en las órdenes."
+          />
+        ))}
 
       {compras.data && compras.data.proveedores.length > 0 && (
-        <>
-          <ul className="lista" aria-label="Totales por proveedor" aria-busy={compras.isPlaceholderData}>
+        <Tabla etiqueta="Totales por proveedor" ocupada={compras.isPlaceholderData}>
+          <thead>
+            <tr>
+              <th scope="col">Proveedor</th>
+              <th scope="col" className="numero">
+                Compras
+              </th>
+              <th scope="col" className="numero">
+                Total comprado
+              </th>
+            </tr>
+          </thead>
+          <tbody>
             {compras.data.proveedores.map((item) => (
-              <li key={item.proveedor ?? 'sin-proveedor'} className="tarjeta fila-item">
-                <div className="item-datos">
-                  <strong>{nombreProveedor(item.proveedor)}</strong>
-                  <span>
-                    {item.cantidad_compras} {item.cantidad_compras === 1 ? 'compra' : 'compras'}
-                  </span>
-                </div>
-                <strong>$ {importe(item.total_comprado)}</strong>
-              </li>
+              <tr key={item.proveedor ?? 'sin-proveedor'}>
+                <td>{nombreProveedor(item.proveedor)}</td>
+                <td className="numero">{item.cantidad_compras}</td>
+                <td className="numero">$ {importe(item.total_comprado)}</td>
+              </tr>
             ))}
-          </ul>
-          <p className="resumen-saldo" role="status">
-            <span>Total comprado</span>
-            <strong>$ {importe(compras.data.total_comprado)}</strong>
-          </p>
-        </>
+          </tbody>
+          <tfoot>
+            <tr>
+              <th scope="row" colSpan={2}>
+                Total comprado
+              </th>
+              <td className="numero">$ {importe(compras.data.total_comprado)}</td>
+            </tr>
+          </tfoot>
+        </Tabla>
       )}
 
       {compras.data && compras.data.repuestos.length > 0 && (
         <>
           <h2>Compras</h2>
-          <ul className="lista" aria-busy={compras.isPlaceholderData}>
-            {compras.data.repuestos.map((repuesto) => (
-              <li key={repuesto.id} className="tarjeta item-datos">
-                <strong>{repuesto.descripcion}</strong>
-                <span>Proveedor: {nombreProveedor(repuesto.proveedor)}</span>
-                <span>
-                  {repuesto.cantidad} × $ {importe(repuesto.costo_unitario)} · Total: $ {importe(repuesto.total_costo)}
-                  {repuesto.con_ajustes && ' (con devoluciones o cambios)'}
-                </span>
-                <span>
-                  {repuesto.orden.cliente} · {describirVehiculo(repuesto.orden.vehiculo)} · {fechaHora(repuesto.created_at)}
-                </span>
-                <Link to={`/ordenes/${repuesto.orden.id}`}>Ver orden</Link>
-              </li>
-            ))}
-          </ul>
-          <Paginacion meta={compras.data.meta} cargando={compras.isPlaceholderData} onCambiar={irAPagina} />
+          <Tabla etiqueta="Compras" ocupada={compras.isPlaceholderData}>
+            <thead>
+              <tr>
+                <th scope="col">Repuesto</th>
+                <th scope="col">Proveedor</th>
+                <th scope="col" className="numero">
+                  Cantidad
+                </th>
+                <th scope="col" className="numero">
+                  Costo unitario
+                </th>
+                <th scope="col" className="numero">
+                  Total
+                </th>
+                <th scope="col">Orden</th>
+                <th scope="col">Fecha</th>
+              </tr>
+            </thead>
+            <tbody>
+              {compras.data.repuestos.map((repuesto) => (
+                <tr key={repuesto.id}>
+                  <td>
+                    {repuesto.descripcion}
+                    {repuesto.con_ajustes && <span className="secundaria">Con devoluciones o cambios</span>}
+                  </td>
+                  <td>{nombreProveedor(repuesto.proveedor)}</td>
+                  <td className="numero">{repuesto.cantidad}</td>
+                  <td className="numero">$ {importe(repuesto.costo_unitario)}</td>
+                  <td className="numero">$ {importe(repuesto.total_costo)}</td>
+                  <td>
+                    <Link to={`/ordenes/${repuesto.orden.id}`} className="enlace-fila">
+                      {repuesto.orden.cliente}
+                    </Link>
+                    <span className="secundaria">{describirVehiculo(repuesto.orden.vehiculo)}</span>
+                  </td>
+                  <td className="fecha">{fechaHora(repuesto.created_at)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </Tabla>
+          <Paginacion
+            meta={compras.data.meta}
+            cargando={compras.isPlaceholderData}
+            onCambiar={irAPagina}
+            porPagina={porPagina}
+            onCambiarPorPagina={(valor) => {
+              setPorPagina(valor)
+              irAPagina(1)
+            }}
+          />
         </>
       )}
     </section>

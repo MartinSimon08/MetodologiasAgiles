@@ -64,6 +64,16 @@ RSpec.describe "TareasFrecuentes", type: :request do
       expect(response.parsed_body["tareas_frecuentes"].pluck("descripcion")).to eq(%w[Aceite Alineación])
     end
 
+    it "busca las tareas frecuentes por descripción sin importar acentos" do
+      create(:tarea_frecuente, descripcion: "Alineación y balanceo")
+      create(:tarea_frecuente, descripcion: "Cambio de aceite")
+
+      get "/tareas_frecuentes", params: { q: "alineacion" }, headers: auth_headers(admin)
+
+      expect(response.parsed_body["tareas_frecuentes"].pluck("descripcion")).to eq([ "Alineación y balanceo" ])
+      expect(response.parsed_body["meta"]["total"]).to eq(1)
+    end
+
     it "le muestra el precio sugerido al administrador" do
       create(:tarea_frecuente, precio_sugerido: 15_000)
 

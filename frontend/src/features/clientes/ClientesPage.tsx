@@ -9,7 +9,10 @@ import { errorMessage } from '../../lib/api'
 import { useDebounce } from '../../lib/useDebounce'
 import { listarClientes } from './api'
 import { NuevoClienteForm } from './NuevoClienteForm'
+import { EstadoVacio } from '../../components/EstadoVacio'
+import { Tabla } from '../../components/Tabla'
 import { Cargando } from '../../components/Cargando'
+import { usePorPagina } from '../../lib/paginacion'
 
 export function ClientesPage() {
   const [registrando, setRegistrando] = useState(false)
@@ -17,12 +20,13 @@ export function ClientesPage() {
 
   const [searchParams, setSearchParams] = useSearchParams()
   const pagina = Math.max(1, Number(searchParams.get('pagina')) || 1)
+  const [porPagina, setPorPagina] = usePorPagina()
   const busqueda = searchParams.get('q') ?? ''
   const q = useDebounce(busqueda.trim())
 
   const clientes = useQuery({
-    queryKey: ['clientes', pagina, q],
-    queryFn: () => listarClientes(pagina, q),
+    queryKey: ['clientes', pagina, q, porPagina],
+    queryFn: () => listarClientes(pagina, q, porPagina),
     placeholderData: keepPreviousData,
   })
 
@@ -51,7 +55,9 @@ export function ClientesPage() {
 
   return (
     <section className="clientes">
-      <EncabezadoPagina titulo="Clientes" bajada="Personas que traen vehículos al taller." />
+      <EncabezadoPagina titulo="Clientes" bajada="Personas que traen vehículos al taller.">
+        {nuevo}
+      </EncabezadoPagina>
 
       {aviso && (
         <p className="aviso" role="status">
@@ -74,7 +80,6 @@ export function ClientesPage() {
         placeholder="Nombre, teléfono o patente"
         valor={busqueda}
         onCambiar={(valor) => actualizarFiltros(1, valor)}
-        accion={nuevo || undefined}
       />
 
       {clientes.isPending && <Cargando />}
@@ -84,26 +89,43 @@ export function ClientesPage() {
         </p>
       )}
 
-      {clientes.data?.clientes.length === 0 && (
-        <p className="estado">
-          {q ? `No hay clientes que coincidan con “${q}”.` : 'Todavía no hay clientes registrados.'}
-        </p>
-      )}
+      {clientes.data?.clientes.length === 0 &&
+        (q ? (
+          <EstadoVacio
+            busqueda
+            titulo="Sin resultados"
+            descripcion={`No hay clientes que coincidan con “${q}”.`}
+          />
+        ) : (
+          <EstadoVacio
+            titulo="Todavía no hay clientes"
+            descripcion="Registrá al primer cliente para poder ingresar su vehículo."
+          />
+        ))}
 
       {clientes.data && clientes.data.clientes.length > 0 && (
-        <ul className="lista" aria-busy={clientes.isPlaceholderData}>
-          {clientes.data.clientes.map((cliente) => (
-            <li key={cliente.id} className="tarjeta item item-cliente">
-              <div className="item-datos">
-                <strong>{cliente.nombre}</strong>
-                <span>
+        <Tabla etiqueta="Clientes" ocupada={clientes.isPlaceholderData}>
+          <thead>
+            <tr>
+              <th scope="col">Nombre</th>
+              <th scope="col">Teléfono</th>
+              <th scope="col">Email</th>
+            </tr>
+          </thead>
+          <tbody>
+            {clientes.data.clientes.map((cliente) => (
+              <tr key={cliente.id}>
+                <td>
+                  <strong>{cliente.nombre}</strong>
+                </td>
+                <td>
                   <a href={`tel:${cliente.telefono}`}>{cliente.telefono}</a>
-                  {cliente.email && ` · ${cliente.email}`}
-                </span>
-              </div>
-            </li>
-          ))}
-        </ul>
+                </td>
+                <td>{cliente.email ?? <span className="sin-dato">—</span>}</td>
+              </tr>
+            ))}
+          </tbody>
+        </Tabla>
       )}
 
       {clientes.data && (
@@ -111,6 +133,11 @@ export function ClientesPage() {
           meta={clientes.data.meta}
           cargando={clientes.isPlaceholderData}
           onCambiar={irAPagina}
+          porPagina={porPagina}
+          onCambiarPorPagina={(valor) => {
+            setPorPagina(valor)
+            irAPagina(1)
+          }}
         />
       )}
     </section>

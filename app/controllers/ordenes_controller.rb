@@ -8,7 +8,7 @@ class OrdenesController < ApplicationController
   def index
     ordenes = Orden.includes(:cliente, :vehiculo, :cerrada_por).order(created_at: :desc, id: :desc)
     ordenes = ordenes.where(estado: params[:estado]) if Orden.estados.key?(params[:estado])
-    ordenes, meta = paginar(ordenes)
+    ordenes, meta = paginar(OrdenBuscar.call(params[:q], scope: ordenes))
     render json: { ordenes: ordenes.map { |orden| serialize(orden) }, meta: meta }
   end
 

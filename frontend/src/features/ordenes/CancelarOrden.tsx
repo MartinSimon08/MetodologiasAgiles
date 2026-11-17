@@ -8,6 +8,8 @@ import type { Orden, OrdenCancelada } from './types'
 
 interface Props {
   orden: Orden
+  iniciarConfirmacion?: boolean
+  onTerminar?: () => void
 }
 
 function avisoLiberadas({ tareas_liberadas }: OrdenCancelada) {
@@ -18,10 +20,10 @@ function avisoLiberadas({ tareas_liberadas }: OrdenCancelada) {
     : `Se liberaron ${tareas_liberadas.length} tareas que estaban en curso: ${descripciones}.`
 }
 
-export function CancelarOrden({ orden }: Props) {
+export function CancelarOrden({ orden, iniciarConfirmacion = false, onTerminar }: Props) {
   const { usuario } = useAuth()
   const queryClient = useQueryClient()
-  const [confirmando, setConfirmando] = useState(false)
+  const [confirmando, setConfirmando] = useState(iniciarConfirmacion)
   const [liberadas, setLiberadas] = useState<string | null>(null)
 
   const mutation = useMutation({
@@ -32,6 +34,7 @@ export function CancelarOrden({ orden }: Props) {
       queryClient.invalidateQueries({ queryKey: ['orden', orden.id] })
       queryClient.invalidateQueries({ queryKey: ['ordenes'] })
       queryClient.invalidateQueries({ queryKey: ['tareas', orden.id] })
+      onTerminar?.()
     },
   })
 
@@ -82,7 +85,14 @@ export function CancelarOrden({ orden }: Props) {
         </p>
       )}
       <div className="acciones">
-        <button type="button" className="secundario" onClick={() => setConfirmando(false)}>
+        <button
+          type="button"
+          className="secundario"
+          onClick={() => {
+            setConfirmando(false)
+            onTerminar?.()
+          }}
+        >
           No cancelar
         </button>
         <button type="button" className="peligro" disabled={mutation.isPending} onClick={() => mutation.mutate()}>

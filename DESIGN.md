@@ -238,6 +238,7 @@ El ícono del select se dibuja con gradientes CSS. Los íconos SVG son de trazo 
   - cancelada, rechazada, supera el cupo: texto y borde `error`.
   - turno asignado: insignia base, sin color.
 - **Turnera** (`.dias-turnera`): un bloque por día con encabezado (día, ingresos contra cupo) y una `.lista` de turnos. El día de hoy lleva la línea inferior en `primary`; un día que supera el cupo la lleva en `error`, con el conteo en `error` y la insignia "Supera el cupo".
+- **Tablero de órdenes** (`.tablero-ordenes`): una columna por estado con encabezado (insignia del estado y cantidad) y una `.lista` de tarjetas. Tres columnas desde 900px, apiladas por debajo. Se alterna con la lista mediante `.subnav`. Al arrastrar una orden abierta, las columnas que la aceptan toman fondo `control` con borde inset de 1px en `primary` (2px cuando la orden está encima) y el resto baja a opacidad 0.6.
 - **Avisos**: `.aviso` en `surface-note` para información; `.advertencia` en `attention` para algo que requiere atención; `.bloqueo-cierre` y `.orden-cancelada` en `error-container` con borde `error`.
 - **Totales** (`.totales-cierre`): filas etiqueta/monto separadas por líneas, borde superior en `primary` y total final a 18px peso 500.
 - **Navegación activa**: fondo `control` con indicador inset en `primary`.

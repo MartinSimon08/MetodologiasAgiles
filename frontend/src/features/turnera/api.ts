@@ -25,14 +25,17 @@ export interface DiaTurnera {
   turnos: Turno[]
 }
 
+export type PeriodoTurnera = 'semana' | 'mes'
+
 export interface Turnera {
+  periodo: PeriodoTurnera
   desde: string
   hasta: string
   cupo_diario: number
   dias: DiaTurnera[]
 }
 
-export async function obtenerTurnera(fecha: string | undefined) {
-  const { data } = await api.get<Turnera>('/turnera', { params: { fecha } })
+export async function obtenerTurnera(fecha: string | undefined, periodo: PeriodoTurnera) {
+  const { data } = await api.get<Turnera>('/turnera', { params: { fecha, periodo } })
   return data
 }

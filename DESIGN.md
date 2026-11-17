@@ -241,6 +241,7 @@ El ícono del select se dibuja con gradientes CSS. Los íconos SVG son de trazo 
   - cancelada, rechazada, supera el cupo: texto y borde `error`.
   - turno asignado: insignia base, sin color.
 - **Turnera** (`.dias-turnera`): un bloque por día con encabezado (día, ingresos contra cupo) y una `.lista` de turnos. El día de hoy lleva la línea inferior en `primary`; un día que supera el cupo la lleva en `error`, con el conteo en `error` y la insignia "Supera el cupo".
+- **Calendario de la turnera** (`.calendario-turnera`): grilla de 7 columnas (lunes a domingo) en `surface` con líneas `outline`. Cada día es un enlace a su semana con el número, ingresos contra cupo (en `error` si se supera) y hasta tres patentes en Plex Mono 12px: turno asignado con borde `outline`, ingresado en `primary` y listo para retirar en `attention`. Los días de otro mes van sobre `background` con texto `text-muted`; hoy lleva el número invertido y línea superior en `primary`, y un día excedido la lleva en `error`. Por debajo de 600px se ocultan las patentes y queda solo el conteo.
 - **Avisos**: `.aviso` en `surface-note` para información; `.advertencia` en `attention` para algo que requiere atención; `.bloqueo-cierre` y `.orden-cancelada` en `error-container` con borde `error`.
 - **Totales** (`.totales-cierre`): filas etiqueta/monto separadas por líneas, borde superior en `primary` y total final a 18px peso 500.
 - **Navegación activa**: fondo `control` con indicador inset en `primary`.

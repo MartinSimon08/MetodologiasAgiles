@@ -21,6 +21,27 @@ RSpec.describe TurneraArmar do
     expect(resultado.dias.map(&:fecha)).to eq((lunes..Date.new(2026, 11, 15)).to_a)
   end
 
+  it "arma el mes completo en semanas de lunes a domingo cuando el período es mes" do
+    turno = create(:caso, fecha_turno: Date.new(2026, 11, 30))
+    create(:caso, fecha_turno: Date.new(2026, 12, 7))
+
+    resultado = described_class.call(fecha: miercoles.iso8601, periodo: "mes")
+
+    expect(resultado).to be_valid
+    expect(resultado.periodo).to eq("mes")
+    expect(resultado.desde).to eq(Date.new(2026, 10, 26))
+    expect(resultado.hasta).to eq(Date.new(2026, 12, 6))
+    expect(resultado.dias.size).to eq(42)
+    expect(resultado.dias.index_by(&:fecha)[Date.new(2026, 11, 30)].turnos.map(&:caso)).to eq([ turno ])
+  end
+
+  it "rechaza un período desconocido" do
+    resultado = described_class.call(fecha: miercoles.iso8601, periodo: "anio")
+
+    expect(resultado).to be_invalid
+    expect(resultado.errors).to eq(periodo: [ "no es un período válido" ])
+  end
+
   it "usa la semana actual cuando no recibe fecha" do
     travel_to(Time.zone.local(2026, 11, 11, 10)) do
       expect(described_class.call.desde).to eq(lunes)

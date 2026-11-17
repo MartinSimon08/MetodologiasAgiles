@@ -3,6 +3,14 @@ class Usuario < ApplicationRecord
 
   has_secure_password
 
+  scope :buscar, lambda { |termino|
+    termino = termino.to_s.squish
+    next all if termino.blank?
+
+    patron = "%#{sanitize_sql_like(termino)}%"
+    where("unaccent(usuarios.nombre) ILIKE unaccent(:patron) OR usuarios.email ILIKE :patron", patron: patron)
+  }
+
   has_many :tareas, foreign_key: :mecanico_id, inverse_of: :mecanico, dependent: :restrict_with_error
   has_many :repuestos_registrados, class_name: "Repuesto", foreign_key: :registrado_por_id,
                                    inverse_of: :registrado_por, dependent: :restrict_with_error

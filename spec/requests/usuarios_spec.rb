@@ -78,6 +78,17 @@ RSpec.describe "Usuarios", type: :request do
       )
     end
 
+    it "busca los usuarios por nombre o email sin importar acentos" do
+      buscado = create(:usuario, nombre: "Martín Quiroga", email: "marta@taller.test")
+      create(:usuario, nombre: "Diego Ferreyra", email: "diego@taller.test")
+
+      get "/usuarios", params: { q: "martin" }, headers: auth_headers(admin)
+      expect(response.parsed_body["usuarios"].pluck("id")).to eq([ buscado.id ])
+
+      get "/usuarios", params: { q: "MARTA@" }, headers: auth_headers(admin)
+      expect(response.parsed_body["usuarios"].pluck("id")).to eq([ buscado.id ])
+    end
+
     it "pagina los resultados ordenados por nombre" do
       %w[Carla Ana Bruno Diego].each { |nombre| create(:usuario, nombre: nombre) }
       admin.update!(nombre: "Zoe")

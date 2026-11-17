@@ -7,6 +7,9 @@ class Caso < ApplicationRecord
   belongs_to :vehiculo
   belongs_to :orden, optional: true, inverse_of: :caso
   has_many :notificacion_asegurados, dependent: :destroy
+  has_many :cambios_turno, -> { order(:created_at, :id) }, class_name: "CambioTurno", inverse_of: :caso, dependent: :destroy
+
+  scope :ocupan_cupo, -> { left_joins(:orden).where("casos.orden_id IS NULL OR ordenes.estado = ?", Orden.estados[:abierta]) }
 
   normalizes :numero_siniestro, with: ->(numero) { numero.squish.upcase }
   normalizes :descripcion, with: ->(descripcion) { descripcion.strip.presence }

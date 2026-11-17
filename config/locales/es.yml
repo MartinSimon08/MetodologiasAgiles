@@ -14,6 +14,7 @@ es:
       vehiculo: Vehículo
       aseguradora: Aseguradora
       caso: Caso
+      cambio_turno: Cambio de turno
     attributes:
       usuario:
         nombre: Nombre
@@ -118,6 +119,11 @@ es:
             base:
               sin_turno: El caso no tiene turno asignado
               ya_ingresado: El caso ya tiene una orden abierta
+              turno_de_caso_ingresado: El vehículo del caso ya ingresó, no se puede cambiar su turno
+            fecha_turno:
+              pasada: no puede ser anterior a hoy
+              misma_fecha: es la misma fecha que ya tiene asignada
+              sin_cupo: "no tiene lugar ese día: ya hay %{ingresos} ingresos con cupo de %{cupo}"
             aseguradora:
               desactivada: está desactivada
             vehiculo:

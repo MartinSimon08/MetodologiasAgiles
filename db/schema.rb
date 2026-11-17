@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_15_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_16_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "unaccent"
@@ -86,6 +86,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_15_120000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index "lower((nombre)::text)", name: "index_aseguradoras_on_lower_nombre", unique: true
+  end
+
+  create_table "cambios_turno", force: :cascade do |t|
+    t.bigint "caso_id", null: false
+    t.date "fecha_anterior"
+    t.date "fecha_nueva", null: false
+    t.bigint "registrado_por_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["caso_id"], name: "index_cambios_turno_on_caso_id"
+    t.index ["registrado_por_id"], name: "index_cambios_turno_on_registrado_por_id"
+    t.check_constraint "fecha_anterior IS NULL OR fecha_anterior <> fecha_nueva", name: "cambios_turno_fecha_distinta"
   end
 
   create_table "casos", force: :cascade do |t|
@@ -289,6 +301,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_15_120000) do
   add_foreign_key "adelantos", "usuarios", column: "registrado_por_id"
   add_foreign_key "ajustes_repuesto", "repuestos"
   add_foreign_key "ajustes_repuesto", "usuarios", column: "registrado_por_id"
+  add_foreign_key "cambios_turno", "casos"
+  add_foreign_key "cambios_turno", "usuarios", column: "registrado_por_id"
   add_foreign_key "casos", "aseguradoras"
   add_foreign_key "casos", "clientes", column: "asegurado_id"
   add_foreign_key "casos", "ordenes"

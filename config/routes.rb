@@ -25,6 +25,7 @@ Rails.application.routes.draw do
   resources :casos, only: %i[index create] do
     member do
       post :ingresar
+      patch :turno
     end
     collection do
       get :aseguradora

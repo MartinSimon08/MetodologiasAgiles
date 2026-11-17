@@ -87,6 +87,74 @@ RSpec.describe "Casos de siniestro", type: :request do
     end
   end
 
+  describe "PATCH /casos/:id/turno" do
+    let(:caso) { create(:caso, asegurado: asegurado, vehiculo: vehiculo) }
+    let(:manana) { Date.current + 1.day }
+
+    it "asigna el turno y devuelve el caso con su historial" do
+      patch "/casos/#{caso.id}/turno", params: { caso: { fecha_turno: manana.iso8601 } }, headers: auth_headers(admin), as: :json
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body).to include("id" => caso.id, "fecha_turno" => manana.iso8601)
+      expect(response.parsed_body["cambios_turno"]).to contain_exactly(
+        a_hash_including("fecha_anterior" => nil, "fecha_nueva" => manana.iso8601,
+                         "registrado_por" => { "id" => admin.id, "nombre" => admin.nombre })
+      )
+    end
+
+    it "reprograma y conserva la fecha anterior" do
+      caso.update!(fecha_turno: manana)
+
+      patch "/casos/#{caso.id}/turno", params: { caso: { fecha_turno: (manana + 1.day).iso8601 } }, headers: auth_headers(admin), as: :json
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body["fecha_turno"]).to eq((manana + 1.day).iso8601)
+      expect(response.parsed_body["cambios_turno"].last)
+        .to include("fecha_anterior" => manana.iso8601, "fecha_nueva" => (manana + 1.day).iso8601)
+    end
+
+    it "rechaza un día sin cupo" do
+      ConfiguracionTaller.actual.update!(cupo_diario: 1)
+      create(:caso, fecha_turno: manana)
+
+      patch "/casos/#{caso.id}/turno", params: { caso: { fecha_turno: manana.iso8601 } }, headers: auth_headers(admin), as: :json
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body["errors"]["fecha_turno"])
+        .to eq([ "Turno no tiene lugar ese día: ya hay 1 ingresos con cupo de 1" ])
+      expect(caso.reload.fecha_turno).to be_nil
+    end
+
+    it "rechaza reprogramar un caso que ya ingresó" do
+      caso.update!(fecha_turno: Date.current)
+      CasoIngresar.call(caso_id: caso.id)
+
+      patch "/casos/#{caso.id}/turno", params: { caso: { fecha_turno: manana.iso8601 } }, headers: auth_headers(admin), as: :json
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body["errors"]["base"]).to eq([ "El vehículo del caso ya ingresó, no se puede cambiar su turno" ])
+    end
+
+    it "exige el parámetro caso" do
+      patch "/casos/#{caso.id}/turno", params: {}, headers: auth_headers(admin), as: :json
+
+      expect(response).to have_http_status(:bad_request)
+    end
+
+    it "responde 404 para un caso inexistente" do
+      patch "/casos/0/turno", params: { caso: { fecha_turno: manana.iso8601 } }, headers: auth_headers(admin), as: :json
+
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it "no permite a un mecánico asignar turnos" do
+      patch "/casos/#{caso.id}/turno", params: { caso: { fecha_turno: manana.iso8601 } }, headers: auth_headers(create(:usuario)), as: :json
+
+      expect(response).to have_http_status(:forbidden)
+      expect(caso.reload.fecha_turno).to be_nil
+    end
+  end
+
   describe "POST /casos/:id/ingresar" do
     let(:caso) { create(:caso, asegurado: asegurado, vehiculo: vehiculo, descripcion: "Choque trasero", fecha_turno: Date.current) }
 

@@ -29,8 +29,10 @@ export interface PaginaUsuarios {
   meta: MetaPaginacion
 }
 
-export async function listarUsuarios(pagina: number) {
-  const { data } = await api.get<PaginaUsuarios>('/usuarios', { params: { pagina } })
+export async function listarUsuarios(pagina: number, q = '', porPagina?: number) {
+  const { data } = await api.get<PaginaUsuarios>('/usuarios', {
+    params: { pagina, q: q || undefined, por_pagina: porPagina },
+  })
   return data
 }
 

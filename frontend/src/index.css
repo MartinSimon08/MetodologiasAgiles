@@ -27,7 +27,7 @@
   --admin: var(--tinta);
   --mecanico: var(--tinta);
 
-  font: 400 18px/27px 'IBM Plex Sans', 'Segoe UI', sans-serif;
+  font: 400 16px/24px 'IBM Plex Sans', 'Segoe UI', sans-serif;
   color-scheme: light;
   color: var(--texto);
   background: var(--fondo);
@@ -99,7 +99,7 @@ h1 {
 }
 
 h2 {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 500;
   line-height: 28px;
 }
@@ -277,7 +277,7 @@ button.peligro:focus-visible {
 .formulario small,
 .bajada {
   font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 400;
   line-height: 24px;
   letter-spacing: 0;
@@ -412,7 +412,7 @@ button.peligro:focus-visible {
 .error {
   color: var(--peligro);
   font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 400;
   letter-spacing: 0;
   text-transform: none;
@@ -717,7 +717,7 @@ button.peligro:focus-visible {
 }
 
 .contenido {
-  width: min(100%, 1080px);
+  width: min(100%, 1440px);
   margin: 0 auto;
   padding: 28px 16px 64px;
   display: flex;
@@ -828,7 +828,7 @@ button.peligro:focus-visible {
 
 .campo-porcentaje > span {
   font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 500;
   letter-spacing: 0;
   text-transform: none;
@@ -896,7 +896,7 @@ button.peligro:focus-visible {
   min-width: 0;
   gap: 0.1rem;
   font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 400;
   letter-spacing: 0;
   text-transform: none;
@@ -1008,21 +1008,53 @@ button.peligro:focus-visible {
 
 .paginacion {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
+  gap: 0.75rem 1.25rem;
+  font-variant-numeric: tabular-nums;
 }
 
-.paginacion span {
+.paginacion-cantidad {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--tinta-suave);
+}
+
+.paginacion-cantidad select {
+  width: auto;
+  min-width: 4.5rem;
+}
+
+.paginacion-rango {
   display: flex;
   flex-direction: column;
   align-items: center;
   line-height: 1.3;
-  font-variant-numeric: tabular-nums;
 }
 
 .paginacion small {
   color: var(--tinta-suave);
+}
+
+.paginacion-botones {
+  display: flex;
+  gap: 0.5rem;
+}
+
+@media (max-width: 600px) {
+  .paginacion {
+    justify-content: center;
+  }
+
+  .paginacion-botones {
+    width: 100%;
+  }
+
+  .paginacion-botones button {
+    flex: 1;
+  }
 }
 
 .item-acciones {
@@ -1153,6 +1185,21 @@ button.secundario.peligro:hover:not(:disabled) {
   max-width: 16rem;
 }
 
+.filtros-ordenes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.9rem;
+}
+
+.filtros-ordenes .buscador {
+  flex: 1 1 18rem;
+}
+
+.filtros-ordenes .filtro-estado {
+  flex: 0 1 16rem;
+}
+
 .orden-cancelada {
   display: flex;
   flex-direction: column;
@@ -1273,7 +1320,7 @@ button.secundario.peligro:hover:not(:disabled) {
 .totales-cierre .total {
   padding-top: 0.45rem;
   border-top: 1px solid var(--regla);
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 500;
 }
 
@@ -1302,7 +1349,7 @@ button.secundario.peligro:hover:not(:disabled) {
   align-items: center;
   gap: 0.5rem;
   font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
-  font-size: 18px;
+  font-size: 16px;
   letter-spacing: 0;
   text-transform: none;
   color: var(--tinta);
@@ -1404,7 +1451,7 @@ button.secundario.peligro:hover:not(:disabled) {
 .nueva-orden select,
 .nueva-orden textarea {
   font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 400;
   letter-spacing: 0;
   text-transform: none;
@@ -1591,7 +1638,7 @@ button.opcion:focus-visible {
 .filtro-estado select,
 .filtros-compras input {
   font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 400;
   letter-spacing: 0;
   text-transform: none;
@@ -1636,7 +1683,8 @@ button.opcion:focus-visible {
   border-bottom: 1px solid var(--regla);
 }
 
-.subnav a {
+.subnav a,
+.subnav button {
   padding: 10px 14px;
   color: var(--tinta-suave);
   font-family: 'IBM Plex Mono', ui-monospace, monospace;
@@ -1648,9 +1696,94 @@ button.opcion:focus-visible {
   text-decoration: none;
 }
 
-.subnav a.active {
+.subnav button {
+  min-height: 44px;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+}
+
+.subnav button:hover:not(:disabled) {
+  background: transparent;
+  color: var(--tinta);
+}
+
+.subnav a.active,
+.subnav button.active {
   color: var(--tinta);
   box-shadow: inset 0 -2px 0 var(--tinta);
+}
+
+.tablero-ordenes {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+  align-items: stretch;
+}
+
+.ayuda-tablero {
+  margin: 0;
+}
+
+.columna-tablero {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.columna-tablero-encabezado {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--regla);
+}
+
+.columna-tablero-encabezado h2 {
+  margin: 0;
+}
+
+.columna-tablero-total {
+  color: var(--tinta-suave);
+  font-variant-numeric: tabular-nums;
+}
+
+.tarjeta-tablero {
+  font-size: 16px;
+  text-decoration: none;
+}
+
+.tarjeta-tablero.arrastrable {
+  cursor: grab;
+}
+
+.tarjeta-tablero.arrastrable:active {
+  cursor: grabbing;
+}
+
+.columna-tablero-destino {
+  background: var(--control);
+  box-shadow: inset 0 0 0 1px var(--tinta);
+}
+
+.columna-tablero-encima {
+  box-shadow: inset 0 0 0 2px var(--tinta);
+}
+
+.tablero-ordenes.arrastrando .columna-tablero:not(.columna-tablero-destino) {
+  opacity: 0.6;
+}
+
+.columna-tablero > button {
+  width: 100%;
+}
+
+@media (min-width: 900px) {
+  .tablero-ordenes {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 .filtros-compras {
@@ -2286,28 +2419,6 @@ label.boton-archivo:has(input:disabled) {
   margin: auto 0;
 }
 
-.buscador-con-accion {
-  display: flex;
-  align-items: flex-end;
-  gap: 0.75rem;
-}
-
-.buscador-con-accion .buscador {
-  flex: 1;
-  min-width: 0;
-}
-
-@media (max-width: 600px) {
-  .buscador-con-accion {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .buscador-con-accion .boton-nuevo {
-    justify-content: center;
-  }
-}
-
 .resumen-ordenes {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -2433,4 +2544,354 @@ label.boton-archivo:has(input:disabled) {
 
 .cambio-turno {
   color: var(--tinta-suave);
+}
+
+.tabla-contenedor {
+  overflow-x: auto;
+  background: var(--superficie);
+  border: 1px solid var(--regla);
+}
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.tabla[aria-busy='true'] {
+  opacity: 0.6;
+}
+
+.tabla th {
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid var(--regla);
+  color: var(--tinta-suave);
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0.06em;
+  text-align: left;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.tabla td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--regla);
+  vertical-align: middle;
+}
+
+.tabla tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.tabla strong {
+  font-weight: 500;
+}
+
+.tabla tfoot th,
+.tabla tfoot td {
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--tinta);
+  color: var(--tinta);
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.tabla .barra-frecuencia {
+  margin-top: 0.4rem;
+}
+
+.tabla .fecha {
+  white-space: nowrap;
+}
+
+.tabla .numero {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.tabla .acciones-celda {
+  width: 1%;
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.tabla .secundaria {
+  display: block;
+  color: var(--tinta-suave);
+}
+
+.tabla .sin-dato {
+  color: var(--tinta-suave);
+}
+
+.tabla tr.inactiva td:not(.acciones-celda) {
+  color: var(--tinta-suave);
+}
+
+.tabla td a.enlace-fila {
+  color: var(--tinta);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.tabla td a.enlace-fila:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (hover: hover) {
+  .tabla tbody tr:hover td {
+    background: var(--nota);
+  }
+}
+
+.menu-acciones {
+  display: inline-block;
+}
+
+button.menu-acciones-disparador {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--tinta);
+}
+
+button.menu-acciones-disparador:hover:not(:disabled),
+button.menu-acciones-disparador[aria-expanded='true'] {
+  background: var(--control);
+  border-color: var(--regla);
+}
+
+.menu-acciones-lista {
+  position: fixed;
+  z-index: 150;
+  display: flex;
+  flex-direction: column;
+  min-width: 12rem;
+  padding: 4px 0;
+  background: var(--superficie);
+  border: 1px solid var(--tinta);
+}
+
+.menu-acciones-lista button {
+  min-height: 44px;
+  padding: 0 1rem;
+  border: 0;
+  background: transparent;
+  color: var(--tinta);
+  font-weight: 400;
+  text-align: left;
+  justify-content: flex-start;
+}
+
+.menu-acciones-lista button:hover:not(:disabled),
+.menu-acciones-lista button:focus-visible {
+  background: var(--control);
+}
+
+.menu-acciones-lista button.peligro {
+  color: var(--peligro);
+}
+
+.menu-acciones-lista button.peligro:hover:not(:disabled),
+.menu-acciones-lista button.peligro:focus-visible {
+  background: var(--peligro-fondo);
+}
+
+.estado-vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 2.5rem 1rem;
+  background: var(--superficie);
+  border: 1px solid var(--regla);
+  color: var(--tinta-suave);
+  text-align: center;
+}
+
+.estado-vacio strong {
+  color: var(--tinta);
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.estado-vacio p {
+  margin: 0;
+  max-width: 32rem;
+}
+
+.calendario-turnera {
+  background: var(--superficie);
+  border: 1px solid var(--regla);
+}
+
+.calendario-turnera[aria-busy='true'] {
+  opacity: 0.6;
+}
+
+.calendario-turnera-semana,
+.calendario-turnera-dias {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.calendario-turnera-semana span {
+  padding: 0.5rem 0.6rem;
+  border-bottom: 1px solid var(--regla);
+  color: var(--tinta-suave);
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.calendario-turnera-dias {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.calendario-turnera-dia {
+  min-width: 0;
+  border-right: 1px solid var(--regla);
+  border-bottom: 1px solid var(--regla);
+}
+
+.calendario-turnera-dia:nth-child(7n) {
+  border-right: 0;
+}
+
+.calendario-turnera-dia:nth-last-child(-n + 7) {
+  border-bottom: 0;
+}
+
+.calendario-turnera-dia > a {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  height: 100%;
+  min-height: 7rem;
+  padding: 0.5rem 0.6rem;
+  color: var(--tinta);
+  text-decoration: none;
+}
+
+@media (hover: hover) {
+  .calendario-turnera-dia > a:hover {
+    background: var(--nota);
+  }
+}
+
+.calendario-turnera-dia.fuera-de-mes > a {
+  color: var(--tinta-suave);
+  background: var(--papel);
+}
+
+.calendario-turnera-dia.hoy > a {
+  box-shadow: inset 0 2px 0 var(--tinta);
+}
+
+.calendario-turnera-dia.excedido > a {
+  box-shadow: inset 0 2px 0 var(--peligro);
+}
+
+.calendario-turnera-encabezado {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.25rem;
+}
+
+.calendario-turnera-numero {
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.calendario-turnera-dia.hoy .calendario-turnera-numero {
+  padding: 0 0.3rem;
+  background: var(--tinta);
+  color: var(--superficie);
+}
+
+.calendario-turnera-cupo {
+  color: var(--tinta-suave);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.calendario-turnera-dia.excedido .calendario-turnera-cupo {
+  color: var(--peligro);
+  font-weight: 500;
+}
+
+.calendario-turnera-turnos {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.calendario-turno {
+  overflow: hidden;
+  padding: 0 0.3rem;
+  border: 1px solid var(--regla);
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 12px;
+  line-height: 18px;
+  letter-spacing: 0.04em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calendario-turno-ingresado {
+  background: var(--tinta);
+  border-color: var(--tinta);
+  color: var(--superficie);
+}
+
+.calendario-turno-listo_para_retirar {
+  background: var(--ambar);
+  border-color: var(--ambar);
+  color: var(--tinta);
+}
+
+.calendario-turno-mas {
+  color: var(--tinta-suave);
+  font-size: 13px;
+}
+
+@media (max-width: 600px) {
+  .calendario-turnera-semana span {
+    padding: 0.4rem 0.2rem;
+    text-align: center;
+  }
+
+  .calendario-turnera-dia > a {
+    min-height: 3.5rem;
+    padding: 0.35rem 0.2rem;
+    align-items: center;
+  }
+
+  .calendario-turnera-encabezado {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .calendario-turnera-turnos {
+    display: none;
+  }
 }

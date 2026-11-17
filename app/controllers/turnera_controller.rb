@@ -2,10 +2,11 @@ class TurneraController < ApplicationController
   before_action :require_administrador!
 
   def show
-    resultado = TurneraArmar.call(fecha: params[:fecha])
+    resultado = TurneraArmar.call(fecha: params[:fecha], periodo: params[:periodo])
     return render json: { errors: resultado.errors }, status: :unprocessable_content if resultado.invalid?
 
     render json: {
+      periodo: resultado.periodo,
       desde: resultado.desde,
       hasta: resultado.hasta,
       cupo_diario: resultado.cupo_diario,

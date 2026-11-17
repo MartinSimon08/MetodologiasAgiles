@@ -2,15 +2,21 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { BotonNuevo } from '../../components/BotonNuevo'
+import { Buscador } from '../../components/Buscador'
 import { EncabezadoPagina } from '../../components/EncabezadoPagina'
 import { Paginacion } from '../../components/Paginacion'
 import { errorMessage } from '../../lib/api'
 import { fechaHora } from '../../lib/formato'
+import { useDebounce } from '../../lib/useDebounce'
 import { useAuth } from '../auth/AuthContext'
 import { listarOrdenes } from './api'
 import { NuevaOrdenForm } from './NuevaOrdenForm'
+import { TableroOrdenes } from './TableroOrdenes'
 import { describirVehiculo, ESTADO_ORDEN_LABELS, type EstadoOrden } from './types'
 import { Cargando } from '../../components/Cargando'
+import { EstadoVacio } from '../../components/EstadoVacio'
+import { Tabla } from '../../components/Tabla'
+import { usePorPagina } from '../../lib/paginacion'
 
 const ESTADOS = Object.keys(ESTADO_ORDEN_LABELS) as EstadoOrden[]
 
@@ -20,23 +26,32 @@ export function OrdenesPage() {
   const [abriendo, setAbriendo] = useState(false)
   const [searchParams, setSearchParams] = useSearchParams()
   const pagina = Math.max(1, Number(searchParams.get('pagina')) || 1)
+  const [porPagina, setPorPagina] = usePorPagina()
   const estado = ESTADOS.find((valor) => valor === searchParams.get('estado'))
+  const busqueda = searchParams.get('q') ?? ''
+  const q = useDebounce(busqueda.trim())
+  const enTablero = searchParams.get('vista') === 'tablero'
 
   const ordenes = useQuery({
-    queryKey: ['ordenes', pagina, estado ?? 'todas'],
-    queryFn: () => listarOrdenes(pagina, estado),
+    queryKey: ['ordenes', pagina, estado ?? 'todas', q, porPagina],
+    queryFn: () => listarOrdenes(pagina, estado, q, porPagina),
     placeholderData: keepPreviousData,
+    enabled: !enTablero,
   })
 
-  function navegar(nuevaPagina: number, nuevoEstado: EstadoOrden | undefined) {
-    setSearchParams({
-      ...(nuevoEstado ? { estado: nuevoEstado } : {}),
-      ...(nuevaPagina === 1 ? {} : { pagina: String(nuevaPagina) }),
-    })
+  function navegar(nuevaPagina: number, nuevoEstado: EstadoOrden | undefined, nuevaBusqueda: string) {
+    setSearchParams(
+      {
+        ...(nuevaBusqueda ? { q: nuevaBusqueda } : {}),
+        ...(nuevoEstado ? { estado: nuevoEstado } : {}),
+        ...(nuevaPagina === 1 ? {} : { pagina: String(nuevaPagina) }),
+      },
+      { replace: true },
+    )
   }
 
   function irAPagina(nueva: number) {
-    navegar(nueva, estado)
+    navegar(nueva, estado, busqueda)
     window.scrollTo({ top: 0 })
   }
 
@@ -55,51 +70,131 @@ export function OrdenesPage() {
         />
       )}
 
-      <label className="filtro-estado">
-        <span>Estado</span>
-        <select
-          value={estado ?? ''}
-          onChange={(e) => navegar(1, ESTADOS.find((valor) => valor === e.target.value))}
+      <nav className="subnav" aria-label="Vista de órdenes">
+        <button
+          type="button"
+          className={enTablero ? undefined : 'active'}
+          aria-pressed={!enTablero}
+          onClick={() => setSearchParams({})}
         >
-          <option value="">Todas</option>
-          {ESTADOS.map((valor) => (
-            <option key={valor} value={valor}>
-              {ESTADO_ORDEN_LABELS[valor]}
-            </option>
-          ))}
-        </select>
-      </label>
+          Lista
+        </button>
+        <button
+          type="button"
+          className={enTablero ? 'active' : undefined}
+          aria-pressed={enTablero}
+          onClick={() => setSearchParams({ vista: 'tablero' })}
+        >
+          Tablero
+        </button>
+      </nav>
 
-      {ordenes.isPending && <Cargando />}
-      {ordenes.isError && (
-        <p className="error" role="alert">
-          {errorMessage(ordenes.error, 'No se pudieron cargar las órdenes.')}
-        </p>
-      )}
+      {enTablero ? (
+        <TableroOrdenes />
+      ) : (
+        <>
+          <div className="filtros-ordenes">
+            <Buscador
+              etiqueta="Buscar orden"
+              placeholder="Cliente, teléfono, patente, marca o modelo"
+              valor={busqueda}
+              onCambiar={(valor) => navegar(1, estado, valor)}
+            />
+            <label className="filtro-estado">
+              <span>Estado</span>
+              <select
+                value={estado ?? ''}
+                onChange={(e) =>
+                  navegar(
+                    1,
+                    ESTADOS.find((valor) => valor === e.target.value),
+                    busqueda,
+                  )
+                }
+              >
+                <option value="">Todas</option>
+                {ESTADOS.map((valor) => (
+                  <option key={valor} value={valor}>
+                    {ESTADO_ORDEN_LABELS[valor]}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
 
-      {ordenes.data && ordenes.data.ordenes.length === 0 && (
-        <p className="estado">{estado ? 'No hay órdenes en ese estado.' : 'Todavía no hay órdenes cargadas.'}</p>
-      )}
+          {ordenes.isPending && <Cargando />}
+          {ordenes.isError && (
+            <p className="error" role="alert">
+              {errorMessage(ordenes.error, 'No se pudieron cargar las órdenes.')}
+            </p>
+          )}
 
-      {ordenes.data && (
-        <ul className="lista" aria-busy={ordenes.isPlaceholderData}>
-          {ordenes.data.ordenes.map((orden) => (
-            <li key={orden.id} className="tarjeta fila-item">
-              <Link to={`/ordenes/${orden.id}`} className="item-datos">
-                <strong>{orden.cliente.nombre}</strong>
-                <span>{describirVehiculo(orden.vehiculo)}</span>
-                <span>Ingreso: {fechaHora(orden.created_at)}</span>
-              </Link>
-              <span className={`insignia insignia-${orden.estado}`}>
-                {ESTADO_ORDEN_LABELS[orden.estado]}
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
+          {ordenes.data &&
+            ordenes.data.ordenes.length === 0 &&
+            (q || estado ? (
+              <EstadoVacio
+                busqueda
+                titulo="Sin resultados"
+                descripcion={[
+                  'No hay órdenes',
+                  q && `que coincidan con “${q}”`,
+                  estado && `en estado ${ESTADO_ORDEN_LABELS[estado].toLowerCase()}`,
+                ]
+                  .filter(Boolean)
+                  .join(' ')
+                  .concat('.')}
+              />
+            ) : (
+              <EstadoVacio
+                titulo="Todavía no hay órdenes"
+                descripcion="Cuando ingrese un vehículo al taller, abrí una orden para cargarle tareas y repuestos."
+              />
+            ))}
 
-      {ordenes.data && (
-        <Paginacion meta={ordenes.data.meta} cargando={ordenes.isPlaceholderData} onCambiar={irAPagina} />
+          {ordenes.data && ordenes.data.ordenes.length > 0 && (
+            <Tabla etiqueta="Órdenes" ocupada={ordenes.isPlaceholderData}>
+              <thead>
+                <tr>
+                  <th scope="col">Cliente</th>
+                  <th scope="col">Vehículo</th>
+                  <th scope="col">Ingreso</th>
+                  <th scope="col">Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {ordenes.data.ordenes.map((orden) => (
+                  <tr key={orden.id}>
+                    <td>
+                      <Link to={`/ordenes/${orden.id}`} className="enlace-fila">
+                        {orden.cliente.nombre}
+                      </Link>
+                    </td>
+                    <td>{describirVehiculo(orden.vehiculo)}</td>
+                    <td className="fecha">{fechaHora(orden.created_at)}</td>
+                    <td>
+                      <span className={`insignia insignia-${orden.estado}`}>
+                        {ESTADO_ORDEN_LABELS[orden.estado]}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Tabla>
+          )}
+
+          {ordenes.data && (
+            <Paginacion
+              meta={ordenes.data.meta}
+              cargando={ordenes.isPlaceholderData}
+              onCambiar={irAPagina}
+              porPagina={porPagina}
+              onCambiarPorPagina={(valor) => {
+                setPorPagina(valor)
+                irAPagina(1)
+              }}
+            />
+          )}
+        </>
       )}
     </section>
   )

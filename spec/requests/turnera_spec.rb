@@ -19,7 +19,8 @@ RSpec.describe "Turnera", type: :request do
 
       expect(response).to have_http_status(:ok)
       cuerpo = response.parsed_body
-      expect(cuerpo).to include("desde" => "2026-11-09", "hasta" => "2026-11-15", "cupo_diario" => 1)
+      expect(cuerpo).to include("periodo" => "semana", "desde" => "2026-11-09", "hasta" => "2026-11-15",
+                                "cupo_diario" => 1)
       expect(cuerpo["dias"].map { |dia| dia["fecha"] }).to eq((lunes..lunes + 6.days).map(&:iso8601))
       expect(cuerpo["dias"].first).to include("fecha" => "2026-11-09", "ingresos" => 2, "supera_cupo" => true)
       expect(cuerpo["dias"].first["turnos"].first).to eq(
@@ -29,6 +30,25 @@ RSpec.describe "Turnera", type: :request do
         "vehiculo" => { "id" => vehiculo.id, "patente" => "AB123CD", "marca" => vehiculo.marca, "modelo" => vehiculo.modelo }
       )
       expect(cuerpo["dias"].second).to include("ingresos" => 0, "supera_cupo" => false, "turnos" => [])
+    end
+
+    it "devuelve el mes completo cuando se pide el período mes" do
+      create(:caso, fecha_turno: Date.new(2026, 11, 20))
+
+      get "/turnera", params: { fecha: "2026-11-12", periodo: "mes" }, headers: auth_headers(admin)
+
+      expect(response).to have_http_status(:ok)
+      cuerpo = response.parsed_body
+      expect(cuerpo).to include("periodo" => "mes", "desde" => "2026-10-26", "hasta" => "2026-12-06")
+      expect(cuerpo["dias"].size).to eq(42)
+      expect(cuerpo["dias"].find { |dia| dia["fecha"] == "2026-11-20" }["ingresos"]).to eq(1)
+    end
+
+    it "devuelve errores de campo para un período inválido" do
+      get "/turnera", params: { periodo: "anio" }, headers: auth_headers(admin)
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body["errors"]).to eq("periodo" => [ "no es un período válido" ])
     end
 
     it "devuelve errores de campo para una fecha inválida" do

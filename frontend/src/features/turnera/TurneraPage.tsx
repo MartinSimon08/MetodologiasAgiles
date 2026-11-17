@@ -6,33 +6,9 @@ import { EncabezadoPagina } from '../../components/EncabezadoPagina'
 import { errorMessage } from '../../lib/api'
 import { fechaCorta as fechaTurno } from '../casos/api'
 import { TurnoForm } from '../casos/TurnoForm'
-import { ESTADO_TURNO_LABELS, obtenerTurnera, type DiaTurnera } from './api'
-
-function desdeIso(iso: string) {
-  const [anio, mes, dia] = iso.split('-').map(Number)
-  return new Date(anio, mes - 1, dia)
-}
-
-function aIso(fecha: Date) {
-  const mes = String(fecha.getMonth() + 1).padStart(2, '0')
-  const dia = String(fecha.getDate()).padStart(2, '0')
-  return `${fecha.getFullYear()}-${mes}-${dia}`
-}
-
-function sumarDias(iso: string, dias: number) {
-  const fecha = desdeIso(iso)
-  fecha.setDate(fecha.getDate() + dias)
-  return aIso(fecha)
-}
-
-function nombreDia(iso: string) {
-  const texto = desdeIso(iso).toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })
-  return texto.charAt(0).toUpperCase() + texto.slice(1)
-}
-
-function fechaCorta(iso: string) {
-  return desdeIso(iso).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })
-}
+import { ESTADO_TURNO_LABELS, obtenerTurnera, type DiaTurnera, type PeriodoTurnera } from './api'
+import { CalendarioTurnera } from './CalendarioTurnera'
+import { aIso, fechaCorta, mismoMes, nombreDia, nombreMes, primerDiaDelMes, sumarDias } from './fechas'
 
 interface DiaTurneraProps {
   dia: DiaTurnera
@@ -112,29 +88,78 @@ function DiaTurneraTarjeta({ dia, cupo, esHoy, reprogramandoId, onReprogramar, o
 export function TurneraPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const fecha = searchParams.get('fecha') ?? undefined
+  const periodo: PeriodoTurnera = searchParams.get('vista') === 'mes' ? 'mes' : 'semana'
   const hoy = aIso(new Date())
+  const referencia = fecha ?? hoy
   const [reprogramandoId, setReprogramandoId] = useState<number | null>(null)
   const [aviso, setAviso] = useState<string | null>(null)
 
   const turnera = useQuery({
-    queryKey: ['turnera', fecha ?? 'actual'],
-    queryFn: () => obtenerTurnera(fecha),
+    queryKey: ['turnera', periodo, fecha ?? 'actual'],
+    queryFn: () => obtenerTurnera(fecha, periodo),
     placeholderData: keepPreviousData,
   })
 
-  function irA(nuevaFecha: string | null) {
-    setSearchParams(nuevaFecha ? { fecha: nuevaFecha } : {}, { replace: true })
+  function parametros(nuevoPeriodo: PeriodoTurnera, nuevaFecha: string | null) {
+    const params = new URLSearchParams()
+    if (nuevoPeriodo === 'mes') params.set('vista', 'mes')
+    if (nuevaFecha) params.set('fecha', nuevaFecha)
+    return params
   }
 
-  const semana = turnera.data
+  function irA(nuevaFecha: string | null) {
+    setSearchParams(parametros(periodo, nuevaFecha), { replace: true })
+  }
+
+  const datos = turnera.data?.periodo === periodo ? turnera.data : undefined
+  const semana = periodo === 'semana' ? datos : undefined
+  const mes = periodo === 'mes' ? datos : undefined
   const esSemanaActual = semana ? semana.desde <= hoy && hoy <= semana.hasta : true
 
   return (
     <section className="turnera">
       <EncabezadoPagina
         titulo="Turnera"
-        bajada="Casos con turno de la semana, agrupados por día, contra el cupo diario de ingresos."
+        bajada="Casos con turno agrupados por día, contra el cupo diario de ingresos."
       />
+
+      <nav className="subnav" aria-label="Vista de la turnera">
+        <Link
+          to={`?${parametros('semana', fecha ?? null)}`}
+          className={periodo === 'semana' ? 'active' : undefined}
+          aria-current={periodo === 'semana' ? 'page' : undefined}
+        >
+          Semana
+        </Link>
+        <Link
+          to={`?${parametros('mes', fecha ?? null)}`}
+          className={periodo === 'mes' ? 'active' : undefined}
+          aria-current={periodo === 'mes' ? 'page' : undefined}
+        >
+          Calendario
+        </Link>
+      </nav>
+
+      {mes && (
+        <nav className="turnera-semana" aria-label="Mes">
+          <strong>
+            {nombreMes(referencia)} · Cupo diario {mes.cupo_diario}
+          </strong>
+          <div className="acciones">
+            <button type="button" className="secundario" onClick={() => irA(primerDiaDelMes(referencia, -1))}>
+              Mes anterior
+            </button>
+            {!mismoMes(referencia, hoy) && (
+              <button type="button" className="secundario" onClick={() => irA(null)}>
+                Este mes
+              </button>
+            )}
+            <button type="button" className="secundario" onClick={() => irA(primerDiaDelMes(referencia, 1))}>
+              Mes siguiente
+            </button>
+          </div>
+        </nav>
+      )}
 
       {semana && (
         <nav className="turnera-semana" aria-label="Semana">
@@ -163,11 +188,21 @@ export function TurneraPage() {
         </p>
       )}
 
-      {turnera.isPending && <Cargando />}
+      {!datos && !turnera.isError && <Cargando />}
       {turnera.isError && (
         <p className="error" role="alert">
           {errorMessage(turnera.error, 'No se pudo cargar la turnera.')}
         </p>
+      )}
+
+      {mes && (
+        <CalendarioTurnera
+          dias={mes.dias}
+          cupo={mes.cupo_diario}
+          mes={referencia}
+          hoy={hoy}
+          ocupado={turnera.isPlaceholderData}
+        />
       )}
 
       {semana && (

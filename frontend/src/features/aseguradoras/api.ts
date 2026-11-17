@@ -21,9 +21,9 @@ export interface PaginaAseguradoras {
   meta: MetaPaginacion
 }
 
-export async function listarAseguradoras(buscar: string, pagina: number, soloActivas = false) {
+export async function listarAseguradoras(buscar: string, pagina: number, soloActivas = false, porPagina?: number) {
   const { data } = await api.get<PaginaAseguradoras>('/aseguradoras', {
-    params: { buscar: buscar || undefined, pagina, solo_activas: soloActivas || undefined },
+    params: { buscar: buscar || undefined, pagina, solo_activas: soloActivas || undefined, por_pagina: porPagina },
   })
   return data
 }

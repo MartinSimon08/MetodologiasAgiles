@@ -31,11 +31,11 @@ export function ReporteMargenRepuestosPage() {
 
   return (
     <section className="reportes">
-      <ReportesNav />
       <EncabezadoPagina
         titulo="Margen de repuestos"
         bajada="Diferencia entre el precio de venta y el costo de compra de los repuestos de las órdenes abiertas en el período."
       />
+      <ReportesNav />
 
       <form className="filtros-compras" onSubmit={(event) => event.preventDefault()}>
         <label>

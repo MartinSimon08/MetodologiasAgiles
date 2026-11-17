@@ -4,7 +4,7 @@ class TareasFrecuentesController < ApplicationController
   before_action :require_administrador!
 
   def index
-    tareas_frecuentes, meta = paginar(TareaFrecuente.order(:descripcion, :id))
+    tareas_frecuentes, meta = paginar(TareaFrecuente.buscar(params[:q]).order(:descripcion, :id))
     render json: { tareas_frecuentes: tareas_frecuentes.map { |tarea_frecuente| serialize(tarea_frecuente) }, meta: meta }
   end
 

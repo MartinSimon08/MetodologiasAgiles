@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { BotonNuevo } from '../../components/BotonNuevo'
 import { EncabezadoPagina } from '../../components/EncabezadoPagina'
@@ -7,14 +7,26 @@ import { importe } from '../../lib/formato'
 import { listarTareasFrecuentes } from './api'
 import { NuevaTareaFrecuenteForm } from './NuevaTareaFrecuenteForm'
 import { Cargando } from '../../components/Cargando'
+import { EstadoVacio } from '../../components/EstadoVacio'
+import { Tabla } from '../../components/Tabla'
+import { Buscador } from '../../components/Buscador'
+import { Paginacion } from '../../components/Paginacion'
+import { usePorPagina } from '../../lib/paginacion'
+import { useDebounce } from '../../lib/useDebounce'
 
 export function TareasFrecuentesPage() {
   const [creando, setCreando] = useState(false)
   const [aviso, setAviso] = useState<string | null>(null)
 
+  const [busqueda, setBusqueda] = useState('')
+  const [pagina, setPagina] = useState(1)
+  const [porPagina, setPorPagina] = usePorPagina()
+  const q = useDebounce(busqueda.trim())
+
   const tareasFrecuentes = useQuery({
-    queryKey: ['tareas-frecuentes'],
-    queryFn: () => listarTareasFrecuentes(),
+    queryKey: ['tareas-frecuentes', 'pagina', pagina, porPagina, q],
+    queryFn: () => listarTareasFrecuentes(pagina, porPagina, q),
+    placeholderData: keepPreviousData,
   })
 
   return (
@@ -51,6 +63,16 @@ export function TareasFrecuentesPage() {
         />
       )}
 
+      <Buscador
+        etiqueta="Buscar tarea frecuente"
+        placeholder="Descripción de la tarea"
+        valor={busqueda}
+        onCambiar={(valor) => {
+          setBusqueda(valor)
+          setPagina(1)
+        }}
+      />
+
       {tareasFrecuentes.isPending && <Cargando />}
       {tareasFrecuentes.isError && (
         <p className="error" role="alert">
@@ -58,21 +80,49 @@ export function TareasFrecuentesPage() {
         </p>
       )}
 
-      {tareasFrecuentes.data?.tareas_frecuentes.length === 0 && (
-        <p className="estado">Todavía no hay tareas frecuentes cargadas.</p>
+      {tareasFrecuentes.data?.tareas_frecuentes.length === 0 && q && (
+        <EstadoVacio busqueda titulo="Sin resultados" descripcion={`No hay tareas frecuentes que coincidan con “${q}”.`} />
+      )}
+
+      {tareasFrecuentes.data?.tareas_frecuentes.length === 0 && !q && (
+        <EstadoVacio
+          titulo="Todavía no hay tareas frecuentes"
+          descripcion="Cargá los trabajos habituales con su precio sugerido para agregarlos rápido a las órdenes."
+        />
       )}
 
       {tareasFrecuentes.data && tareasFrecuentes.data.tareas_frecuentes.length > 0 && (
-        <ul className="lista">
-          {tareasFrecuentes.data.tareas_frecuentes.map((tareaFrecuente) => (
-            <li key={tareaFrecuente.id} className="tarjeta fila-item">
-              <div className="item-datos">
-                <strong>{tareaFrecuente.descripcion}</strong>
-              </div>
-              <span>$ {importe(tareaFrecuente.precio_sugerido)}</span>
-            </li>
-          ))}
-        </ul>
+        <Tabla etiqueta="Tareas frecuentes" ocupada={tareasFrecuentes.isPlaceholderData}>
+          <thead>
+            <tr>
+              <th scope="col">Descripción</th>
+              <th scope="col" className="numero">
+                Precio sugerido
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {tareasFrecuentes.data.tareas_frecuentes.map((tareaFrecuente) => (
+              <tr key={tareaFrecuente.id}>
+                <td>{tareaFrecuente.descripcion}</td>
+                <td className="numero">$ {importe(tareaFrecuente.precio_sugerido)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </Tabla>
+      )}
+
+      {tareasFrecuentes.data && (
+        <Paginacion
+          meta={tareasFrecuentes.data.meta}
+          cargando={tareasFrecuentes.isPlaceholderData}
+          onCambiar={setPagina}
+          porPagina={porPagina}
+          onCambiarPorPagina={(valor) => {
+            setPorPagina(valor)
+            setPagina(1)
+          }}
+        />
       )}
     </section>
   )

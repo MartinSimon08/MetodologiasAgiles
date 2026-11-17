@@ -11,6 +11,7 @@ import { useDebounce } from '../../lib/useDebounce'
 import { useAuth } from '../auth/AuthContext'
 import { listarOrdenes } from './api'
 import { NuevaOrdenForm } from './NuevaOrdenForm'
+import { TableroOrdenes } from './TableroOrdenes'
 import { describirVehiculo, ESTADO_ORDEN_LABELS, type EstadoOrden } from './types'
 import { Cargando } from '../../components/Cargando'
 import { EstadoVacio } from '../../components/EstadoVacio'
@@ -29,11 +30,13 @@ export function OrdenesPage() {
   const estado = ESTADOS.find((valor) => valor === searchParams.get('estado'))
   const busqueda = searchParams.get('q') ?? ''
   const q = useDebounce(busqueda.trim())
+  const enTablero = searchParams.get('vista') === 'tablero'
 
   const ordenes = useQuery({
     queryKey: ['ordenes', pagina, estado ?? 'todas', q, porPagina],
     queryFn: () => listarOrdenes(pagina, estado, q, porPagina),
     placeholderData: keepPreviousData,
+    enabled: !enTablero,
   })
 
   function navegar(nuevaPagina: number, nuevoEstado: EstadoOrden | undefined, nuevaBusqueda: string) {
@@ -67,103 +70,131 @@ export function OrdenesPage() {
         />
       )}
 
-      <div className="filtros-ordenes">
-        <Buscador
-          etiqueta="Buscar orden"
-          placeholder="Cliente, teléfono, patente, marca o modelo"
-          valor={busqueda}
-          onCambiar={(valor) => navegar(1, estado, valor)}
-        />
-        <label className="filtro-estado">
-          <span>Estado</span>
-          <select
-            value={estado ?? ''}
-            onChange={(e) =>
-              navegar(
-                1,
-                ESTADOS.find((valor) => valor === e.target.value),
-                busqueda,
-              )
-            }
-          >
-            <option value="">Todas</option>
-            {ESTADOS.map((valor) => (
-              <option key={valor} value={valor}>
-                {ESTADO_ORDEN_LABELS[valor]}
-              </option>
+      <nav className="subnav" aria-label="Vista de órdenes">
+        <button
+          type="button"
+          className={enTablero ? undefined : 'active'}
+          aria-pressed={!enTablero}
+          onClick={() => setSearchParams({})}
+        >
+          Lista
+        </button>
+        <button
+          type="button"
+          className={enTablero ? 'active' : undefined}
+          aria-pressed={enTablero}
+          onClick={() => setSearchParams({ vista: 'tablero' })}
+        >
+          Tablero
+        </button>
+      </nav>
+
+      {enTablero ? (
+        <TableroOrdenes />
+      ) : (
+        <>
+          <div className="filtros-ordenes">
+            <Buscador
+              etiqueta="Buscar orden"
+              placeholder="Cliente, teléfono, patente, marca o modelo"
+              valor={busqueda}
+              onCambiar={(valor) => navegar(1, estado, valor)}
+            />
+            <label className="filtro-estado">
+              <span>Estado</span>
+              <select
+                value={estado ?? ''}
+                onChange={(e) =>
+                  navegar(
+                    1,
+                    ESTADOS.find((valor) => valor === e.target.value),
+                    busqueda,
+                  )
+                }
+              >
+                <option value="">Todas</option>
+                {ESTADOS.map((valor) => (
+                  <option key={valor} value={valor}>
+                    {ESTADO_ORDEN_LABELS[valor]}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+
+          {ordenes.isPending && <Cargando />}
+          {ordenes.isError && (
+            <p className="error" role="alert">
+              {errorMessage(ordenes.error, 'No se pudieron cargar las órdenes.')}
+            </p>
+          )}
+
+          {ordenes.data &&
+            ordenes.data.ordenes.length === 0 &&
+            (q || estado ? (
+              <EstadoVacio
+                busqueda
+                titulo="Sin resultados"
+                descripcion={[
+                  'No hay órdenes',
+                  q && `que coincidan con “${q}”`,
+                  estado && `en estado ${ESTADO_ORDEN_LABELS[estado].toLowerCase()}`,
+                ]
+                  .filter(Boolean)
+                  .join(' ')
+                  .concat('.')}
+              />
+            ) : (
+              <EstadoVacio
+                titulo="Todavía no hay órdenes"
+                descripcion="Cuando ingrese un vehículo al taller, abrí una orden para cargarle tareas y repuestos."
+              />
             ))}
-          </select>
-        </label>
-      </div>
 
-      {ordenes.isPending && <Cargando />}
-      {ordenes.isError && (
-        <p className="error" role="alert">
-          {errorMessage(ordenes.error, 'No se pudieron cargar las órdenes.')}
-        </p>
-      )}
+          {ordenes.data && ordenes.data.ordenes.length > 0 && (
+            <Tabla etiqueta="Órdenes" ocupada={ordenes.isPlaceholderData}>
+              <thead>
+                <tr>
+                  <th scope="col">Cliente</th>
+                  <th scope="col">Vehículo</th>
+                  <th scope="col">Ingreso</th>
+                  <th scope="col">Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {ordenes.data.ordenes.map((orden) => (
+                  <tr key={orden.id}>
+                    <td>
+                      <Link to={`/ordenes/${orden.id}`} className="enlace-fila">
+                        {orden.cliente.nombre}
+                      </Link>
+                    </td>
+                    <td>{describirVehiculo(orden.vehiculo)}</td>
+                    <td className="fecha">{fechaHora(orden.created_at)}</td>
+                    <td>
+                      <span className={`insignia insignia-${orden.estado}`}>
+                        {ESTADO_ORDEN_LABELS[orden.estado]}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Tabla>
+          )}
 
-      {ordenes.data && ordenes.data.ordenes.length === 0 &&
-        (q || estado ? (
-          <EstadoVacio
-            busqueda
-            titulo="Sin resultados"
-            descripcion={[
-              'No hay órdenes',
-              q && `que coincidan con “${q}”`,
-              estado && `en estado ${ESTADO_ORDEN_LABELS[estado].toLowerCase()}`,
-            ]
-              .filter(Boolean)
-              .join(' ')
-              .concat('.')}
-          />
-        ) : (
-          <EstadoVacio
-            titulo="Todavía no hay órdenes"
-            descripcion="Cuando ingrese un vehículo al taller, abrí una orden para cargarle tareas y repuestos."
-          />
-        ))}
-
-      {ordenes.data && ordenes.data.ordenes.length > 0 && (
-        <Tabla etiqueta="Órdenes" ocupada={ordenes.isPlaceholderData}>
-          <thead>
-            <tr>
-              <th scope="col">Cliente</th>
-              <th scope="col">Vehículo</th>
-              <th scope="col">Ingreso</th>
-              <th scope="col">Estado</th>
-            </tr>
-          </thead>
-          <tbody>
-            {ordenes.data.ordenes.map((orden) => (
-              <tr key={orden.id}>
-                <td>
-                  <Link to={`/ordenes/${orden.id}`} className="enlace-fila">
-                    {orden.cliente.nombre}
-                  </Link>
-                </td>
-                <td>{describirVehiculo(orden.vehiculo)}</td>
-                <td className="fecha">{fechaHora(orden.created_at)}</td>
-                <td>
-                  <span className={`insignia insignia-${orden.estado}`}>{ESTADO_ORDEN_LABELS[orden.estado]}</span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </Tabla>
-      )}
-
-      {ordenes.data && (
-        <Paginacion
-          meta={ordenes.data.meta}
-          cargando={ordenes.isPlaceholderData}
-          onCambiar={irAPagina}
-          porPagina={porPagina}
-          onCambiarPorPagina={(valor) => {
-            setPorPagina(valor)
-            irAPagina(1)
-          }}
-        />
+          {ordenes.data && (
+            <Paginacion
+              meta={ordenes.data.meta}
+              cargando={ordenes.isPlaceholderData}
+              onCambiar={irAPagina}
+              porPagina={porPagina}
+              onCambiarPorPagina={(valor) => {
+                setPorPagina(valor)
+                irAPagina(1)
+              }}
+            />
+          )}
+        </>
       )}
     </section>
   )

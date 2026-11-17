@@ -11,6 +11,8 @@ import type { Orden, ResumenCierre } from './types'
 
 interface Props {
   orden: Orden
+  iniciarRevision?: boolean
+  onTerminar?: () => void
 }
 
 function plural(cantidad: number, singular: string, varias: string) {
@@ -139,11 +141,11 @@ function OrdenCerrada({ orden, esAdministrador }: { orden: Orden; esAdministrado
   )
 }
 
-export function CerrarOrden({ orden }: Props) {
+export function CerrarOrden({ orden, iniciarRevision = false, onTerminar }: Props) {
   const { usuario } = useAuth()
   const queryClient = useQueryClient()
   const esAdministrador = usuario?.rol === 'administrador'
-  const [revisando, setRevisando] = useState(false)
+  const [revisando, setRevisando] = useState(iniciarRevision)
   const [descartar, setDescartar] = useState(false)
   const [franquicia, setFranquicia] = useState('')
 
@@ -165,6 +167,7 @@ export function CerrarOrden({ orden }: Props) {
       queryClient.invalidateQueries({ queryKey: ['repuestos', orden.id] })
       queryClient.invalidateQueries({ queryKey: ['adelantos', orden.id] })
       queryClient.invalidateQueries({ queryKey: ['resumen-cierre', orden.id] })
+      onTerminar?.()
     },
     onError: () => resumen.refetch(),
   })
@@ -291,7 +294,14 @@ export function CerrarOrden({ orden }: Props) {
       )}
 
       <div className="acciones">
-        <button type="button" className="secundario" onClick={() => setRevisando(false)}>
+        <button
+          type="button"
+          className="secundario"
+          onClick={() => {
+            setRevisando(false)
+            onTerminar?.()
+          }}
+        >
           Volver
         </button>
         <button type="button" disabled={!puedeCerrar || mutation.isPending} onClick={() => mutation.mutate()}>

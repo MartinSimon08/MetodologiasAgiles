@@ -44,6 +44,8 @@ class AseguradorasController < ApplicationController
   end
 
   def serialize(aseguradora)
-    aseguradora.as_json(only: %i[id nombre telefono email activa created_at])
+    aseguradora.as_json(only: %i[id nombre telefono email activa created_at]).merge(
+      "telegram_vinculada" => aseguradora.telegram_vinculada?
+    )
   end
 end

@@ -1,39 +1,42 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { errorMessage } from '../../lib/api'
-import { fechaHora, importe } from '../../lib/formato'
+import { fechaHora } from '../../lib/formato'
 import { enviarPresupuesto } from './api'
 import type { Presupuesto } from './types'
 
-type Medio = 'email' | 'whatsapp'
+// type Medio = 'email' | 'whatsapp'
+type Medio = 'email' | 'telegram'
 
 const MEDIO_LABELS: Record<Medio, string> = {
   email: 'Email',
-  whatsapp: 'WhatsApp',
+  // whatsapp: 'WhatsApp',
+  telegram: 'Telegram',
 }
 
-function soloDigitos(valor: string) {
-  return valor.replace(/\D/g, '')
-}
-
-function componerMensaje(presupuesto: Presupuesto) {
-  const lineas = [`Presupuesto de la orden #${presupuesto.orden_id}`]
-  if (presupuesto.caso) lineas.push(`Siniestro ${presupuesto.caso.numero_siniestro}`)
-  lineas.push(`Total para la aseguradora: $ ${importe(presupuesto.total_aseguradora)}`)
-  return lineas.join('\n')
-}
-
-function componerEnlace(
-  medio: Medio,
-  aseguradora: NonNullable<Presupuesto['aseguradora']>,
-  mensaje: string,
-  ordenId: number,
-) {
-  if (medio === 'email') {
-    const asunto = `Presupuesto orden #${ordenId}`
-    return `mailto:${aseguradora.email}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(mensaje)}`
-  }
-  return `https://wa.me/${soloDigitos(aseguradora.telefono ?? '')}?text=${encodeURIComponent(mensaje)}`
-}
+// function soloDigitos(valor: string) {
+//   return valor.replace(/\D/g, '')
+// }
+//
+// function componerMensaje(presupuesto: Presupuesto) {
+//   const lineas = [`Presupuesto de la orden #${presupuesto.orden_id}`]
+//   if (presupuesto.caso) lineas.push(`Siniestro ${presupuesto.caso.numero_siniestro}`)
+//   lineas.push(`Total para la aseguradora: $ ${importe(presupuesto.total_aseguradora)}`)
+//   return lineas.join('\n')
+// }
+//
+// function componerEnlace(
+//   medio: Medio,
+//   aseguradora: NonNullable<Presupuesto['aseguradora']>,
+//   mensaje: string,
+//   ordenId: number,
+// ): string | null {
+//   if (medio === 'email') {
+//     const asunto = `Presupuesto orden #${ordenId}`
+//     return `mailto:${aseguradora.email}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(mensaje)}`
+//   }
+//   // return `https://wa.me/${soloDigitos(aseguradora.telefono ?? '')}?text=${encodeURIComponent(mensaje)}`
+//   return null
+// }
 
 export function EnvioPresupuestoAseguradora({ ordenId, presupuesto }: { ordenId: number; presupuesto: Presupuesto }) {
   const queryClient = useQueryClient()
@@ -45,7 +48,6 @@ export function EnvioPresupuestoAseguradora({ ordenId, presupuesto }: { ordenId:
 
   function enviarPor(medio: Medio) {
     if (!aseguradora) return
-    window.open(componerEnlace(medio, aseguradora, componerMensaje(presupuesto), ordenId), '_blank', 'noopener')
     enviar.mutate(medio)
   }
 
@@ -63,6 +65,11 @@ export function EnvioPresupuestoAseguradora({ ordenId, presupuesto }: { ordenId:
                 {aseguradora.email ? ` · ${aseguradora.email}` : ' · Sin email'}
                 {aseguradora.telefono ? ` · ${aseguradora.telefono}` : ' · Sin teléfono'}
               </p>
+              {!aseguradora.telegram_vinculada && (
+                <p className="estado">
+                  Telegram sin vincular: la aseguradora tiene que escribirle al bot y compartir su contacto.
+                </p>
+              )}
               <span className="acciones">
                 <button
                   type="button"
@@ -72,13 +79,21 @@ export function EnvioPresupuestoAseguradora({ ordenId, presupuesto }: { ordenId:
                 >
                   Enviar por email
                 </button>
-                <button
+                {/* <button
                   type="button"
                   className="secundario"
                   disabled={!aseguradora.telefono || enviar.isPending}
                   onClick={() => enviarPor('whatsapp')}
                 >
                   Enviar por WhatsApp
+                </button> */}
+                <button
+                  type="button"
+                  className="secundario"
+                  disabled={!aseguradora.telegram_vinculada || enviar.isPending}
+                  onClick={() => enviarPor('telegram')}
+                >
+                  Enviar por Telegram
                 </button>
               </span>
             </>

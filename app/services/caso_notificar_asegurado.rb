@@ -1,5 +1,6 @@
 class CasoNotificarAsegurado
-  MEDIO_POR_DEFECTO = :whatsapp
+  # MEDIO_POR_DEFECTO = :whatsapp
+  MEDIO_POR_DEFECTO = :telegram
 
   def self.call(caso:)
     asegurado = caso.asegurado
@@ -9,6 +10,8 @@ class CasoNotificarAsegurado
     notificacion = NotificacionAsegurado.create!(
       caso: caso, medio: MEDIO_POR_DEFECTO, contenido: contenido, enviada_en: Time.current
     )
+
+    TelegramEnviar.call(texto: contenido)
 
     Rails.logger.info(
       "[NotificacionAsegurado] #{notificacion.medio} a #{asegurado.telefono}: #{notificacion.contenido}"

@@ -141,6 +141,7 @@ export function AseguradorasPage() {
                 <th scope="col">Teléfono</th>
                 <th scope="col">Email</th>
                 <th scope="col">Estado</th>
+                <th scope="col">Telegram</th>
                 <th scope="col" className="acciones-celda">
                   <span className="solo-lectores">Acciones</span>
                 </th>
@@ -159,6 +160,13 @@ export function AseguradorasPage() {
                       'Activa'
                     ) : (
                       <span className="insignia insignia-desactivado">Desactivada</span>
+                    )}
+                  </td>
+                  <td>
+                    {aseguradora.telegram_vinculada ? (
+                      <span className="insignia insignia-terminada">Vinculado</span>
+                    ) : (
+                      <span className="insignia insignia-pendiente">Sin vincular</span>
                     )}
                   </td>
                   <td className="acciones-celda">

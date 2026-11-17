@@ -12,9 +12,16 @@ class PresupuestoEnviar
     end
 
     aseguradora = caso.aseguradora
-    destinatario = medio.to_s == "email" ? aseguradora.email : aseguradora.telefono
+    # destinatario = medio.to_s == "email" ? aseguradora.email : aseguradora.telefono
+    destinatario = medio.to_s == "email" ? aseguradora.email : aseguradora.telegram_chat_id
     if destinatario.blank?
-      orden.errors.add(:base, :sin_contacto)
+      orden.errors.add(:base, medio.to_s == "telegram" ? :sin_telegram : :sin_contacto)
+      raise ActiveRecord::RecordInvalid, orden
+    end
+
+    texto = mensaje(orden, caso)
+    unless entregar(medio.to_s, destinatario, orden, texto)
+      orden.errors.add(:base, :envio_fallido)
       raise ActiveRecord::RecordInvalid, orden
     end
 
@@ -22,5 +29,22 @@ class PresupuestoEnviar
       orden: orden, aseguradora: aseguradora, enviado_por: enviado_por, medio: medio,
       destinatario: destinatario, enviado_en: Time.current
     )
+  end
+
+  def self.entregar(medio, destinatario, orden, texto)
+    case medio
+    when "email" then EmailEnviar.call(destinatario: destinatario, asunto: "Presupuesto orden ##{orden.id}", texto: texto)
+    when "telegram" then TelegramEnviar.call(texto: texto, chat_ids: [ destinatario ])
+    else true
+    end
+  end
+
+  def self.mensaje(orden, caso)
+    total = OrdenCalcularPresupuesto.call(orden: orden).total_aseguradora.to_d.to_s("F")
+    [
+      "Presupuesto de la orden ##{orden.id}",
+      "Siniestro #{caso.numero_siniestro}",
+      "Total para la aseguradora: $ #{total}"
+    ].join("\n")
   end
 end

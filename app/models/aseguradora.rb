@@ -11,5 +11,9 @@ class Aseguradora < ApplicationRecord
 
   validates :nombre, presence: true, length: { maximum: 200 }, uniqueness: { case_sensitive: false }
   validates :telefono, format: { with: TELEFONO_FORMATO }, allow_nil: true
+  def telegram_vinculada?
+    telegram_chat_id.present?
+  end
+
   validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, allow_nil: true
 end

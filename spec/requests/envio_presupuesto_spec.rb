@@ -4,10 +4,11 @@ RSpec.describe "Envío del presupuesto a la aseguradora", type: :request do
   let(:administrador) { create(:usuario, :administrador) }
   let(:mecanico) { create(:usuario) }
   let(:orden) { create(:orden) }
-  let(:aseguradora) { create(:aseguradora, :con_contacto) }
+  let(:aseguradora) { create(:aseguradora, :con_contacto, :con_telegram) }
   let!(:caso) { create(:caso, orden: orden, aseguradora: aseguradora) }
 
   it "registra el envío por email y devuelve el destinatario" do
+    allow(EmailEnviar).to receive(:call).and_return(true)
     expect {
       post "/ordenes/#{orden.id}/enviar_presupuesto", params: { medio: "email" },
            headers: auth_headers(administrador), as: :json
@@ -19,7 +20,8 @@ RSpec.describe "Envío del presupuesto a la aseguradora", type: :request do
   end
 
   it "expone el caso, el contacto y el historial en el presupuesto" do
-    post "/ordenes/#{orden.id}/enviar_presupuesto", params: { medio: "whatsapp" },
+    allow(TelegramEnviar).to receive(:call).and_return(true)
+    post "/ordenes/#{orden.id}/enviar_presupuesto", params: { medio: "telegram" },
          headers: auth_headers(administrador), as: :json
 
     get "/ordenes/#{orden.id}/presupuesto", headers: auth_headers(administrador)
@@ -28,7 +30,7 @@ RSpec.describe "Envío del presupuesto a la aseguradora", type: :request do
     expect(response.parsed_body["caso"]).to include("numero_siniestro" => caso.numero_siniestro)
     expect(response.parsed_body["aseguradora"]).to include("email" => aseguradora.email)
     expect(response.parsed_body["envios"].first).to include(
-      "medio" => "whatsapp", "destinatario" => aseguradora.telefono
+      "medio" => "telegram", "destinatario" => "555000111"
     )
   end
 

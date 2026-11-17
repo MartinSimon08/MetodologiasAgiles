@@ -6,6 +6,7 @@ export interface Aseguradora {
   telefono: string | null
   email: string | null
   activa: boolean
+  telegram_vinculada: boolean
   created_at: string
 }
 

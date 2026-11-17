@@ -51,7 +51,7 @@ export async function obtenerPresupuesto(id: number) {
   return data
 }
 
-export async function enviarPresupuesto(id: number, medio: 'email' | 'whatsapp') {
+export async function enviarPresupuesto(id: number, medio: 'email' | 'telegram') {
   const { data } = await api.post<EnvioPresupuesto>(`/ordenes/${id}/enviar_presupuesto`, { medio })
   return data
 }

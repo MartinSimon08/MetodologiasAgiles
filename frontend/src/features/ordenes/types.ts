@@ -78,7 +78,7 @@ export interface TotalParcial {
 
 export interface EnvioPresupuesto {
   id: number
-  medio: 'email' | 'whatsapp'
+  medio: 'email' | 'telegram'
   destinatario: string
   enviado_en: string
   aseguradora: { id: number; nombre: string }
@@ -99,7 +99,13 @@ export interface Presupuesto {
   presupuesto: string
   total_aseguradora: string
   caso: { id: number; numero_siniestro: string } | null
-  aseguradora: { id: number; nombre: string; email: string | null; telefono: string | null } | null
+  aseguradora: {
+    id: number
+    nombre: string
+    email: string | null
+    telefono: string | null
+    telegram_vinculada: boolean
+  } | null
   envios: EnvioPresupuesto[]
 }
 

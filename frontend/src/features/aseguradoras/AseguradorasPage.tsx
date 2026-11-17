@@ -135,6 +135,11 @@ export function AseguradorasPage() {
                     {[aseguradora.telefono, aseguradora.email].filter(Boolean).join(' · ') || 'Sin contacto cargado'}
                   </span>
                   {!aseguradora.activa && <span className="insignia insignia-desactivado">Desactivada</span>}
+                  {aseguradora.telegram_vinculada ? (
+                    <span className="insignia insignia-terminada">Telegram vinculado</span>
+                  ) : (
+                    <span className="insignia insignia-pendiente">Telegram sin vincular</span>
+                  )}
                 </div>
                 <div className="item-acciones">
                   <button

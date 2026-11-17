@@ -17,9 +17,9 @@ export interface PaginaTareasFrecuentes {
   meta: MetaPaginacion
 }
 
-export async function listarTareasFrecuentes(pagina = 1, porPagina = 100) {
+export async function listarTareasFrecuentes(pagina = 1, porPagina = 100, q = '') {
   const { data } = await api.get<PaginaTareasFrecuentes>('/tareas_frecuentes', {
-    params: { pagina, por_pagina: porPagina },
+    params: { pagina, por_pagina: porPagina, q: q || undefined },
   })
   return data
 }

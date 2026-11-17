@@ -17,6 +17,7 @@ import { fechaCorta, ingresarCaso, listarCasos, type Caso } from './api'
 import { CasosNav } from './CasosNav'
 import { NuevoCasoForm } from './NuevoCasoForm'
 import { TurnoForm } from './TurnoForm'
+import { usePorPagina } from '../../lib/paginacion'
 
 export function CasosPage() {
   const [abriendo, setAbriendo] = useState(false)
@@ -24,12 +25,13 @@ export function CasosPage() {
   const [aviso, setAviso] = useState<string | null>(null)
   const [busqueda, setBusqueda] = useState('')
   const [pagina, setPagina] = useState(1)
+  const [porPagina, setPorPagina] = usePorPagina()
   const buscar = useDebounce(busqueda.trim())
   const queryClient = useQueryClient()
 
   const casos = useQuery({
-    queryKey: ['casos', buscar, pagina],
-    queryFn: () => listarCasos(buscar, pagina),
+    queryKey: ['casos', buscar, pagina, porPagina],
+    queryFn: () => listarCasos(buscar, pagina, porPagina),
     placeholderData: keepPreviousData,
   })
 
@@ -195,7 +197,16 @@ export function CasosPage() {
               })}
             </tbody>
           </Tabla>
-          <Paginacion meta={casos.data.meta} cargando={casos.isPlaceholderData} onCambiar={setPagina} />
+          <Paginacion
+            meta={casos.data.meta}
+            cargando={casos.isPlaceholderData}
+            onCambiar={setPagina}
+            porPagina={porPagina}
+            onCambiarPorPagina={(valor) => {
+              setPorPagina(valor)
+              setPagina(1)
+            }}
+          />
         </>
       )}
 

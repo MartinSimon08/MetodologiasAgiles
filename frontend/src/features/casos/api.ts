@@ -38,8 +38,10 @@ export interface PaginaCasos {
   meta: MetaPaginacion
 }
 
-export async function listarCasos(buscar: string, pagina: number) {
-  const { data } = await api.get<PaginaCasos>('/casos', { params: { buscar: buscar || undefined, pagina } })
+export async function listarCasos(buscar: string, pagina: number, porPagina?: number) {
+  const { data } = await api.get<PaginaCasos>('/casos', {
+    params: { buscar: buscar || undefined, pagina, por_pagina: porPagina },
+  })
   return data
 }
 

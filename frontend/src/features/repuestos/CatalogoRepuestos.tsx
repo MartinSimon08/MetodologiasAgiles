@@ -8,6 +8,7 @@ import { Cargando } from '../../components/Cargando'
 import { EstadoVacio } from '../../components/EstadoVacio'
 import { MenuAcciones, type Accion } from '../../components/MenuAcciones'
 import { Tabla } from '../../components/Tabla'
+import { usePorPagina } from '../../lib/paginacion'
 
 interface Props {
   onSeleccionar?: (repuesto: RepuestoCatalogo) => void
@@ -20,9 +21,11 @@ export function CatalogoRepuestos({ onSeleccionar, onEditar, onEliminar, filtro 
   const [busqueda, setBuscar] = useState('')
   const buscar = filtro ?? busqueda
   const [pagina, setPagina] = useState(1)
+  const [porPagina, setPorPagina] = usePorPagina()
+  const tamanio = onSeleccionar ? undefined : porPagina
   const catalogo = useQuery({
-    queryKey: ['repuestos-catalogo', buscar, pagina],
-    queryFn: () => listarCatalogo(buscar, pagina),
+    queryKey: ['repuestos-catalogo', buscar, pagina, tamanio],
+    queryFn: () => listarCatalogo(buscar, pagina, tamanio),
   })
 
   return (
@@ -77,7 +80,16 @@ export function CatalogoRepuestos({ onSeleccionar, onEditar, onEliminar, filtro 
             })}
           </tbody>
         </Tabla>
-        <Paginacion meta={catalogo.data.meta} cargando={catalogo.isFetching} onCambiar={setPagina} />
+        <Paginacion
+          meta={catalogo.data.meta}
+          cargando={catalogo.isFetching}
+          onCambiar={setPagina}
+          porPagina={porPagina}
+          onCambiarPorPagina={(valor) => {
+            setPorPagina(valor)
+            setPagina(1)
+          }}
+        />
       </>}
       {catalogo.data && onSeleccionar && <>
         <ul className="lista">

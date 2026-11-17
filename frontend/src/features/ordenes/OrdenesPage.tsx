@@ -15,6 +15,7 @@ import { describirVehiculo, ESTADO_ORDEN_LABELS, type EstadoOrden } from './type
 import { Cargando } from '../../components/Cargando'
 import { EstadoVacio } from '../../components/EstadoVacio'
 import { Tabla } from '../../components/Tabla'
+import { usePorPagina } from '../../lib/paginacion'
 
 const ESTADOS = Object.keys(ESTADO_ORDEN_LABELS) as EstadoOrden[]
 
@@ -24,13 +25,14 @@ export function OrdenesPage() {
   const [abriendo, setAbriendo] = useState(false)
   const [searchParams, setSearchParams] = useSearchParams()
   const pagina = Math.max(1, Number(searchParams.get('pagina')) || 1)
+  const [porPagina, setPorPagina] = usePorPagina()
   const estado = ESTADOS.find((valor) => valor === searchParams.get('estado'))
   const busqueda = searchParams.get('q') ?? ''
   const q = useDebounce(busqueda.trim())
 
   const ordenes = useQuery({
-    queryKey: ['ordenes', pagina, estado ?? 'todas', q],
-    queryFn: () => listarOrdenes(pagina, estado, q),
+    queryKey: ['ordenes', pagina, estado ?? 'todas', q, porPagina],
+    queryFn: () => listarOrdenes(pagina, estado, q, porPagina),
     placeholderData: keepPreviousData,
   })
 
@@ -152,7 +154,16 @@ export function OrdenesPage() {
       )}
 
       {ordenes.data && (
-        <Paginacion meta={ordenes.data.meta} cargando={ordenes.isPlaceholderData} onCambiar={irAPagina} />
+        <Paginacion
+          meta={ordenes.data.meta}
+          cargando={ordenes.isPlaceholderData}
+          onCambiar={irAPagina}
+          porPagina={porPagina}
+          onCambiarPorPagina={(valor) => {
+            setPorPagina(valor)
+            irAPagina(1)
+          }}
+        />
       )}
     </section>
   )

@@ -15,6 +15,10 @@ import { Cargando } from '../../components/Cargando'
 import { Dialogo } from '../../components/Dialogo'
 import { MenuAcciones } from '../../components/MenuAcciones'
 import { Tabla } from '../../components/Tabla'
+import { usePorPagina } from '../../lib/paginacion'
+import { Buscador } from '../../components/Buscador'
+import { EstadoVacio } from '../../components/EstadoVacio'
+import { useDebounce } from '../../lib/useDebounce'
 
 export function UsuariosPage() {
   const { usuario: actual } = useAuth()
@@ -24,16 +28,26 @@ export function UsuariosPage() {
 
   const [searchParams, setSearchParams] = useSearchParams()
   const pagina = Math.max(1, Number(searchParams.get('pagina')) || 1)
+  const busqueda = searchParams.get('q') ?? ''
+  const q = useDebounce(busqueda.trim())
+  const [porPagina, setPorPagina] = usePorPagina()
 
   const usuarios = useQuery({
-    queryKey: ['usuarios', pagina],
-    queryFn: () => listarUsuarios(pagina),
+    queryKey: ['usuarios', pagina, q, porPagina],
+    queryFn: () => listarUsuarios(pagina, q, porPagina),
     placeholderData: keepPreviousData,
   })
 
-  function irAPagina(nueva: number) {
+  function actualizarFiltros(nuevaPagina: number, nuevaBusqueda: string) {
+    const params: Record<string, string> = {}
+    if (nuevaBusqueda) params.q = nuevaBusqueda
+    if (nuevaPagina > 1) params.pagina = String(nuevaPagina)
     setAccion(null)
-    setSearchParams(nueva === 1 ? {} : { pagina: String(nueva) })
+    setSearchParams(params, { replace: true })
+  }
+
+  function irAPagina(nueva: number) {
+    actualizarFiltros(nueva, busqueda)
     window.scrollTo({ top: 0 })
   }
 
@@ -84,6 +98,13 @@ export function UsuariosPage() {
         />
       )}
 
+      <Buscador
+        etiqueta="Buscar usuario"
+        placeholder="Nombre o email"
+        valor={busqueda}
+        onCambiar={(valor) => actualizarFiltros(1, valor)}
+      />
+
       {usuarios.isPending && <Cargando />}
       {usuarios.isError && (
         <p className="error" role="alert">
@@ -91,7 +112,11 @@ export function UsuariosPage() {
         </p>
       )}
 
-      {usuarios.data && (
+      {usuarios.data?.usuarios.length === 0 && (
+        <EstadoVacio busqueda titulo="Sin resultados" descripcion={`No hay usuarios que coincidan con “${q}”.`} />
+      )}
+
+      {usuarios.data && usuarios.data.usuarios.length > 0 && (
         <Tabla etiqueta="Usuarios" ocupada={usuarios.isPlaceholderData}>
           <thead>
             <tr>
@@ -174,6 +199,11 @@ export function UsuariosPage() {
           meta={usuarios.data.meta}
           cargando={usuarios.isPlaceholderData}
           onCambiar={irAPagina}
+          porPagina={porPagina}
+          onCambiarPorPagina={(valor) => {
+            setPorPagina(valor)
+            irAPagina(1)
+          }}
         />
       )}
     </section>

@@ -97,9 +97,9 @@ export async function guardarCatalogo(repuesto: { nombre: string; precio: string
   return data
 }
 
-export async function listarCatalogo(buscar: string, pagina: number) {
+export async function listarCatalogo(buscar: string, pagina: number, porPagina?: number) {
   const { data } = await api.get<{ repuestos: RepuestoCatalogo[]; meta: MetaPaginacion }>(
-    '/repuestos_catalogo', { params: { buscar, pagina } },
+    '/repuestos_catalogo', { params: { buscar, pagina, por_pagina: porPagina } },
   )
   return data
 }
@@ -192,10 +192,12 @@ export async function listarRepuestosPorProveedor(filtros: {
   desde?: string
   hasta?: string
   pagina: number
+  porPagina?: number
 }) {
   const { data } = await api.get<PaginaRepuestosPorProveedor>('/repuestos_por_proveedor', {
     params: {
       pagina: filtros.pagina,
+      por_pagina: filtros.porPagina,
       ...(filtros.proveedor ? { proveedor: filtros.proveedor } : {}),
       ...(filtros.desde ? { desde: filtros.desde } : {}),
       ...(filtros.hasta ? { hasta: filtros.hasta } : {}),

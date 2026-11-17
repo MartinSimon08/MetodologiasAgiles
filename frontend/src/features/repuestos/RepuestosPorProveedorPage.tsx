@@ -12,19 +12,22 @@ import { RepuestosNav } from './RepuestosNav'
 import { Cargando } from '../../components/Cargando'
 import { EstadoVacio } from '../../components/EstadoVacio'
 import { Tabla } from '../../components/Tabla'
+import { usePorPagina } from '../../lib/paginacion'
 
 export function RepuestosPorProveedorPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const pagina = Math.max(1, Number(searchParams.get('pagina')) || 1)
+  const [porPagina, setPorPagina] = usePorPagina()
   const proveedor = searchParams.get('proveedor') ?? ''
   const desde = searchParams.get('desde') ?? ''
   const hasta = searchParams.get('hasta') ?? ''
   const proveedorDebounced = useDebounce(proveedor.trim())
 
   const compras = useQuery({
-    queryKey: ['repuestos-por-proveedor', pagina, proveedorDebounced, desde, hasta],
+    queryKey: ['repuestos-por-proveedor', pagina, proveedorDebounced, desde, hasta, porPagina],
     queryFn: () => listarRepuestosPorProveedor({
       pagina,
+      porPagina,
       proveedor: proveedorDebounced || undefined,
       desde: desde || undefined,
       hasta: hasta || undefined,
@@ -188,7 +191,16 @@ export function RepuestosPorProveedorPage() {
               ))}
             </tbody>
           </Tabla>
-          <Paginacion meta={compras.data.meta} cargando={compras.isPlaceholderData} onCambiar={irAPagina} />
+          <Paginacion
+            meta={compras.data.meta}
+            cargando={compras.isPlaceholderData}
+            onCambiar={irAPagina}
+            porPagina={porPagina}
+            onCambiarPorPagina={(valor) => {
+              setPorPagina(valor)
+              irAPagina(1)
+            }}
+          />
         </>
       )}
     </section>

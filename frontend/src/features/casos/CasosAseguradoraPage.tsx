@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { Cargando } from '../../components/Cargando'
 import { EncabezadoPagina } from '../../components/EncabezadoPagina'
@@ -11,6 +12,10 @@ import { fechaHora, importe } from '../../lib/formato'
 import { AseguradoraSelector } from '../aseguradoras/AseguradoraSelector'
 import { consultarCasosAseguradora } from './api'
 import { CasosNav } from './CasosNav'
+import { Buscador } from '../../components/Buscador'
+import { Paginacion } from '../../components/Paginacion'
+import { paginarLocal, usePorPagina } from '../../lib/paginacion'
+import { coincide } from '../../lib/texto'
 
 export function CasosAseguradoraPage() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -26,6 +31,20 @@ export function CasosAseguradoraPage() {
   })
 
   const errores = fieldErrors(consulta.error)
+  const [busqueda, setBusqueda] = useState('')
+  const [numeroPagina, setNumeroPagina] = useState(1)
+  const [porPagina, setPorPagina] = usePorPagina()
+  const filtrados = (consulta.data?.casos ?? []).filter((caso) =>
+    coincide(
+      busqueda,
+      caso.numero_siniestro,
+      caso.asegurado.nombre,
+      caso.vehiculo.patente,
+      caso.vehiculo.marca,
+      caso.vehiculo.modelo,
+    ),
+  )
+  const pagina = paginarLocal(filtrados, numeroPagina, porPagina)
 
   function actualizar(valores: { aseguradora?: number | null; desde?: string; hasta?: string }) {
     const aseguradora = valores.aseguradora === undefined ? aseguradoraId : valores.aseguradora
@@ -34,6 +53,7 @@ export function CasosAseguradoraPage() {
       hasta: valores.hasta ?? hasta,
     }
     if (aseguradora !== null) params.aseguradora = String(aseguradora)
+    setNumeroPagina(1)
     setSearchParams(params, { replace: true })
   }
 
@@ -92,6 +112,22 @@ export function CasosAseguradoraPage() {
       )}
 
       {consulta.data && consulta.data.casos.length > 0 && (
+        <Buscador
+          etiqueta="Buscar caso"
+          placeholder="Siniestro, asegurado, patente, marca o modelo"
+          valor={busqueda}
+          onCambiar={(valor) => {
+            setBusqueda(valor)
+            setNumeroPagina(1)
+          }}
+        />
+      )}
+
+      {consulta.data && consulta.data.casos.length > 0 && filtrados.length === 0 && (
+        <EstadoVacio busqueda titulo="Sin resultados" descripcion={`No hay casos que coincidan con “${busqueda.trim()}”.`} />
+      )}
+
+      {consulta.data && filtrados.length > 0 && (
         <Tabla etiqueta="Casos de la aseguradora" ocupada={consulta.isFetching}>
           <thead>
             <tr>
@@ -111,7 +147,7 @@ export function CasosAseguradoraPage() {
             </tr>
           </thead>
           <tbody>
-            {consulta.data.casos.map((caso) => {
+            {pagina.items.map((caso) => {
               const vehiculo = [caso.vehiculo.marca, caso.vehiculo.modelo].filter(Boolean).join(' ')
               return (
                 <tr key={caso.id}>
@@ -155,6 +191,18 @@ export function CasosAseguradoraPage() {
             </tr>
           </tfoot>
         </Tabla>
+      )}
+
+      {consulta.data && filtrados.length > 0 && (
+        <Paginacion
+          meta={pagina.meta}
+          onCambiar={setNumeroPagina}
+          porPagina={porPagina}
+          onCambiarPorPagina={(valor) => {
+            setPorPagina(valor)
+            setNumeroPagina(1)
+          }}
+        />
       )}
     </section>
   )

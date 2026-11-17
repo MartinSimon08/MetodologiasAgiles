@@ -15,6 +15,7 @@ import { Dialogo } from '../../components/Dialogo'
 import { EstadoVacio } from '../../components/EstadoVacio'
 import { MenuAcciones } from '../../components/MenuAcciones'
 import { Tabla } from '../../components/Tabla'
+import { usePorPagina } from '../../lib/paginacion'
 
 function descripcion(vehiculo: Vehiculo) {
   return [vehiculo.marca, vehiculo.modelo, vehiculo.anio].filter(Boolean).join(' ')
@@ -28,12 +29,13 @@ export function VehiculosPage() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const pagina = Math.max(1, Number(searchParams.get('pagina')) || 1)
+  const [porPagina, setPorPagina] = usePorPagina()
   const busqueda = searchParams.get('q') ?? ''
   const q = useDebounce(busqueda.trim())
 
   const vehiculos = useQuery({
-    queryKey: ['vehiculos', pagina, q],
-    queryFn: () => listarVehiculos(pagina, q),
+    queryKey: ['vehiculos', pagina, q, porPagina],
+    queryFn: () => listarVehiculos(pagina, q, porPagina),
     placeholderData: keepPreviousData,
   })
 
@@ -195,6 +197,11 @@ export function VehiculosPage() {
           meta={vehiculos.data.meta}
           cargando={vehiculos.isPlaceholderData}
           onCambiar={irAPagina}
+          porPagina={porPagina}
+          onCambiarPorPagina={(valor) => {
+            setPorPagina(valor)
+            irAPagina(1)
+          }}
         />
       )}
     </section>

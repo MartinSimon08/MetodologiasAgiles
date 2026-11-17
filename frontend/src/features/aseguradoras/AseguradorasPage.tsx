@@ -18,6 +18,7 @@ import {
   listarAseguradoras,
   type Aseguradora,
 } from './api'
+import { usePorPagina } from '../../lib/paginacion'
 
 export function AseguradorasPage() {
   const queryClient = useQueryClient()
@@ -25,11 +26,12 @@ export function AseguradorasPage() {
   const [aviso, setAviso] = useState<string | null>(null)
   const [busqueda, setBusqueda] = useState('')
   const [pagina, setPagina] = useState(1)
+  const [porPagina, setPorPagina] = usePorPagina()
   const buscar = useDebounce(busqueda.trim())
 
   const aseguradoras = useQuery({
-    queryKey: ['aseguradoras', buscar, pagina],
-    queryFn: () => listarAseguradoras(buscar, pagina),
+    queryKey: ['aseguradoras', buscar, pagina, porPagina],
+    queryFn: () => listarAseguradoras(buscar, pagina, false, porPagina),
     placeholderData: keepPreviousData,
   })
 
@@ -192,7 +194,16 @@ export function AseguradorasPage() {
               ))}
             </tbody>
           </Tabla>
-          <Paginacion meta={aseguradoras.data.meta} cargando={aseguradoras.isPlaceholderData} onCambiar={setPagina} />
+          <Paginacion
+            meta={aseguradoras.data.meta}
+            cargando={aseguradoras.isPlaceholderData}
+            onCambiar={setPagina}
+            porPagina={porPagina}
+            onCambiarPorPagina={(valor) => {
+              setPorPagina(valor)
+              setPagina(1)
+            }}
+          />
         </>
       )}
 

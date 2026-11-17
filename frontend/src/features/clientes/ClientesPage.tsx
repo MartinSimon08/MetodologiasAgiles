@@ -12,6 +12,7 @@ import { NuevoClienteForm } from './NuevoClienteForm'
 import { EstadoVacio } from '../../components/EstadoVacio'
 import { Tabla } from '../../components/Tabla'
 import { Cargando } from '../../components/Cargando'
+import { usePorPagina } from '../../lib/paginacion'
 
 export function ClientesPage() {
   const [registrando, setRegistrando] = useState(false)
@@ -19,12 +20,13 @@ export function ClientesPage() {
 
   const [searchParams, setSearchParams] = useSearchParams()
   const pagina = Math.max(1, Number(searchParams.get('pagina')) || 1)
+  const [porPagina, setPorPagina] = usePorPagina()
   const busqueda = searchParams.get('q') ?? ''
   const q = useDebounce(busqueda.trim())
 
   const clientes = useQuery({
-    queryKey: ['clientes', pagina, q],
-    queryFn: () => listarClientes(pagina, q),
+    queryKey: ['clientes', pagina, q, porPagina],
+    queryFn: () => listarClientes(pagina, q, porPagina),
     placeholderData: keepPreviousData,
   })
 
@@ -131,6 +133,11 @@ export function ClientesPage() {
           meta={clientes.data.meta}
           cargando={clientes.isPlaceholderData}
           onCambiar={irAPagina}
+          porPagina={porPagina}
+          onCambiarPorPagina={(valor) => {
+            setPorPagina(valor)
+            irAPagina(1)
+          }}
         />
       )}
     </section>

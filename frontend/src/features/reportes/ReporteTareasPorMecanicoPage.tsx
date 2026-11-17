@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Cargando } from '../../components/Cargando'
 import { EstadoVacio } from '../../components/EstadoVacio'
@@ -9,6 +10,10 @@ import { errorMessage, fieldErrors } from '../../lib/api'
 import { hoyIso, primerDiaDelMesIso } from '../../lib/fechas'
 import { obtenerReporteTareasPorMecanico } from './api'
 import { ReportesNav } from './ReportesNav'
+import { Buscador } from '../../components/Buscador'
+import { Paginacion } from '../../components/Paginacion'
+import { paginarLocal, usePorPagina } from '../../lib/paginacion'
+import { coincide } from '../../lib/texto'
 
 export function ReporteTareasPorMecanicoPage() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -21,12 +26,18 @@ export function ReporteTareasPorMecanicoPage() {
   })
 
   const errores = fieldErrors(reporte.error)
+  const [busqueda, setBusqueda] = useState('')
+  const [numeroPagina, setNumeroPagina] = useState(1)
+  const [porPagina, setPorPagina] = usePorPagina()
+  const filtrados = (reporte.data?.mecanicos ?? []).filter((fila) => coincide(busqueda, fila.mecanico.nombre))
+  const pagina = paginarLocal(filtrados, numeroPagina, porPagina)
 
   function actualizar(valores: { desde?: string; hasta?: string }) {
     const params: Record<string, string> = {
       desde: valores.desde ?? desde,
       hasta: valores.hasta ?? hasta,
     }
+    setNumeroPagina(1)
     setSearchParams(params, { replace: true })
   }
 
@@ -71,6 +82,22 @@ export function ReporteTareasPorMecanicoPage() {
       )}
 
       {reporte.data && reporte.data.mecanicos.length > 0 && (
+        <Buscador
+          etiqueta="Buscar mecánico"
+          placeholder="Nombre del mecánico"
+          valor={busqueda}
+          onCambiar={(valor) => {
+            setBusqueda(valor)
+            setNumeroPagina(1)
+          }}
+        />
+      )}
+
+      {reporte.data && reporte.data.mecanicos.length > 0 && filtrados.length === 0 && (
+        <EstadoVacio busqueda titulo="Sin resultados" descripcion={`No hay mecánicos que coincidan con “${busqueda.trim()}”.`} />
+      )}
+
+      {filtrados.length > 0 && (
         <Tabla etiqueta="Tareas por mecánico" ocupada={reporte.isFetching}>
           <thead>
             <tr>
@@ -84,7 +111,7 @@ export function ReporteTareasPorMecanicoPage() {
             </tr>
           </thead>
           <tbody>
-            {reporte.data.mecanicos.map((fila) => (
+            {pagina.items.map((fila) => (
               <tr key={fila.mecanico.id}>
                 <td>{fila.mecanico.nombre}</td>
                 <td className="numero">{fila.tomadas}</td>
@@ -93,6 +120,18 @@ export function ReporteTareasPorMecanicoPage() {
             ))}
           </tbody>
         </Tabla>
+      )}
+
+      {filtrados.length > 0 && (
+        <Paginacion
+          meta={pagina.meta}
+          onCambiar={setNumeroPagina}
+          porPagina={porPagina}
+          onCambiarPorPagina={(valor) => {
+            setPorPagina(valor)
+            setNumeroPagina(1)
+          }}
+        />
       )}
 
       {reporte.data && reporte.data.mecanicos.length === 0 && (

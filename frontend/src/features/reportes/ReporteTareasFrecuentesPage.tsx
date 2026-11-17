@@ -1,5 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { Cargando } from '../../components/Cargando'
+import { EstadoVacio } from '../../components/EstadoVacio'
+import { Tabla } from '../../components/Tabla'
 import { EncabezadoPagina } from '../../components/EncabezadoPagina'
 import { errorMessage } from '../../lib/api'
 import { obtenerReporteTareasFrecuentes } from './api'
@@ -29,25 +31,41 @@ export function ReporteTareasFrecuentesPage() {
       )}
 
       {reporte.data && reporte.data.tareas.length === 0 && (
-        <p className="estado">Todavía no hay tareas terminadas.</p>
+        <EstadoVacio
+          titulo="Todavía no hay tareas terminadas"
+          descripcion="El ranking se arma con las tareas que los mecánicos marcan como terminadas."
+        />
       )}
 
       {reporte.data && reporte.data.tareas.length > 0 && (
-        <ol className="lista lista-frecuencia">
-          {reporte.data.tareas.map((fila, indice) => (
-            <li key={fila.descripcion} className="tarjeta fila-frecuencia">
-              <span className="puesto">{indice + 1}</span>
-              <div className="item-datos">
-                <strong>{fila.descripcion}</strong>
-                <span
-                  className="barra-frecuencia"
-                  style={{ width: `${maximo ? (fila.cantidad / maximo) * 100 : 0}%` }}
-                />
-              </div>
-              <strong>{fila.cantidad} {fila.cantidad === 1 ? 'vez' : 'veces'}</strong>
-            </li>
-          ))}
-        </ol>
+        <Tabla etiqueta="Tareas más frecuentes">
+          <thead>
+            <tr>
+              <th scope="col" className="numero">
+                #
+              </th>
+              <th scope="col">Tarea</th>
+              <th scope="col" className="numero">
+                Veces
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {reporte.data.tareas.map((fila, indice) => (
+              <tr key={fila.descripcion}>
+                <td className="numero">{indice + 1}</td>
+                <td>
+                  {fila.descripcion}
+                  <span
+                    className="barra-frecuencia"
+                    style={{ width: `${maximo ? (fila.cantidad / maximo) * 100 : 0}%` }}
+                  />
+                </td>
+                <td className="numero">{fila.cantidad}</td>
+              </tr>
+            ))}
+          </tbody>
+        </Tabla>
       )}
     </section>
   )

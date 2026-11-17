@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { BotonNuevo } from '../../components/BotonNuevo'
+import { Dialogo } from '../../components/Dialogo'
 import { EncabezadoPagina } from '../../components/EncabezadoPagina'
 import { errorMessage } from '../../lib/api'
 import { CatalogoRepuestos } from './CatalogoRepuestos'
@@ -52,11 +53,16 @@ export function CatalogoRepuestosPage() {
       {eliminar.isError && <p className="error" role="alert">
         {errorMessage(eliminar.error, 'No se pudo eliminar el repuesto del catálogo.')}
       </p>}
-      {editando !== undefined && <RepuestoCatalogoForm key={editando?.id ?? 'nuevo'}
-        repuesto={editando ?? undefined} onCancelar={() => setEditando(undefined)} onGuardado={() => {
+      {editando === null && <RepuestoCatalogoForm key="nuevo" onCancelar={() => setEditando(undefined)} onGuardado={() => {
           setEditando(undefined)
           setAviso('Repuesto guardado en el catálogo.')
         }} />}
+      {editando && <Dialogo onCerrar={() => setEditando(undefined)}>
+        <RepuestoCatalogoForm key={editando.id} repuesto={editando} onCancelar={() => setEditando(undefined)} onGuardado={() => {
+          setEditando(undefined)
+          setAviso('Repuesto guardado en el catálogo.')
+        }} />
+      </Dialogo>}
       <CatalogoRepuestos accionNuevo={nuevo || undefined} onEditar={puedeGestionar ? (repuesto) => {
         setAviso('')
         eliminar.reset()

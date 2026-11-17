@@ -1,6 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import { useSearchParams } from 'react-router-dom'
 import { Cargando } from '../../components/Cargando'
+import { EstadoVacio } from '../../components/EstadoVacio'
+import { Tabla } from '../../components/Tabla'
 import { EncabezadoPagina } from '../../components/EncabezadoPagina'
 import { ErroresCampo } from '../../components/ErroresCampo'
 import { errorMessage, fieldErrors } from '../../lib/api'
@@ -68,22 +70,33 @@ export function ReporteTareasPorMecanicoPage() {
         </p>
       )}
 
-      {reporte.data && (
-        <ul className="lista" aria-busy={reporte.isFetching}>
-          {reporte.data.mecanicos.map((fila) => (
-            <li key={fila.mecanico.id} className="tarjeta fila-item">
-              <div className="item-datos">
-                <strong>{fila.mecanico.nombre}</strong>
-              </div>
-              <span>{fila.tomadas} {fila.tomadas === 1 ? 'tomada' : 'tomadas'}</span>
-              <span>{fila.completadas} {fila.completadas === 1 ? 'completada' : 'completadas'}</span>
-            </li>
-          ))}
-        </ul>
+      {reporte.data && reporte.data.mecanicos.length > 0 && (
+        <Tabla etiqueta="Tareas por mecánico" ocupada={reporte.isFetching}>
+          <thead>
+            <tr>
+              <th scope="col">Mecánico</th>
+              <th scope="col" className="numero">
+                Tomadas
+              </th>
+              <th scope="col" className="numero">
+                Completadas
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {reporte.data.mecanicos.map((fila) => (
+              <tr key={fila.mecanico.id}>
+                <td>{fila.mecanico.nombre}</td>
+                <td className="numero">{fila.tomadas}</td>
+                <td className="numero">{fila.completadas}</td>
+              </tr>
+            ))}
+          </tbody>
+        </Tabla>
       )}
 
       {reporte.data && reporte.data.mecanicos.length === 0 && (
-        <p className="estado">No hay mecánicos registrados.</p>
+        <EstadoVacio titulo="No hay mecánicos registrados" descripcion="Creá usuarios con rol mecánico para ver sus tareas." />
       )}
     </section>
   )

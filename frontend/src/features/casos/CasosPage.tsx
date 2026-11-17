@@ -4,8 +4,12 @@ import { Link } from 'react-router-dom'
 import { BotonNuevo } from '../../components/BotonNuevo'
 import { Buscador } from '../../components/Buscador'
 import { Cargando } from '../../components/Cargando'
+import { Dialogo } from '../../components/Dialogo'
 import { EncabezadoPagina } from '../../components/EncabezadoPagina'
+import { EstadoVacio } from '../../components/EstadoVacio'
+import { MenuAcciones, type Accion } from '../../components/MenuAcciones'
 import { Paginacion } from '../../components/Paginacion'
+import { Tabla } from '../../components/Tabla'
 import { errorMessage } from '../../lib/api'
 import { fechaHora } from '../../lib/formato'
 import { useDebounce } from '../../lib/useDebounce'
@@ -16,7 +20,7 @@ import { TurnoForm } from './TurnoForm'
 
 export function CasosPage() {
   const [abriendo, setAbriendo] = useState(false)
-  const [turnoId, setTurnoId] = useState<number | null>(null)
+  const [turnoDe, setTurnoDe] = useState<Caso | null>(null)
   const [aviso, setAviso] = useState<string | null>(null)
   const [busqueda, setBusqueda] = useState('')
   const [pagina, setPagina] = useState(1)
@@ -96,91 +100,126 @@ export function CasosPage() {
         </p>
       )}
 
-      {casos.data?.casos.length === 0 && (
-        <p className="estado">{buscar ? 'No hay casos que coincidan.' : 'Todavía no hay casos abiertos.'}</p>
-      )}
+      {casos.data?.casos.length === 0 &&
+        (buscar ? (
+          <EstadoVacio busqueda titulo="Sin resultados" descripcion="No hay casos que coincidan." />
+        ) : (
+          <EstadoVacio
+            titulo="Todavía no hay casos abiertos"
+            descripcion="Abrí un caso cuando una aseguradora derive un siniestro al taller."
+          />
+        ))}
 
       {casos.data && casos.data.casos.length > 0 && (
         <>
-          <ul className="lista" aria-busy={casos.isPlaceholderData}>
-            {casos.data.casos.map((caso) => (
-              <li key={caso.id} className="tarjeta item">
-                <div className="item-datos">
-                  <strong>
-                    Siniestro {caso.numero_siniestro} · {caso.aseguradora.nombre}
-                  </strong>
-                  <span>
-                    {caso.asegurado.nombre} · <span className="patente">{caso.vehiculo.patente}</span>
-                    {[caso.vehiculo.marca, caso.vehiculo.modelo].filter(Boolean).length > 0 &&
-                      ` ${[caso.vehiculo.marca, caso.vehiculo.modelo].filter(Boolean).join(' ')}`}
-                  </span>
-                  {caso.descripcion && <span>{caso.descripcion}</span>}
-                  <span>Abierto el {fechaHora(caso.created_at)}</span>
-                  {caso.fecha_turno !== null && <span>Turno: {fechaCorta(caso.fecha_turno)}</span>}
-                  {caso.cambios_turno
-                    .filter((cambio) => cambio.fecha_anterior !== null)
-                    .map((cambio) => (
-                      <small key={cambio.id} className="cambio-turno">
-                        Reprogramado del {fechaCorta(cambio.fecha_anterior!)} al {fechaCorta(cambio.fecha_nueva)} por{' '}
-                        {cambio.registrado_por.nombre} el {fechaHora(cambio.created_at)}
-                      </small>
-                    ))}
-                </div>
-                <div className="item-insignias">
-                  {caso.fecha_turno === null && <span className="insignia insignia-pendiente">Sin turno</span>}
-                  {caso.orden_id === null ? (
-                    <>
-                      <span className="insignia insignia-desactivado">Sin orden</span>
-                      {turnoId !== caso.id && (
-                        <button
-                          type="button"
-                          className="secundario"
-                          onClick={() => {
-                            setAviso(null)
-                            setTurnoId(caso.id)
-                          }}
-                        >
-                          {caso.fecha_turno === null ? 'Asignar turno' : 'Reprogramar'}
-                        </button>
+          <Tabla etiqueta="Casos" ocupada={casos.isPlaceholderData}>
+            <thead>
+              <tr>
+                <th scope="col">Siniestro</th>
+                <th scope="col">Asegurado</th>
+                <th scope="col">Abierto</th>
+                <th scope="col">Turno</th>
+                <th scope="col">Orden</th>
+                <th scope="col" className="acciones-celda">
+                  <span className="solo-lectores">Acciones</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {casos.data.casos.map((caso) => {
+                const vehiculo = [caso.vehiculo.marca, caso.vehiculo.modelo].filter(Boolean).join(' ')
+                const acciones: Accion[] = []
+                if (caso.orden_id === null) {
+                  acciones.push({
+                    etiqueta: caso.fecha_turno === null ? 'Asignar turno' : 'Reprogramar turno',
+                    onSeleccionar: () => {
+                      setAviso(null)
+                      setTurnoDe(caso)
+                    },
+                  })
+                  if (caso.fecha_turno !== null) {
+                    acciones.push({
+                      etiqueta: 'Ingresar vehículo',
+                      deshabilitada: ingresar.isPending,
+                      onSeleccionar: () => {
+                        setAviso(null)
+                        ingresar.mutate(caso)
+                      },
+                    })
+                  }
+                }
+
+                return (
+                  <tr key={caso.id}>
+                    <td>
+                      <strong>{caso.numero_siniestro}</strong>
+                      <span className="secundaria">{caso.aseguradora.nombre}</span>
+                      {caso.descripcion && <span className="secundaria">{caso.descripcion}</span>}
+                    </td>
+                    <td>
+                      {caso.asegurado.nombre}
+                      <span className="secundaria">
+                        <span className="patente">{caso.vehiculo.patente}</span>
+                        {vehiculo && ` ${vehiculo}`}
+                      </span>
+                    </td>
+                    <td className="fecha">{fechaHora(caso.created_at)}</td>
+                    <td>
+                      {caso.fecha_turno === null ? (
+                        <span className="insignia insignia-pendiente">Sin turno</span>
+                      ) : (
+                        fechaCorta(caso.fecha_turno)
                       )}
-                      {caso.fecha_turno !== null && (
-                        <button
-                          type="button"
-                          disabled={ingresar.isPending}
-                          onClick={() => {
-                            setAviso(null)
-                            ingresar.mutate(caso)
-                          }}
-                        >
-                          Ingresar vehículo
-                        </button>
+                      {caso.cambios_turno
+                        .filter((cambio) => cambio.fecha_anterior !== null)
+                        .map((cambio) => (
+                          <small key={cambio.id} className="secundaria cambio-turno">
+                            Reprogramado del {fechaCorta(cambio.fecha_anterior!)} al {fechaCorta(cambio.fecha_nueva)} por{' '}
+                            {cambio.registrado_por.nombre} el {fechaHora(cambio.created_at)}
+                          </small>
+                        ))}
+                    </td>
+                    <td>
+                      {caso.orden_id === null ? (
+                        <span className="insignia insignia-desactivado">Sin orden</span>
+                      ) : (
+                        <Link to={`/ordenes/${caso.orden_id}`} className="insignia insignia-abierta">
+                          Orden #{caso.orden_id}
+                        </Link>
                       )}
-                    </>
-                  ) : (
-                    <Link to={`/ordenes/${caso.orden_id}`} className="insignia insignia-abierta">
-                      Ingresado · orden #{caso.orden_id}
-                    </Link>
-                  )}
-                </div>
-                {turnoId === caso.id && (
-                  <TurnoForm
-                    casoId={caso.id}
-                    numeroSiniestro={caso.numero_siniestro}
-                    fechaActual={caso.fecha_turno}
-                    onCancelar={() => setTurnoId(null)}
-                    onListo={(actualizado) => {
-                      setTurnoId(null)
-                      setAviso(
-                        `${caso.fecha_turno === null ? 'Se asignó' : 'Se reprogramó'} el turno del caso ${actualizado.numero_siniestro} para el ${fechaCorta(actualizado.fecha_turno!)}.`,
-                      )
-                    }}
-                  />
-                )}
-              </li>
-            ))}
-          </ul>
+                    </td>
+                    <td className="acciones-celda">
+                      <MenuAcciones etiqueta={`Acciones para el caso ${caso.numero_siniestro}`} acciones={acciones} />
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </Tabla>
           <Paginacion meta={casos.data.meta} cargando={casos.isPlaceholderData} onCambiar={setPagina} />
         </>
+      )}
+
+      {turnoDe && (
+        <Dialogo onCerrar={() => setTurnoDe(null)}>
+          <div className="tarjeta">
+            <h2>
+              {turnoDe.fecha_turno === null ? 'Asignar turno' : 'Reprogramar turno'} · caso {turnoDe.numero_siniestro}
+            </h2>
+            <TurnoForm
+              casoId={turnoDe.id}
+              numeroSiniestro={turnoDe.numero_siniestro}
+              fechaActual={turnoDe.fecha_turno}
+              onCancelar={() => setTurnoDe(null)}
+              onListo={(actualizado) => {
+                setTurnoDe(null)
+                setAviso(
+                  `${turnoDe.fecha_turno === null ? 'Se asignó' : 'Se reprogramó'} el turno del caso ${actualizado.numero_siniestro} para el ${fechaCorta(actualizado.fecha_turno!)}.`,
+                )
+              }}
+            />
+          </div>
+        </Dialogo>
       )}
     </section>
   )

@@ -7,6 +7,8 @@ import { importe } from '../../lib/formato'
 import { listarTareasFrecuentes } from './api'
 import { NuevaTareaFrecuenteForm } from './NuevaTareaFrecuenteForm'
 import { Cargando } from '../../components/Cargando'
+import { EstadoVacio } from '../../components/EstadoVacio'
+import { Tabla } from '../../components/Tabla'
 
 export function TareasFrecuentesPage() {
   const [creando, setCreando] = useState(false)
@@ -59,20 +61,31 @@ export function TareasFrecuentesPage() {
       )}
 
       {tareasFrecuentes.data?.tareas_frecuentes.length === 0 && (
-        <p className="estado">Todavía no hay tareas frecuentes cargadas.</p>
+        <EstadoVacio
+          titulo="Todavía no hay tareas frecuentes"
+          descripcion="Cargá los trabajos habituales con su precio sugerido para agregarlos rápido a las órdenes."
+        />
       )}
 
       {tareasFrecuentes.data && tareasFrecuentes.data.tareas_frecuentes.length > 0 && (
-        <ul className="lista">
-          {tareasFrecuentes.data.tareas_frecuentes.map((tareaFrecuente) => (
-            <li key={tareaFrecuente.id} className="tarjeta fila-item">
-              <div className="item-datos">
-                <strong>{tareaFrecuente.descripcion}</strong>
-              </div>
-              <span>$ {importe(tareaFrecuente.precio_sugerido)}</span>
-            </li>
-          ))}
-        </ul>
+        <Tabla etiqueta="Tareas frecuentes">
+          <thead>
+            <tr>
+              <th scope="col">Descripción</th>
+              <th scope="col" className="numero">
+                Precio sugerido
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {tareasFrecuentes.data.tareas_frecuentes.map((tareaFrecuente) => (
+              <tr key={tareaFrecuente.id}>
+                <td>{tareaFrecuente.descripcion}</td>
+                <td className="numero">$ {importe(tareaFrecuente.precio_sugerido)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </Tabla>
       )}
     </section>
   )

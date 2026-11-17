@@ -3,8 +3,12 @@ import { useState } from 'react'
 import { BotonNuevo } from '../../components/BotonNuevo'
 import { Buscador } from '../../components/Buscador'
 import { Cargando } from '../../components/Cargando'
+import { Dialogo } from '../../components/Dialogo'
 import { EncabezadoPagina } from '../../components/EncabezadoPagina'
+import { EstadoVacio } from '../../components/EstadoVacio'
+import { MenuAcciones } from '../../components/MenuAcciones'
 import { Paginacion } from '../../components/Paginacion'
+import { Tabla } from '../../components/Tabla'
 import { errorMessage, fieldErrors } from '../../lib/api'
 import { useDebounce } from '../../lib/useDebounce'
 import { AseguradoraForm } from './AseguradoraForm'
@@ -76,10 +80,9 @@ export function AseguradorasPage() {
         </p>
       )}
 
-      {editando !== undefined && (
+      {editando === null && (
         <AseguradoraForm
-          key={editando?.id ?? 'nueva'}
-          aseguradora={editando ?? undefined}
+          key="nueva"
           onCancelar={() => setEditando(undefined)}
           onGuardada={(guardada) => {
             setEditando(undefined)
@@ -118,64 +121,94 @@ export function AseguradorasPage() {
         </p>
       )}
 
-      {aseguradoras.data?.aseguradoras.length === 0 && (
-        <p className="estado">
-          {buscar ? 'No hay aseguradoras que coincidan.' : 'Todavía no hay aseguradoras cargadas.'}
-        </p>
-      )}
+      {aseguradoras.data?.aseguradoras.length === 0 &&
+        (buscar ? (
+          <EstadoVacio busqueda titulo="Sin resultados" descripcion="No hay aseguradoras que coincidan." />
+        ) : (
+          <EstadoVacio
+            titulo="Todavía no hay aseguradoras"
+            descripcion="Cargá las compañías con las que trabaja el taller para asociarles los casos."
+          />
+        ))}
 
       {aseguradoras.data && aseguradoras.data.aseguradoras.length > 0 && (
         <>
-          <ul className="lista" aria-busy={aseguradoras.isPlaceholderData}>
-            {aseguradoras.data.aseguradoras.map((aseguradora) => (
-              <li key={aseguradora.id} className={`tarjeta item${aseguradora.activa ? '' : ' inactivo'}`}>
-                <div className="item-datos">
-                  <strong>{aseguradora.nombre}</strong>
-                  <span>
-                    {[aseguradora.telefono, aseguradora.email].filter(Boolean).join(' · ') || 'Sin contacto cargado'}
-                  </span>
-                  {!aseguradora.activa && <span className="insignia insignia-desactivado">Desactivada</span>}
-                </div>
-                <div className="item-acciones">
-                  <button
-                    type="button"
-                    className="secundario"
-                    disabled={ocupado}
-                    onClick={() => {
-                      iniciar()
-                      setEditando(aseguradora)
-                    }}
-                    aria-label={`Editar ${aseguradora.nombre}`}
-                  >
-                    Editar
-                  </button>
-                  <button
-                    type="button"
-                    className="secundario"
-                    disabled={ocupado}
-                    onClick={() => {
-                      iniciar()
-                      cambiarEstado.mutate({ aseguradora, activa: !aseguradora.activa })
-                    }}
-                    aria-label={`${aseguradora.activa ? 'Desactivar' : 'Reactivar'} ${aseguradora.nombre}`}
-                  >
-                    {aseguradora.activa ? 'Desactivar' : 'Reactivar'}
-                  </button>
-                  <button
-                    type="button"
-                    className="secundario peligro"
-                    disabled={ocupado}
-                    onClick={() => confirmarEliminacion(aseguradora)}
-                    aria-label={`Eliminar ${aseguradora.nombre}`}
-                  >
-                    Eliminar
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
+          <Tabla etiqueta="Aseguradoras" ocupada={aseguradoras.isPlaceholderData}>
+            <thead>
+              <tr>
+                <th scope="col">Nombre</th>
+                <th scope="col">Teléfono</th>
+                <th scope="col">Email</th>
+                <th scope="col">Estado</th>
+                <th scope="col" className="acciones-celda">
+                  <span className="solo-lectores">Acciones</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {aseguradoras.data.aseguradoras.map((aseguradora) => (
+                <tr key={aseguradora.id} className={aseguradora.activa ? undefined : 'inactiva'}>
+                  <td>
+                    <strong>{aseguradora.nombre}</strong>
+                  </td>
+                  <td>{aseguradora.telefono || <span className="sin-dato">—</span>}</td>
+                  <td>{aseguradora.email || <span className="sin-dato">—</span>}</td>
+                  <td>
+                    {aseguradora.activa ? (
+                      'Activa'
+                    ) : (
+                      <span className="insignia insignia-desactivado">Desactivada</span>
+                    )}
+                  </td>
+                  <td className="acciones-celda">
+                    <MenuAcciones
+                      etiqueta={`Acciones para ${aseguradora.nombre}`}
+                      acciones={[
+                        {
+                          etiqueta: 'Editar',
+                          deshabilitada: ocupado,
+                          onSeleccionar: () => {
+                            iniciar()
+                            setEditando(aseguradora)
+                          },
+                        },
+                        {
+                          etiqueta: aseguradora.activa ? 'Desactivar' : 'Reactivar',
+                          deshabilitada: ocupado,
+                          onSeleccionar: () => {
+                            iniciar()
+                            cambiarEstado.mutate({ aseguradora, activa: !aseguradora.activa })
+                          },
+                        },
+                        {
+                          etiqueta: 'Eliminar',
+                          peligro: true,
+                          deshabilitada: ocupado,
+                          onSeleccionar: () => confirmarEliminacion(aseguradora),
+                        },
+                      ]}
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </Tabla>
           <Paginacion meta={aseguradoras.data.meta} cargando={aseguradoras.isPlaceholderData} onCambiar={setPagina} />
         </>
+      )}
+
+      {editando && (
+        <Dialogo onCerrar={() => setEditando(undefined)}>
+          <AseguradoraForm
+            key={editando.id}
+            aseguradora={editando}
+            onCancelar={() => setEditando(undefined)}
+            onGuardada={(guardada) => {
+              setEditando(undefined)
+              setAviso(`Se guardó ${guardada.nombre}.`)
+            }}
+          />
+        </Dialogo>
       )}
     </section>
   )

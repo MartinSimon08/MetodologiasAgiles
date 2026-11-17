@@ -11,6 +11,8 @@ import { listarOrdenes } from './api'
 import { NuevaOrdenForm } from './NuevaOrdenForm'
 import { describirVehiculo, ESTADO_ORDEN_LABELS, type EstadoOrden } from './types'
 import { Cargando } from '../../components/Cargando'
+import { EstadoVacio } from '../../components/EstadoVacio'
+import { Tabla } from '../../components/Tabla'
 
 const ESTADOS = Object.keys(ESTADO_ORDEN_LABELS) as EstadoOrden[]
 
@@ -77,25 +79,47 @@ export function OrdenesPage() {
         </p>
       )}
 
-      {ordenes.data && ordenes.data.ordenes.length === 0 && (
-        <p className="estado">{estado ? 'No hay órdenes en ese estado.' : 'Todavía no hay órdenes cargadas.'}</p>
-      )}
+      {ordenes.data && ordenes.data.ordenes.length === 0 &&
+        (estado ? (
+          <EstadoVacio
+            busqueda
+            titulo="Sin resultados"
+            descripcion={`No hay órdenes en estado ${ESTADO_ORDEN_LABELS[estado].toLowerCase()}.`}
+          />
+        ) : (
+          <EstadoVacio
+            titulo="Todavía no hay órdenes"
+            descripcion="Cuando ingrese un vehículo al taller, abrí una orden para cargarle tareas y repuestos."
+          />
+        ))}
 
-      {ordenes.data && (
-        <ul className="lista" aria-busy={ordenes.isPlaceholderData}>
-          {ordenes.data.ordenes.map((orden) => (
-            <li key={orden.id} className="tarjeta fila-item">
-              <Link to={`/ordenes/${orden.id}`} className="item-datos">
-                <strong>{orden.cliente.nombre}</strong>
-                <span>{describirVehiculo(orden.vehiculo)}</span>
-                <span>Ingreso: {fechaHora(orden.created_at)}</span>
-              </Link>
-              <span className={`insignia insignia-${orden.estado}`}>
-                {ESTADO_ORDEN_LABELS[orden.estado]}
-              </span>
-            </li>
-          ))}
-        </ul>
+      {ordenes.data && ordenes.data.ordenes.length > 0 && (
+        <Tabla etiqueta="Órdenes" ocupada={ordenes.isPlaceholderData}>
+          <thead>
+            <tr>
+              <th scope="col">Cliente</th>
+              <th scope="col">Vehículo</th>
+              <th scope="col">Ingreso</th>
+              <th scope="col">Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            {ordenes.data.ordenes.map((orden) => (
+              <tr key={orden.id}>
+                <td>
+                  <Link to={`/ordenes/${orden.id}`} className="enlace-fila">
+                    {orden.cliente.nombre}
+                  </Link>
+                </td>
+                <td>{describirVehiculo(orden.vehiculo)}</td>
+                <td className="fecha">{fechaHora(orden.created_at)}</td>
+                <td>
+                  <span className={`insignia insignia-${orden.estado}`}>{ESTADO_ORDEN_LABELS[orden.estado]}</span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </Tabla>
       )}
 
       {ordenes.data && (

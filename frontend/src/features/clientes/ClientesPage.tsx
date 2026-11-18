@@ -7,7 +7,9 @@ import { EncabezadoPagina } from '../../components/EncabezadoPagina'
 import { Paginacion } from '../../components/Paginacion'
 import { errorMessage } from '../../lib/api'
 import { useDebounce } from '../../lib/useDebounce'
-import { listarClientes } from './api'
+import { EnlaceEntidad } from '../../components/EnlaceEntidad'
+import { FilaEnlace } from '../../components/FilaEnlace'
+import { listarClientes, type TipoCliente } from './api'
 import { NuevoClienteForm } from './NuevoClienteForm'
 import { EstadoVacio } from '../../components/EstadoVacio'
 import { Tabla } from '../../components/Tabla'
@@ -23,17 +25,19 @@ export function ClientesPage() {
   const [porPagina, setPorPagina] = usePorPagina()
   const busqueda = searchParams.get('q') ?? ''
   const q = useDebounce(busqueda.trim())
+  const tipo = (searchParams.get('tipo') ?? '') as TipoCliente
 
   const clientes = useQuery({
-    queryKey: ['clientes', pagina, q, porPagina],
-    queryFn: () => listarClientes(pagina, q, porPagina),
+    queryKey: ['clientes', pagina, q, porPagina, tipo],
+    queryFn: () => listarClientes(pagina, q, porPagina, tipo),
     placeholderData: keepPreviousData,
   })
 
-  function actualizarFiltros(nuevaPagina: number, nuevaBusqueda: string) {
+  function actualizarFiltros(nuevaPagina: number, nuevaBusqueda: string, nuevoTipo: TipoCliente = tipo) {
     const params: Record<string, string> = {}
     if (nuevaBusqueda) params.q = nuevaBusqueda
     if (nuevaPagina > 1) params.pagina = String(nuevaPagina)
+    if (nuevoTipo) params.tipo = nuevoTipo
     setSearchParams(params, { replace: true })
   }
 
@@ -82,6 +86,15 @@ export function ClientesPage() {
         onCambiar={(valor) => actualizarFiltros(1, valor)}
       />
 
+      <label className="filtro-tipo">
+        Tipo de cliente
+        <select value={tipo} onChange={(evento) => actualizarFiltros(1, busqueda, evento.target.value as TipoCliente)}>
+          <option value="">Todos</option>
+          <option value="asegurado">Asegurados</option>
+          <option value="particular">Particulares</option>
+        </select>
+      </label>
+
       {clientes.isPending && <Cargando />}
       {clientes.isError && (
         <p className="error" role="alert">
@@ -114,15 +127,18 @@ export function ClientesPage() {
           </thead>
           <tbody>
             {clientes.data.clientes.map((cliente) => (
-              <tr key={cliente.id}>
+              <FilaEnlace key={cliente.id} a={`/clientes/${cliente.id}`}>
                 <td>
-                  <strong>{cliente.nombre}</strong>
+                  <strong>
+                    <EnlaceEntidad a={`/clientes/${cliente.id}`}>{cliente.nombre}</EnlaceEntidad>
+                  </strong>
+                  {cliente.asegurado && <span className="insignia insignia-asegurado">Asegurado</span>}
                 </td>
                 <td>
                   <a href={`tel:${cliente.telefono}`}>{cliente.telefono}</a>
                 </td>
                 <td>{cliente.email ?? <span className="sin-dato">—</span>}</td>
-              </tr>
+              </FilaEnlace>
             ))}
           </tbody>
         </Tabla>

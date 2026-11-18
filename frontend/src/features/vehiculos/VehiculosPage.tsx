@@ -13,6 +13,8 @@ import { NuevoVehiculoForm } from './NuevoVehiculoForm'
 import { Cargando } from '../../components/Cargando'
 import { Dialogo } from '../../components/Dialogo'
 import { EstadoVacio } from '../../components/EstadoVacio'
+import { EnlaceEntidad } from '../../components/EnlaceEntidad'
+import { FilaEnlace } from '../../components/FilaEnlace'
 import { MenuAcciones } from '../../components/MenuAcciones'
 import { Tabla } from '../../components/Tabla'
 import { usePorPagina } from '../../lib/paginacion'
@@ -134,9 +136,11 @@ export function VehiculosPage() {
           </thead>
           <tbody>
             {vehiculos.data.vehiculos.map((vehiculo) => (
-              <tr key={vehiculo.id}>
+              <FilaEnlace key={vehiculo.id} a={`/vehiculos/${vehiculo.id}/historial`}>
                 <td>
-                  <strong className="patente">{vehiculo.patente}</strong>
+                  <strong className="patente">
+                    <EnlaceEntidad a={`/vehiculos/${vehiculo.id}/historial`}>{vehiculo.patente}</EnlaceEntidad>
+                  </strong>
                 </td>
                 <td>{descripcion(vehiculo) || <span className="sin-dato">—</span>}</td>
                 <td className="numero">
@@ -147,7 +151,7 @@ export function VehiculosPage() {
                   )}
                 </td>
                 <td>
-                  {vehiculo.cliente.nombre}
+                  <EnlaceEntidad a={`/clientes/${vehiculo.cliente.id}`}>{vehiculo.cliente.nombre}</EnlaceEntidad>
                   <a className="secundaria" href={`tel:${vehiculo.cliente.telefono}`}>
                     {vehiculo.cliente.telefono}
                   </a>
@@ -170,7 +174,7 @@ export function VehiculosPage() {
                     ]}
                   />
                 </td>
-              </tr>
+              </FilaEnlace>
             ))}
           </tbody>
         </Tabla>

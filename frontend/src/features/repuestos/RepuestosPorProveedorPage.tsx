@@ -11,6 +11,7 @@ import { listarRepuestosPorProveedor, nombreProveedor } from './api'
 import { RepuestosNav } from './RepuestosNav'
 import { Cargando } from '../../components/Cargando'
 import { EstadoVacio } from '../../components/EstadoVacio'
+import { FilaEnlace } from '../../components/FilaEnlace'
 import { Tabla } from '../../components/Tabla'
 import { usePorPagina } from '../../lib/paginacion'
 
@@ -171,7 +172,7 @@ export function RepuestosPorProveedorPage() {
             </thead>
             <tbody>
               {compras.data.repuestos.map((repuesto) => (
-                <tr key={repuesto.id}>
+                <FilaEnlace key={repuesto.id} a={`/ordenes/${repuesto.orden.id}`}>
                   <td>
                     {repuesto.descripcion}
                     {repuesto.con_ajustes && <span className="secundaria">Con devoluciones o cambios</span>}
@@ -187,7 +188,7 @@ export function RepuestosPorProveedorPage() {
                     <span className="secundaria">{describirVehiculo(repuesto.orden.vehiculo)}</span>
                   </td>
                   <td className="fecha">{fechaHora(repuesto.created_at)}</td>
-                </tr>
+                </FilaEnlace>
               ))}
             </tbody>
           </Tabla>

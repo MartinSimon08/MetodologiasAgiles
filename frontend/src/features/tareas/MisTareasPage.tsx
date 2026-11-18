@@ -77,7 +77,9 @@ export function MisTareasPage() {
       <div className="item-datos">
         <strong>{tarea.descripcion}</strong>
         <span>
-          <Link to={`/ordenes/${tarea.orden.id}`}>Orden #{tarea.orden.id}</Link> ·{' '}
+          <Link to={`/ordenes/${tarea.orden.id}`} className="enlace-tarjeta">
+            Orden #{tarea.orden.id}
+          </Link> ·{' '}
           {describirVehiculo(tarea.orden.vehiculo)}
         </span>
         <span>{tarea.orden.cliente}</span>
@@ -143,7 +145,7 @@ export function MisTareasPage() {
           ) : (
             <ul className="lista lista-en-curso">
               {tareas.data.mias.map((tarea) => (
-                <li key={tarea.id} className="tarjeta tarea-movil">
+                <li key={tarea.id} className="tarjeta tarea-movil tarjeta-enlazada">
                   {datosTarea(tarea)}
                   <div className="acciones">
                     <button
@@ -168,7 +170,7 @@ export function MisTareasPage() {
           ) : (
             <ul className="lista">
               {tareas.data.disponibles.map((tarea) => (
-                <li key={tarea.id} className="tarjeta tarea-movil">
+                <li key={tarea.id} className="tarjeta tarea-movil tarjeta-enlazada">
                   {datosTarea(tarea)}
                   <div className="acciones">
                     <button disabled={ocupado} onClick={() => ejecutar(tomar.mutate, tarea.id)}>
@@ -186,7 +188,7 @@ export function MisTareasPage() {
           ) : (
             <ul className="lista">
               {tareas.data.terminadas_hoy.map((tarea) => (
-                <li key={tarea.id} className="tarjeta tarea-movil">
+                <li key={tarea.id} className="tarjeta tarea-movil tarjeta-enlazada">
                   {datosTarea(tarea)}
                 </li>
               ))}

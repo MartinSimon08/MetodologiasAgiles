@@ -21,10 +21,11 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :clientes, only: %i[index create]
-  resources :casos, only: %i[index create] do
+  resources :clientes, only: %i[index show create]
+  resources :casos, only: %i[index show create] do
     member do
       post :ingresar
+      post :avisar
       patch :turno
     end
     collection do
@@ -32,7 +33,7 @@ Rails.application.routes.draw do
     end
   end
   resource :turnera, only: :show, controller: "turnera"
-  resources :aseguradoras, only: %i[index create update destroy] do
+  resources :aseguradoras, only: %i[index show create update destroy] do
     member do
       patch :desactivar
       patch :activar

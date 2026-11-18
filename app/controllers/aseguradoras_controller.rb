@@ -14,6 +14,17 @@ class AseguradorasController < ApplicationController
     render json: { aseguradoras: pagina.map { |aseguradora| serialize(aseguradora) }, meta: meta }
   end
 
+  def show
+    aseguradora = Aseguradora.find(params[:id])
+    casos = aseguradora.casos.includes(:asegurado, :vehiculo).order(created_at: :desc, id: :desc).map do |caso|
+      caso.as_json(only: %i[id numero_siniestro fecha_turno orden_id]).merge(
+        asegurado: caso.asegurado.as_json(only: %i[id nombre]),
+        vehiculo: caso.vehiculo.as_json(only: %i[id patente marca modelo])
+      )
+    end
+    render json: serialize(aseguradora).merge(casos: casos)
+  end
+
   def create
     aseguradora = AseguradoraGuardar.call(**aseguradora_params.to_h.symbolize_keys)
     render json: serialize(aseguradora), status: :created

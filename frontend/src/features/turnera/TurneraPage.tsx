@@ -45,10 +45,12 @@ function DiaTurneraTarjeta({ dia, cupo, esHoy, reprogramandoId, onReprogramar, o
       ) : (
         <ul className="lista">
           {dia.turnos.map((turno) => (
-            <li key={turno.caso_id} className="tarjeta item">
+            <li key={turno.caso_id} className="tarjeta item tarjeta-enlazada">
               <div className="item-datos">
                 <strong>
-                  Siniestro {turno.numero_siniestro} · {turno.aseguradora.nombre}
+                  <Link to={`/casos/${turno.caso_id}`} className="enlace-tarjeta">
+                    Siniestro {turno.numero_siniestro} · {turno.aseguradora.nombre}
+                  </Link>
                 </strong>
                 <span>
                   {turno.asegurado.nombre} · <span className="patente">{turno.vehiculo.patente}</span>

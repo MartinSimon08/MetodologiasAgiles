@@ -5,6 +5,8 @@ import { Cargando } from '../../components/Cargando'
 import { EncabezadoPagina } from '../../components/EncabezadoPagina'
 import { ErroresCampo } from '../../components/ErroresCampo'
 import { EstadoVacio } from '../../components/EstadoVacio'
+import { EnlaceEntidad } from '../../components/EnlaceEntidad'
+import { FilaEnlace } from '../../components/FilaEnlace'
 import { Tabla } from '../../components/Tabla'
 import { errorMessage, fieldErrors } from '../../lib/api'
 import { hoyIso, primerDiaDelMesIso } from '../../lib/fechas'
@@ -150,12 +152,14 @@ export function CasosAseguradoraPage() {
             {pagina.items.map((caso) => {
               const vehiculo = [caso.vehiculo.marca, caso.vehiculo.modelo].filter(Boolean).join(' ')
               return (
-                <tr key={caso.id}>
+                <FilaEnlace key={caso.id} a={`/casos/${caso.id}`}>
                   <td>
-                    <strong>{caso.numero_siniestro}</strong>
+                    <strong>
+                      <EnlaceEntidad a={`/casos/${caso.id}`}>{caso.numero_siniestro}</EnlaceEntidad>
+                    </strong>
                   </td>
                   <td>
-                    {caso.asegurado.nombre}
+                    <EnlaceEntidad a={`/clientes/${caso.asegurado.id}`}>{caso.asegurado.nombre}</EnlaceEntidad>
                     <span className="secundaria">
                       <span className="patente">{caso.vehiculo.patente}</span>
                       {vehiculo && ` ${vehiculo}`}
@@ -176,7 +180,7 @@ export function CasosAseguradoraPage() {
                   <td className="numero">$ {importe(caso.total_autorizado)}</td>
                   <td className="numero">$ {importe(caso.franquicia_cobrada)}</td>
                   <td className="numero">$ {importe(caso.saldo_pendiente)}</td>
-                </tr>
+                </FilaEnlace>
               )
             })}
           </tbody>

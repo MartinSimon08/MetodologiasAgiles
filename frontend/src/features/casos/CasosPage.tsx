@@ -9,6 +9,8 @@ import { EncabezadoPagina } from '../../components/EncabezadoPagina'
 import { EstadoVacio } from '../../components/EstadoVacio'
 import { MenuAcciones, type Accion } from '../../components/MenuAcciones'
 import { Paginacion } from '../../components/Paginacion'
+import { EnlaceEntidad } from '../../components/EnlaceEntidad'
+import { FilaEnlace } from '../../components/FilaEnlace'
 import { Tabla } from '../../components/Tabla'
 import { errorMessage } from '../../lib/api'
 import { fechaHora } from '../../lib/formato'
@@ -151,14 +153,18 @@ export function CasosPage() {
                 }
 
                 return (
-                  <tr key={caso.id}>
+                  <FilaEnlace key={caso.id} a={`/casos/${caso.id}`}>
                     <td>
-                      <strong>{caso.numero_siniestro}</strong>
-                      <span className="secundaria">{caso.aseguradora.nombre}</span>
+                      <strong>
+                        <EnlaceEntidad a={`/casos/${caso.id}`}>{caso.numero_siniestro}</EnlaceEntidad>
+                      </strong>
+                      <span className="secundaria">
+                        <EnlaceEntidad a={`/aseguradoras/${caso.aseguradora.id}`}>{caso.aseguradora.nombre}</EnlaceEntidad>
+                      </span>
                       {caso.descripcion && <span className="secundaria">{caso.descripcion}</span>}
                     </td>
                     <td>
-                      {caso.asegurado.nombre}
+                      <EnlaceEntidad a={`/clientes/${caso.asegurado.id}`}>{caso.asegurado.nombre}</EnlaceEntidad>
                       <span className="secundaria">
                         <span className="patente">{caso.vehiculo.patente}</span>
                         {vehiculo && ` ${vehiculo}`}
@@ -192,7 +198,7 @@ export function CasosPage() {
                     <td className="acciones-celda">
                       <MenuAcciones etiqueta={`Acciones para el caso ${caso.numero_siniestro}`} acciones={acciones} />
                     </td>
-                  </tr>
+                  </FilaEnlace>
                 )
               })}
             </tbody>

@@ -156,7 +156,7 @@ Este archivo sigue el formato [DESIGN.md](https://github.com/google-labs-code/de
 
 ## Overview
 
-Herramienta de trabajo para un taller mecánico, no un producto de marketing. La estética es la de una planilla técnica o un cuaderno de taller ordenado: fondo papel con una grilla tenue, tinta casi negra, bordes finos, esquinas rectas y casi nada de color. El color se reserva para comunicar estado (pendiente, rechazado, peligro).
+Herramienta de trabajo para un taller mecánico, no un producto de marketing. La estética es la de una planilla técnica o un cuaderno de taller ordenado: fondo papel liso, tinta casi negra, bordes finos, esquinas rectas y casi nada de color. El color se reserva para comunicar estado (pendiente, rechazado, peligro).
 
 Dos contextos de uso:
 
@@ -170,7 +170,7 @@ Principios: legibilidad antes que decoración, números alineados (cifras tabula
 Paleta monocromática cálida con tres acentos funcionales. En CSS se exponen como variables en `:root` (entre paréntesis el nombre real).
 
 - **primary** (`--tinta`): texto principal, botón primario, insignias activas, contorno de foco.
-- **background** (`--papel`): fondo de página, con la grilla de 120px dibujada en `body::before`.
+- **background** (`--papel`): fondo de página, liso y sin grilla.
 - **surface** (`--superficie`): tarjetas, listas, barra de navegación. También es el texto sobre fondo `primary`.
 - **surface-note** (`--nota`): notas, avisos y resúmenes informativos.
 - **control** (`--control`): estado activo de la navegación y hover de acciones de catálogo.
@@ -178,6 +178,7 @@ Paleta monocromática cálida con tres acentos funcionales. En CSS se exponen co
 - **outline** (`--regla`): todos los bordes y separadores de 1px.
 - **text-muted** (`--tinta-suave`): etiquetas, metadatos y texto secundario.
 - **attention** (`--ambar`): estados que esperan acción (orden abierta, tarea pendiente, repuesto por valorizar) y advertencias.
+- **on-attention** (`--sobre-ambar`): texto sobre todo fondo ámbar (insignias pendiente, abierta y listo para retirar, avisos, calendario). Es siempre casi negro, también en modo oscuro, para mantener el contraste alto; nunca usar `--tinta` sobre ámbar ni texto blanco sobre un fondo amarillo o verde.
 - **link** (`--senal`): único azul del sistema, solo para enlaces de texto.
 - **error** (`--peligro`) y **error-container** (`--peligro-fondo`): acciones destructivas, validación, órdenes canceladas y bloqueos de cierre.
 
@@ -247,6 +248,8 @@ El ícono del select se dibuja con gradientes CSS. Los íconos SVG son de trazo 
 - **Avisos**: `.aviso` en `surface-note` para información; `.advertencia` en `attention` para algo que requiere atención; `.bloqueo-cierre` y `.orden-cancelada` en `error-container` con borde `error`.
 - **Totales** (`.totales-cierre`): filas etiqueta/monto separadas por líneas, borde superior en `primary` y total final a 18px peso 500.
 - **Navegación activa**: fondo `control` con indicador inset en `primary`.
+- **Filas y tarjetas enlazadas**: toda fila de tabla o tarjeta que representa una entidad (orden, cliente, vehículo, aseguradora, caso) es clickeable completa y lleva a su detalle. Las filas usan `FilaEnlace` (`tr.fila-clicable`, cursor de mano; ignora clics sobre enlaces, botones y menús) y llevan además un `EnlaceEntidad` en la celda principal para el teclado. Las tarjetas (`.tarjeta-enlazada`) extienden un `a.enlace-tarjeta` con `::after` sobre toda la tarjeta; sus botones, campos y otros enlaces quedan por encima. Los nombres de cliente, aseguradora, caso y vehículo que aparecen dentro de otra pantalla son enlaces a su detalle.
+- **Insignia de asegurado** (`.insignia-asegurado`): fondo `control`. Marca al cliente que figura como asegurado de al menos un caso; el resto se muestra como particular.
 - **Enlaces de texto**: color `link`, peso 500, subrayado con offset de 3px.
 - **Vista móvil de tareas** (`.tarea-movil`): una columna; por debajo de 600px los botones de acción ocupan el ancho completo.
 

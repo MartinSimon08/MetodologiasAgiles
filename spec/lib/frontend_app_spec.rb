@@ -27,6 +27,16 @@ RSpec.describe FrontendApp do
     expect(respuesta.headers["vary"]).to eq("Accept")
   end
 
+  it "sirve el manifiesto de la PWA con su tipo y sin cache" do
+    File.write(File.join(root, "manifest.webmanifest"), %({"name":"Taller"}))
+
+    respuesta = request.get("/manifest.webmanifest")
+
+    expect(respuesta.status).to eq(200)
+    expect(respuesta.headers["content-type"]).to eq("application/manifest+json")
+    expect(respuesta.headers["cache-control"]).to eq("no-cache")
+  end
+
   it "devuelve index.html en las rutas del frontend" do
     respuesta = request.get("/ordenes/42")
 

@@ -5,6 +5,7 @@ class FrontendApp
   TIPO_MARKDOWN = "text/markdown; charset=utf-8".freeze
   TIPO_CATALOGO = 'application/linkset+json;profile="https://www.rfc-editor.org/info/rfc9727"'.freeze
   CATALOGO = "/.well-known/api-catalog".freeze
+  TIPO_MANIFIESTO = "application/manifest+json".freeze
 
   RUTAS_SPA = [
     %r{\A/\z},
@@ -155,6 +156,7 @@ class FrontendApp
   def responder_archivo(env, inmutable:)
     status, headers, body = @files.call(env)
     headers["cache-control"] = inmutable && status == 200 ? CACHE_ASSETS : CACHE_PAGINA
+    headers["content-type"] = TIPO_MANIFIESTO if status == 200 && env[Rack::PATH_INFO].end_with?(".webmanifest")
     [ status, headers, body ]
   end
 

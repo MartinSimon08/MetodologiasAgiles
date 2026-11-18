@@ -1,6 +1,0 @@
-*
-!.gitignore
-!notes/
-!notes/*.md
-!nodes.json
-!labels.json

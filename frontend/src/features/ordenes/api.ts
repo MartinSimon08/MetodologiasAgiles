@@ -92,3 +92,19 @@ export async function obtenerComprobante(id: number) {
   const { data } = await api.get<ComprobanteOrden>(`/ordenes/${id}/comprobante`)
   return data
 }
+
+export interface DestinoAviso {
+  destino: 'aseguradora' | 'asegurado' | 'cliente_listo' | 'cliente_total'
+  etiqueta: string
+  nombre: string
+  email: string | null
+}
+
+export async function obtenerAvisosCierre(id: number) {
+  const { data } = await api.get<{ destinos: DestinoAviso[] }>(`/ordenes/${id}/avisos_cierre`)
+  return data.destinos
+}
+
+export async function avisarCierre(id: number, destino: DestinoAviso['destino']) {
+  await api.post(`/ordenes/${id}/avisar_cierre`, { destino })
+}

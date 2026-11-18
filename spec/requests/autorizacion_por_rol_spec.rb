@@ -61,6 +61,8 @@ RSpec.describe "Autorización por rol", type: :request do
     "GET /ordenes/:id/presupuesto" => :administrador,
     "GET /ordenes/:id/comprobante" => :administrador,
     "POST /ordenes/:id/enviar_presupuesto" => :administrador,
+    "GET /ordenes/:id/avisos_cierre" => :administrador,
+    "POST /ordenes/:id/avisar_cierre" => :administrador,
     "GET /ordenes/:orden_id/adelantos" => :administrador,
     "POST /ordenes/:orden_id/adelantos" => :administrador,
     "GET /ordenes/:orden_id/correcciones" => :administrador,

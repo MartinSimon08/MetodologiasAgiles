@@ -6,6 +6,7 @@ import { EnlaceEntidad } from '../../components/EnlaceEntidad'
 import { etiquetaVehiculo } from '../../lib/vehiculo'
 import { errorMessage } from '../../lib/api'
 import { fecha, fechaHora } from '../../lib/formato'
+import { AvisosCierre } from '../ordenes/AvisosCierre'
 import { avisarAsegurado, obtenerCaso } from './api'
 
 export function CasoDetallePage() {
@@ -119,6 +120,12 @@ export function CasoDetallePage() {
               </button>
             </form>
           </section>
+
+          {datos.orden?.estado === 'cerrada' && (
+            <section className="tarjeta">
+              <AvisosCierre ordenId={datos.orden.id} />
+            </section>
+          )}
 
           {datos.cambios_turno.length > 0 && (
             <section className="tarjeta">

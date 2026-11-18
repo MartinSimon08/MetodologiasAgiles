@@ -3,7 +3,7 @@ class OrdenesController < ApplicationController
 
   before_action :require_administrador!,
                 only: %i[create cancelar cerrar corregir resumen_cierre total_parcial presupuesto comprobante
-                         enviar_presupuesto]
+                         enviar_presupuesto avisos_cierre avisar_cierre]
 
   def index
     ordenes = Orden.includes(:cliente, :vehiculo, :cerrada_por).order(created_at: :desc, id: :desc)
@@ -67,6 +67,15 @@ class OrdenesController < ApplicationController
     envio = PresupuestoEnviar.call(orden: Orden.find(params[:id]), medio: params[:medio],
                                    enviado_por: current_usuario)
     render json: serialize_envio(envio), status: :created
+  end
+
+  def avisos_cierre
+    render json: { destinos: OrdenAvisarCierre.destinos(Orden.find(params[:id])) }
+  end
+
+  def avisar_cierre
+    OrdenAvisarCierre.call(orden: Orden.find(params[:id]), destino: params[:destino])
+    render json: { enviado: true }, status: :created
   end
 
   private

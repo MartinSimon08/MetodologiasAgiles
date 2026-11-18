@@ -97,6 +97,8 @@ Rails.application.routes.draw do
       get :presupuesto
       get :comprobante
       post :enviar_presupuesto
+      get :avisos_cierre
+      post :avisar_cierre
     end
   end
 end

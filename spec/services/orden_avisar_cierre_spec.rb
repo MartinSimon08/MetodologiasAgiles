@@ -29,6 +29,20 @@ RSpec.describe OrdenAvisarCierre do
     expect(EmailEnviar).to have_received(:call).with(hash_including(texto: /Total: \$ 0/, html: a_string_including("Total")))
   end
 
+  it "avisa al cliente por Telegram a su propio chat" do
+    cliente.update!(telegram_chat_id: "99")
+
+    described_class.call(orden: orden, destino: "cliente_listo", medio: "telegram")
+
+    expect(TelegramEnviar).to have_received(:call).with(texto: /#{vehiculo.patente}/, chat_ids: [ "99" ])
+    expect(EmailEnviar).not_to have_received(:call)
+  end
+
+  it "rechaza el aviso por Telegram si el cliente no está vinculado" do
+    expect { described_class.call(orden: orden, destino: "cliente_listo", medio: "telegram") }
+      .to raise_error(ActiveRecord::RecordInvalid)
+  end
+
   it "rechaza el aviso si el cliente no tiene email" do
     cliente.update!(email: nil)
 

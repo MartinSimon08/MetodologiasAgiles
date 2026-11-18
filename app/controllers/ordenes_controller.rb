@@ -74,7 +74,8 @@ class OrdenesController < ApplicationController
   end
 
   def avisar_cierre
-    OrdenAvisarCierre.call(orden: Orden.find(params[:id]), destino: params[:destino])
+    OrdenAvisarCierre.call(orden: Orden.find(params[:id]), destino: params[:destino],
+                           medio: params[:medio].presence || "email")
     render json: { enviado: true }, status: :created
   end
 

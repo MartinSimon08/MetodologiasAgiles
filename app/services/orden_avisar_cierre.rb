@@ -5,33 +5,34 @@ class OrdenAvisarCierre
     caso = Caso.includes(:aseguradora, :asegurado).find_by(orden_id: orden.id)
     if caso
       [
-        destino("aseguradora", "Avisar a la aseguradora del cierre", caso.aseguradora.nombre, caso.aseguradora.email),
-        destino("asegurado", "Avisar al asegurado que retire el vehículo", caso.asegurado.nombre, caso.asegurado.email)
+        destino("aseguradora", "Avisar a la aseguradora del cierre", caso.aseguradora),
+        destino("asegurado", "Avisar al asegurado que retire el vehículo", caso.asegurado)
       ]
     else
       [
-        destino("cliente_listo", "Avisar al cliente que retire el vehículo", orden.cliente.nombre, orden.cliente.email),
-        destino("cliente_total", "Enviar el total al cliente", orden.cliente.nombre, orden.cliente.email)
+        destino("cliente_listo", "Avisar al cliente que retire el vehículo", orden.cliente),
+        destino("cliente_total", "Enviar el total al cliente", orden.cliente)
       ]
     end
   end
 
-  def self.call(orden:, destino:)
+  def self.call(orden:, destino:, medio: "email")
     rechazar(orden, :no_cerrada) unless orden.cerrada?
     rechazar(orden, :destino_invalido) unless destinos(orden).any? { |d| d[:destino] == destino.to_s }
 
     caso = Caso.find_by(orden_id: orden.id)
     case destino.to_s
-    when "aseguradora" then enviar(orden, caso.aseguradora.email, aviso_aseguradora(orden, caso))
+    when "aseguradora" then enviar(orden, medio, caso.aseguradora, aviso_aseguradora(orden, caso))
     when "asegurado" then CasoNotificarAsegurado.call(caso: caso)
-    when "cliente_listo" then enviar(orden, orden.cliente.email, aviso_cliente(orden, listo: true))
-    when "cliente_total" then enviar(orden, orden.cliente.email, aviso_cliente(orden, listo: false))
+    when "cliente_listo" then enviar(orden, medio, orden.cliente, aviso_cliente(orden, listo: true))
+    when "cliente_total" then enviar(orden, medio, orden.cliente, aviso_cliente(orden, listo: false))
     end
     true
   end
 
-  def self.destino(clave, etiqueta, nombre, email)
-    { destino: clave, etiqueta: etiqueta, nombre: nombre, email: email }
+  def self.destino(clave, etiqueta, contacto)
+    { destino: clave, etiqueta: etiqueta, nombre: contacto.nombre, email: contacto.email,
+      telegram_vinculada: contacto.telegram_vinculada? }
   end
 
   def self.rechazar(orden, motivo)
@@ -39,11 +40,16 @@ class OrdenAvisarCierre
     raise ActiveRecord::RecordInvalid, orden
   end
 
-  def self.enviar(orden, email, aviso)
-    rechazar(orden, :sin_email) if email.blank?
-    return if EmailEnviar.call(destinatario: email, asunto: aviso[:asunto], texto: aviso[:texto], html: aviso[:html])
-
-    rechazar(orden, :envio_fallido)
+  def self.enviar(orden, medio, contacto, aviso)
+    if medio.to_s == "telegram"
+      rechazar(orden, :sin_telegram) unless contacto.telegram_vinculada?
+      entregado = TelegramEnviar.call(texto: aviso[:texto], chat_ids: [ contacto.telegram_chat_id ])
+    else
+      rechazar(orden, :sin_email) if contacto.email.blank?
+      entregado = EmailEnviar.call(destinatario: contacto.email, asunto: aviso[:asunto], texto: aviso[:texto],
+                                   html: aviso[:html])
+    end
+    rechazar(orden, :envio_fallido) unless entregado
   end
 
   def self.aviso_aseguradora(orden, caso)

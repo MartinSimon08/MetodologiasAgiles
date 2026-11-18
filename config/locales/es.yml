@@ -164,7 +164,7 @@ es:
               sin_email: El destinatario no tiene email cargado
               sin_contacto: La aseguradora no tiene cargado el contacto para ese medio
               envio_fallido: No se pudo enviar el presupuesto. Revisá la configuración del medio de envío
-              sin_telegram: La aseguradora todavía no está vinculada a Telegram. Tiene que escribirle al bot y compartir su contacto
+              sin_telegram: El destinatario todavía no está vinculado a Telegram. Tiene que escribirle al bot y compartir su contacto
               no_corregible: Solo se puede corregir una orden cerrada
               sin_cambios: La corrección no cambia ningún valor de la orden
               revision_requerida: La franquicia o el saldo a facturar de esta orden ya pudieron cobrarse o facturarse. Confirmá que los revisaste para corregir la orden

@@ -98,6 +98,7 @@ export interface DestinoAviso {
   etiqueta: string
   nombre: string
   email: string | null
+  telegram_vinculada: boolean
 }
 
 export async function obtenerAvisosCierre(id: number) {
@@ -105,6 +106,6 @@ export async function obtenerAvisosCierre(id: number) {
   return data.destinos
 }
 
-export async function avisarCierre(id: number, destino: DestinoAviso['destino']) {
-  await api.post(`/ordenes/${id}/avisar_cierre`, { destino })
+export async function avisarCierre(id: number, destino: DestinoAviso['destino'], medio: 'email' | 'telegram') {
+  await api.post(`/ordenes/${id}/avisar_cierre`, { destino, medio })
 }

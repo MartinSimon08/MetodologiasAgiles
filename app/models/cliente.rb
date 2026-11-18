@@ -8,9 +8,15 @@ class Cliente < ApplicationRecord
   normalizes :telefono, with: ->(telefono) { telefono.gsub(/[\s\-().]/, "") }
   normalizes :email, with: ->(email) { email.strip.downcase.presence }
 
+  before_update { self.telegram_chat_id = nil if telefono_changed? }
+
   validates :nombre, presence: true
   validates :telefono, presence: true,
                        uniqueness: true,
                        format: { with: TELEFONO_FORMATO, allow_blank: true }
   validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, allow_nil: true
+
+  def telegram_vinculada?
+    telegram_chat_id.present?
+  end
 end

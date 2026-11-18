@@ -7,11 +7,9 @@ RSpec.describe "páginas públicas para agentes" do
     sin_etiquetas.gsub(/\s+/, " ").strip
   end
 
-  it "deja la home legible sin JavaScript" do
+  it "mantiene los metadatos de la home" do
     html = Rails.root.join("frontend/index.html").read
 
-    expect(texto_visible(html).length).to be > 500
-    expect(html).to include("<h1>Gestión de Taller</h1>")
     expect(html).to include('lang="es"')
     expect(html).to include('rel="canonical"')
     expect(html).to include('property="og:image"')

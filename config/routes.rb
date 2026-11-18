@@ -21,7 +21,7 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :clientes, only: %i[index show create]
+  resources :clientes, only: %i[index show create update]
   resources :casos, only: %i[index show create] do
     member do
       post :ingresar

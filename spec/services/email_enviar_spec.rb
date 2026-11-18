@@ -37,6 +37,21 @@ RSpec.describe EmailEnviar do
     )
   end
 
+  it "manda el HTML a los dos proveedores" do
+    configurar
+    allow(Net::HTTP).to receive(:post).with(URI("https://api.resend.com/emails"), anything, anything).and_return(error)
+    allow(Net::HTTP).to receive(:post).with(URI("https://api.brevo.com/v3/smtp/email"), anything, anything).and_return(ok)
+
+    described_class.call(destinatario: "a@b.com", asunto: "Hola", texto: "Cuerpo", html: "<p>Hola</p>")
+
+    expect(Net::HTTP).to have_received(:post).with(
+      URI("https://api.resend.com/emails"), satisfy { |c| JSON.parse(c)["html"] == "<p>Hola</p>" }, anything
+    )
+    expect(Net::HTTP).to have_received(:post).with(
+      URI("https://api.brevo.com/v3/smtp/email"), satisfy { |c| JSON.parse(c)["htmlContent"] == "<p>Hola</p>" }, anything
+    )
+  end
+
   it "usa Brevo si Resend no está configurado" do
     configurar(resend: nil)
     allow(Net::HTTP).to receive(:post).and_return(ok)
@@ -57,6 +72,21 @@ RSpec.describe EmailEnviar do
     allow(Net::HTTP).to receive(:post).and_raise(SocketError)
 
     expect(enviar).to be(false)
+  end
+
+  it "separa el nombre y el mail del remitente para Brevo y lo conserva para Resend" do
+    configurar(remitente: "TallerWeb<taller@ejemplo.com>")
+    allow(Net::HTTP).to receive(:post).with(URI("https://api.resend.com/emails"), anything, anything).and_return(error)
+    allow(Net::HTTP).to receive(:post).with(URI("https://api.brevo.com/v3/smtp/email"), anything, anything).and_return(ok)
+
+    enviar
+
+    expect(Net::HTTP).to have_received(:post).with(
+      URI("https://api.resend.com/emails"), satisfy { |cuerpo| JSON.parse(cuerpo)["from"] == "TallerWeb <taller@ejemplo.com>" }, anything
+    )
+    expect(Net::HTTP).to have_received(:post).with(
+      URI("https://api.brevo.com/v3/smtp/email"), /"sender":\{"name":"TallerWeb","email":"taller@ejemplo.com"\}/, anything
+    )
   end
 
   it "no envía nada si no hay remitente configurado" do

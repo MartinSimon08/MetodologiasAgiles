@@ -83,7 +83,7 @@ export function CasoDetallePage() {
 
           <section className="tarjeta">
             <h2>Avisar al asegurado</h2>
-            <p className="estado">Se registra el aviso para {datos.asegurado.nombre}. Podés editar el mensaje antes de enviarlo.</p>
+            <p className="estado">Se envía por Telegram{datos.asegurado.email ? ` y por mail a ${datos.asegurado.email}` : ''}. Podés editar el mensaje antes de enviarlo.</p>
             <form
               className="formulario"
               onSubmit={(evento) => {

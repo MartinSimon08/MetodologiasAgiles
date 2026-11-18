@@ -19,7 +19,8 @@ RSpec.describe PresupuestoEnviar do
     expect(envio.enviado_por).to eq(administrador)
     expect(envio.enviado_en).to be_within(2.seconds).of(Time.current)
     expect(EmailEnviar).to have_received(:call).with(
-      destinatario: aseguradora.email, asunto: "Presupuesto orden ##{orden.id}", texto: /Presupuesto de la orden/
+      destinatario: aseguradora.email, asunto: "Presupuesto orden ##{orden.id}", texto: /Presupuesto de la orden/,
+      html: a_string_including("Presupuesto de la orden ##{orden.id}", "Total para la aseguradora")
     )
   end
 

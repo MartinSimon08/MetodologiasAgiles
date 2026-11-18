@@ -25,6 +25,7 @@ RSpec.describe NotificacionAsegurado do
 
   it "acepta telegram o sms como medio" do
     expect(build(:notificacion_asegurado, medio: :telegram)).to be_valid
+    expect(build(:notificacion_asegurado, medio: :email)).to be_valid
     expect(build(:notificacion_asegurado, medio: :sms)).to be_valid
   end
 end

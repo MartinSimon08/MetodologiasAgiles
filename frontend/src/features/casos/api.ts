@@ -12,7 +12,7 @@ export interface Caso {
   orden_id: number | null
   created_at: string
   aseguradora: { id: number; nombre: string }
-  asegurado: { id: number; nombre: string; telefono: string }
+  asegurado: { id: number; nombre: string; telefono: string; email: string | null }
   vehiculo: { id: number; patente: string; marca: string | null; modelo: string | null }
   cambios_turno: CambioTurno[]
 }

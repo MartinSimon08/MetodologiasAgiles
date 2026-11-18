@@ -19,8 +19,9 @@ class PresupuestoEnviar
       raise ActiveRecord::RecordInvalid, orden
     end
 
-    texto = mensaje(orden, caso)
-    unless entregar(medio.to_s, destinatario, orden, texto)
+    datos = OrdenCalcularPresupuesto.call(orden: orden)
+    texto = mensaje(orden, caso, datos)
+    unless entregar(medio.to_s, destinatario, orden, caso, datos, texto)
       orden.errors.add(:base, :envio_fallido)
       raise ActiveRecord::RecordInvalid, orden
     end
@@ -31,16 +32,18 @@ class PresupuestoEnviar
     )
   end
 
-  def self.entregar(medio, destinatario, orden, texto)
+  def self.entregar(medio, destinatario, orden, caso, datos, texto)
     case medio
-    when "email" then EmailEnviar.call(destinatario: destinatario, asunto: "Presupuesto orden ##{orden.id}", texto: texto)
+    when "email"
+      EmailEnviar.call(destinatario: destinatario, asunto: "Presupuesto orden ##{orden.id}", texto: texto,
+                       html: MailPlantilla.presupuesto(orden: orden, caso: caso, presupuesto: datos))
     when "telegram" then TelegramEnviar.call(texto: texto, chat_ids: [ destinatario ])
     else true
     end
   end
 
-  def self.mensaje(orden, caso)
-    total = OrdenCalcularPresupuesto.call(orden: orden).total_aseguradora.to_d.to_s("F")
+  def self.mensaje(orden, caso, datos)
+    total = datos.total_aseguradora.to_d.to_s("F")
     [
       "Presupuesto de la orden ##{orden.id}",
       "Siniestro #{caso.numero_siniestro}",

@@ -2,9 +2,12 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { InicioPage } from './components/InicioPage'
 import { NoEncontrado } from './components/NoEncontrado'
 import { Layout } from './components/Layout'
+import { AseguradoraDetallePage } from './features/aseguradoras/AseguradoraDetallePage'
 import { AseguradorasPage } from './features/aseguradoras/AseguradorasPage'
 import { CasosAseguradoraPage } from './features/casos/CasosAseguradoraPage'
+import { CasoDetallePage } from './features/casos/CasoDetallePage'
 import { CasosPage } from './features/casos/CasosPage'
+import { ClienteDetallePage } from './features/clientes/ClienteDetallePage'
 import { ClientesPage } from './features/clientes/ClientesPage'
 import { ConfiguracionPage } from './features/configuracion/ConfiguracionPage'
 import { LoginPage } from './features/auth/LoginPage'
@@ -122,6 +125,14 @@ function App() {
             }
           />
           <Route
+            path="clientes/:id"
+            element={
+              <RequireAuth roles={['administrador']}>
+                <ClienteDetallePage />
+              </RequireAuth>
+            }
+          />
+          <Route
             path="vehiculos"
             element={
               <RequireAuth roles={['administrador']}>
@@ -146,6 +157,14 @@ function App() {
             }
           />
           <Route
+            path="casos/:id"
+            element={
+              <RequireAuth roles={['administrador']}>
+                <CasoDetallePage />
+              </RequireAuth>
+            }
+          />
+          <Route
             path="casos/aseguradora"
             element={
               <RequireAuth roles={['administrador']}>
@@ -166,6 +185,14 @@ function App() {
             element={
               <RequireAuth roles={['administrador']}>
                 <AseguradorasPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="aseguradoras/:id"
+            element={
+              <RequireAuth roles={['administrador']}>
+                <AseguradoraDetallePage />
               </RequireAuth>
             }
           />

@@ -108,3 +108,18 @@ export function fechaCorta(iso: string) {
     year: 'numeric',
   })
 }
+
+export interface CasoDetalle extends Caso {
+  orden: { id: number; estado: string } | null
+  notificaciones: { id: number; medio: string; contenido: string; enviada_en: string }[]
+}
+
+export async function avisarAsegurado(id: number, mensaje: string) {
+  const { data } = await api.post(`/casos/${id}/avisar`, { mensaje })
+  return data
+}
+
+export async function obtenerCaso(id: number) {
+  const { data } = await api.get<CasoDetalle>(`/casos/${id}`)
+  return data
+}

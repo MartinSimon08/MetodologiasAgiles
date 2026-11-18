@@ -138,10 +138,10 @@ function ColumnaTablero({ estado, puedeMover, acepta, onArrastrar, onSoltar, onF
       {items.length > 0 && (
         <ul className="lista">
           {items.map((orden) => (
-            <li key={orden.id} className="tarjeta">
+            <li key={orden.id} className="tarjeta tarjeta-enlazada">
               <Link
                 to={`/ordenes/${orden.id}`}
-                className={`item-datos tarjeta-tablero${arrastrable ? ' arrastrable' : ''}`}
+                className={`enlace-tarjeta item-datos tarjeta-tablero${arrastrable ? ' arrastrable' : ''}`}
                 draggable={arrastrable}
                 onDragStart={(event) => {
                   if (!arrastrable) return

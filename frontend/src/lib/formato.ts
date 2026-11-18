@@ -10,3 +10,8 @@ export const fechaHora = (valor: string) =>
     minute: '2-digit',
     hour12: false,
   })
+
+export const fecha = (valor: string) => {
+  const [anio, mes, dia] = valor.slice(0, 10).split('-')
+  return `${dia}/${mes}/${anio}`
+}

@@ -6,6 +6,8 @@ import { Cargando } from '../../components/Cargando'
 import { Dialogo } from '../../components/Dialogo'
 import { EncabezadoPagina } from '../../components/EncabezadoPagina'
 import { EstadoVacio } from '../../components/EstadoVacio'
+import { EnlaceEntidad } from '../../components/EnlaceEntidad'
+import { FilaEnlace } from '../../components/FilaEnlace'
 import { MenuAcciones } from '../../components/MenuAcciones'
 import { Paginacion } from '../../components/Paginacion'
 import { Tabla } from '../../components/Tabla'
@@ -148,9 +150,15 @@ export function AseguradorasPage() {
             </thead>
             <tbody>
               {aseguradoras.data.aseguradoras.map((aseguradora) => (
-                <tr key={aseguradora.id} className={aseguradora.activa ? undefined : 'inactiva'}>
+                <FilaEnlace
+                  key={aseguradora.id}
+                  a={`/aseguradoras/${aseguradora.id}`}
+                  className={aseguradora.activa ? undefined : 'inactiva'}
+                >
                   <td>
-                    <strong>{aseguradora.nombre}</strong>
+                    <strong>
+                      <EnlaceEntidad a={`/aseguradoras/${aseguradora.id}`}>{aseguradora.nombre}</EnlaceEntidad>
+                    </strong>
                   </td>
                   <td>{aseguradora.telefono || <span className="sin-dato">—</span>}</td>
                   <td>{aseguradora.email || <span className="sin-dato">—</span>}</td>
@@ -190,7 +198,7 @@ export function AseguradorasPage() {
                       ]}
                     />
                   </td>
-                </tr>
+                </FilaEnlace>
               ))}
             </tbody>
           </Tabla>

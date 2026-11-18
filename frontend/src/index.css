@@ -8,6 +8,7 @@
   --blanco: #ffffff;
   --regla: #d7d7d6;
   --ambar: #ffcf3f;
+  --sobre-ambar: #181818;
   --senal: #0071bb;
   --peligro: #8f2d2d;
   --peligro-fondo: #f8ecec;
@@ -44,6 +45,7 @@
   --control: #2a2d30;
   --regla: #34383b;
   --ambar: #ffcf3f;
+  --sobre-ambar: #181818;
   --senal: #4da6e8;
   --peligro: #ff8f8f;
   --peligro-fondo: #3a1f1f;
@@ -62,20 +64,6 @@ body {
   margin: 0;
   min-height: 100svh;
   background: var(--fondo);
-}
-
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  opacity: 0.3;
-  background-image:
-    linear-gradient(to right, var(--regla) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--regla) 1px, transparent 1px);
-  background-size: 120px 120px;
-  background-position: calc(50% + 60px) 0;
 }
 
 #root {
@@ -954,7 +942,7 @@ button.peligro:focus-visible {
 .insignia-pendiente_de_valorizar {
   background: var(--ambar);
   border-color: var(--ambar);
-  color: var(--tinta);
+  color: var(--sobre-ambar);
 }
 
 .insignia-cerrada,
@@ -1127,7 +1115,7 @@ button.secundario.peligro:hover:not(:disabled) {
   margin: 0;
   padding: 0.6rem 0.75rem;
   background: var(--ambar);
-  color: var(--tinta);
+  color: var(--sobre-ambar);
   font-weight: 500;
 }
 
@@ -2511,7 +2499,7 @@ label.boton-archivo:has(input:disabled) {
 .insignia-listo_para_retirar {
   background: var(--ambar);
   border-color: var(--ambar);
-  color: var(--tinta);
+  color: var(--sobre-ambar);
 }
 
 .insignia-supera_cupo {
@@ -2866,7 +2854,7 @@ button.menu-acciones-disparador[aria-expanded='true'] {
 .calendario-turno-listo_para_retirar {
   background: var(--ambar);
   border-color: var(--ambar);
-  color: var(--tinta);
+  color: var(--sobre-ambar);
 }
 
 .calendario-turno-mas {
@@ -2894,4 +2882,50 @@ button.menu-acciones-disparador[aria-expanded='true'] {
   .calendario-turnera-turnos {
     display: none;
   }
+}
+
+.tabla tr.fila-clicable {
+  cursor: pointer;
+}
+
+.tarjeta-enlazada {
+  position: relative;
+  cursor: pointer;
+}
+
+.tarjeta-enlazada a.enlace-tarjeta {
+  color: inherit;
+  text-decoration: none;
+}
+
+.tarjeta-enlazada a.enlace-tarjeta::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+.tarjeta-enlazada a:not(.enlace-tarjeta),
+.tarjeta-enlazada button,
+.tarjeta-enlazada input,
+.tarjeta-enlazada textarea,
+.tarjeta-enlazada select,
+.tarjeta-enlazada label {
+  position: relative;
+  z-index: 1;
+}
+
+.insignia-asegurado {
+  background: var(--control);
+  color: var(--tinta);
+}
+
+.detalle-entidad {
+  display: grid;
+  gap: 18px;
+}
+
+.datos-entidad {
+  display: grid;
+  gap: 4px;
+  margin: 0;
 }

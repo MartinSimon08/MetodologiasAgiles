@@ -13,6 +13,7 @@ import { PresupuestoAseguradora } from './PresupuestoAseguradora'
 import { TotalParcialOrden } from './TotalParcialOrden'
 import { describirVehiculo, ESTADO_ORDEN_LABELS } from './types'
 import { Cargando } from '../../components/Cargando'
+import { EnlaceEntidad } from '../../components/EnlaceEntidad'
 
 export function OrdenDetallePage() {
   const { id } = useParams()
@@ -41,8 +42,14 @@ export function OrdenDetallePage() {
         <>
           <header className="encabezado">
             <div>
-              <h1>{orden.data.cliente.nombre}</h1>
-              <p className="estado">{describirVehiculo(orden.data.vehiculo)}</p>
+              <h1>
+                <EnlaceEntidad a={`/clientes/${orden.data.cliente.id}`}>{orden.data.cliente.nombre}</EnlaceEntidad>
+              </h1>
+              <p className="estado">
+                <EnlaceEntidad a={`/vehiculos/${orden.data.vehiculo.id}/historial`}>
+                  {describirVehiculo(orden.data.vehiculo)}
+                </EnlaceEntidad>
+              </p>
               <p className="estado">Ingreso: {fechaHora(orden.data.created_at)}</p>
             </div>
             <span className={`insignia insignia-${orden.data.estado}`}>

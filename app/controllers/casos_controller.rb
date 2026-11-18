@@ -15,9 +15,22 @@ class CasosController < ApplicationController
     render json: { casos: pagina.map { |caso| serialize(caso) }, meta: meta }
   end
 
+  def show
+    caso = Caso.includes(:aseguradora, :asegurado, :vehiculo, :notificacion_asegurados, cambios_turno: :registrado_por).find(params[:id])
+    render json: serialize(caso).merge(
+      orden: caso.orden&.as_json(only: %i[id estado]),
+      notificaciones: caso.notificacion_asegurados.order(:enviada_en).as_json(only: %i[id medio contenido enviada_en])
+    )
+  end
+
   def create
     caso = CasoAbrir.call(**caso_params.to_h.symbolize_keys)
     render json: serialize(caso), status: :created
+  end
+
+  def avisar
+    notificacion = CasoNotificarAsegurado.call(caso: Caso.find(params[:id]), contenido: params[:mensaje].to_s.strip)
+    render json: notificacion.as_json(only: %i[id medio contenido enviada_en]), status: :created
   end
 
   def ingresar

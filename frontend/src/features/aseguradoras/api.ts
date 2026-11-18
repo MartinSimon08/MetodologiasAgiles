@@ -42,3 +42,19 @@ export async function cambiarEstadoAseguradora(id: number, activa: boolean) {
 export async function eliminarAseguradora(id: number) {
   await api.delete(`/aseguradoras/${id}`)
 }
+
+export interface AseguradoraDetalle extends Aseguradora {
+  casos: {
+    id: number
+    numero_siniestro: string
+    fecha_turno: string | null
+    orden_id: number | null
+    asegurado: { id: number; nombre: string }
+    vehiculo: { id: number; patente: string; marca: string | null; modelo: string | null }
+  }[]
+}
+
+export async function obtenerAseguradora(id: number) {
+  const { data } = await api.get<AseguradoraDetalle>(`/aseguradoras/${id}`)
+  return data
+}

@@ -15,6 +15,7 @@ import { TableroOrdenes } from './TableroOrdenes'
 import { describirVehiculo, ESTADO_ORDEN_LABELS, type EstadoOrden } from './types'
 import { Cargando } from '../../components/Cargando'
 import { EstadoVacio } from '../../components/EstadoVacio'
+import { FilaEnlace } from '../../components/FilaEnlace'
 import { Tabla } from '../../components/Tabla'
 import { usePorPagina } from '../../lib/paginacion'
 
@@ -163,7 +164,7 @@ export function OrdenesPage() {
               </thead>
               <tbody>
                 {ordenes.data.ordenes.map((orden) => (
-                  <tr key={orden.id}>
+                  <FilaEnlace key={orden.id} a={`/ordenes/${orden.id}`}>
                     <td>
                       <Link to={`/ordenes/${orden.id}`} className="enlace-fila">
                         {orden.cliente.nombre}
@@ -176,7 +177,7 @@ export function OrdenesPage() {
                         {ESTADO_ORDEN_LABELS[orden.estado]}
                       </span>
                     </td>
-                  </tr>
+                  </FilaEnlace>
                 ))}
               </tbody>
             </Tabla>

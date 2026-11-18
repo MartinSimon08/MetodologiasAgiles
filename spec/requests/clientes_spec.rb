@@ -4,6 +4,37 @@ RSpec.describe "Clientes", type: :request do
   let!(:admin) { create(:usuario, :administrador) }
   let(:mecanico) { create(:usuario) }
 
+  describe "PATCH /clientes/:id" do
+    let(:cliente) { create(:cliente, telefono: "1145551234", telegram_chat_id: "77") }
+
+    it "edita los datos del cliente" do
+      patch "/clientes/#{cliente.id}", params: { cliente: { nombre: "Ana López", email: "ana@correo.test" } },
+                                       headers: auth_headers(admin), as: :json
+
+      expect(response).to have_http_status(:ok)
+      expect(cliente.reload).to have_attributes(nombre: "Ana López", email: "ana@correo.test", telegram_chat_id: "77")
+    end
+
+    it "desvincula Telegram si cambia el teléfono" do
+      patch "/clientes/#{cliente.id}", params: { cliente: { telefono: "1166667777" } },
+                                       headers: auth_headers(admin), as: :json
+
+      expect(cliente.reload.telegram_chat_id).to be_nil
+    end
+
+    it "rechaza datos inválidos" do
+      patch "/clientes/#{cliente.id}", params: { cliente: { nombre: "" } }, headers: auth_headers(admin), as: :json
+
+      expect(response).to have_http_status(:unprocessable_content)
+    end
+
+    it "no deja editar a un mecánico" do
+      patch "/clientes/#{cliente.id}", params: { cliente: { nombre: "X" } }, headers: auth_headers(mecanico), as: :json
+
+      expect(response).to have_http_status(:forbidden)
+    end
+  end
+
   describe "POST /clientes" do
     let(:params) do
       { cliente: { nombre: "Ana Gómez", telefono: "11 4555-1234", email: "ana@correo.test" } }

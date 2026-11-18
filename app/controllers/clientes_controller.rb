@@ -25,6 +25,12 @@ class ClientesController < ApplicationController
     render json: serialize(cliente), status: :created
   end
 
+  def update
+    cliente = Cliente.find(params[:id])
+    cliente.update!(params.require(:cliente).permit(:nombre, :telefono, :email))
+    render json: serialize(cliente, cliente.casos.exists?)
+  end
+
   private
 
   def cliente_params
@@ -41,7 +47,8 @@ class ClientesController < ApplicationController
   end
 
   def serialize(cliente, asegurado = false)
-    cliente.as_json(only: %i[id nombre telefono email created_at]).merge("asegurado" => asegurado)
+    cliente.as_json(only: %i[id nombre telefono email created_at]).merge("asegurado" => asegurado,
+                                                                        "telegram_vinculada" => cliente.telegram_vinculada?)
   end
 
   def serialize_caso(caso)

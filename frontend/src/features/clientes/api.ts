@@ -6,6 +6,7 @@ export interface Cliente {
   telefono: string
   email: string | null
   asegurado: boolean
+  telegram_vinculada: boolean
   created_at: string
 }
 
@@ -56,5 +57,10 @@ export async function obtenerCliente(id: number) {
 
 export async function registrarCliente(cliente: NuevoCliente) {
   const { data } = await api.post<Cliente>('/clientes', { cliente })
+  return data
+}
+
+export async function editarCliente(id: number, datos: NuevoCliente) {
+  const { data } = await api.patch<Cliente>(`/clientes/${id}`, { cliente: datos })
   return data
 }

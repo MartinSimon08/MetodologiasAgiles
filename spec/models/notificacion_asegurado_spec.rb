@@ -23,8 +23,8 @@ RSpec.describe NotificacionAsegurado do
     expect(build(:notificacion_asegurado, medio: "carta_documento")).not_to be_valid
   end
 
-  it "acepta whatsapp o sms como medio" do
-    expect(build(:notificacion_asegurado, medio: :whatsapp)).to be_valid
+  it "acepta telegram o sms como medio" do
+    expect(build(:notificacion_asegurado, medio: :telegram)).to be_valid
     expect(build(:notificacion_asegurado, medio: :sms)).to be_valid
   end
 end

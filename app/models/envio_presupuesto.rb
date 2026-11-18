@@ -1,7 +1,8 @@
 class EnvioPresupuesto < ApplicationRecord
   self.table_name = "envios_presupuesto"
 
-  MEDIOS = %w[email whatsapp].freeze
+  # MEDIOS = %w[email whatsapp].freeze
+  MEDIOS = %w[email telegram].freeze
 
   belongs_to :orden
   belongs_to :aseguradora

@@ -134,7 +134,9 @@ class OrdenesController < ApplicationController
       presupuesto: presupuesto.presupuesto.to_d.to_s("F"),
       total_aseguradora: presupuesto.total_aseguradora.to_d.to_s("F"),
       caso: caso&.as_json(only: %i[id numero_siniestro]),
-      aseguradora: caso&.aseguradora&.as_json(only: %i[id nombre email telefono]),
+      aseguradora: caso&.aseguradora&.as_json(only: %i[id nombre email telefono])&.merge(
+        "telegram_vinculada" => caso.aseguradora.telegram_vinculada?
+      ),
       envios: EnvioPresupuesto.where(orden_id: presupuesto.orden.id)
                               .order(created_at: :desc, id: :desc).map { |envio| serialize_envio(envio) }
     }

@@ -16,6 +16,22 @@ RSpec.describe AseguradoraGuardar do
     expect(aseguradora.reload).to have_attributes(nombre: "Rivadavia", telefono: nil, email: nil)
   end
 
+  it "desvincula Telegram cuando cambia el teléfono" do
+    aseguradora = create(:aseguradora, :con_telegram, telefono: "1145551234")
+
+    described_class.call(aseguradora: aseguradora, telefono: "1166667777")
+
+    expect(aseguradora.reload.telegram_chat_id).to be_nil
+  end
+
+  it "conserva el vínculo de Telegram si el teléfono no cambia" do
+    aseguradora = create(:aseguradora, :con_telegram, telefono: "1145551234")
+
+    described_class.call(aseguradora: aseguradora, nombre: "Nuevo nombre", telefono: "11 4555-1234")
+
+    expect(aseguradora.reload.telegram_chat_id).to eq("555000111")
+  end
+
   it "informa el nombre duplicado cuando la base de datos lo rechaza" do
     create(:aseguradora, nombre: "Sancor")
     allow_any_instance_of(Aseguradora).to receive(:valid?).and_return(true)

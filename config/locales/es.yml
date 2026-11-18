@@ -160,6 +160,8 @@ es:
               comprobante_no_disponible: El comprobante solo se genera a partir de una orden cerrada
               sin_caso: La orden no está vinculada a un caso
               sin_contacto: La aseguradora no tiene cargado el contacto para ese medio
+              envio_fallido: No se pudo enviar el presupuesto. Revisá la configuración del medio de envío
+              sin_telegram: La aseguradora todavía no está vinculada a Telegram. Tiene que escribirle al bot y compartir su contacto
               no_corregible: Solo se puede corregir una orden cerrada
               sin_cambios: La corrección no cambia ningún valor de la orden
               revision_requerida: La franquicia o el saldo a facturar de esta orden ya pudieron cobrarse o facturarse. Confirmá que los revisaste para corregir la orden

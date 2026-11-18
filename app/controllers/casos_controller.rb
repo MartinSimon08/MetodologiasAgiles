@@ -68,7 +68,7 @@ class CasosController < ApplicationController
     caso.as_json(only: %i[id numero_siniestro descripcion fecha_turno orden_id created_at])
         .merge(
           aseguradora: caso.aseguradora.as_json(only: %i[id nombre]),
-          asegurado: caso.asegurado.as_json(only: %i[id nombre telefono]),
+          asegurado: caso.asegurado.as_json(only: %i[id nombre telefono email]),
           vehiculo: caso.vehiculo.as_json(only: %i[id patente marca modelo]),
           cambios_turno: caso.cambios_turno.map { |cambio| serialize_cambio_turno(cambio) }
         )

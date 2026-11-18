@@ -6,30 +6,44 @@ class EmailEnviar
   BREVO_URL = "https://api.brevo.com/v3/smtp/email".freeze
   ERRORES_DE_RED = [ SocketError, SystemCallError, Net::OpenTimeout, Net::ReadTimeout ].freeze
 
+  REMITENTE_CON_NOMBRE = /\A\s*"?([^"<]*?)"?\s*<([^>\s]+)>\s*\z/
+
   def self.remitente
     ENV["MAIL_REMITENTE"].presence
   end
 
-  def self.call(destinatario:, asunto:, texto:)
-    return false if remitente.nil?
+  def self.datos_remitente
+    coincidencia = remitente.match(REMITENTE_CON_NOMBRE)
+    return { email: remitente } unless coincidencia
 
-    por_resend(destinatario, asunto, texto) || por_brevo(destinatario, asunto, texto)
+    { name: coincidencia[1].strip.presence, email: coincidencia[2] }.compact
   end
 
-  def self.por_resend(destinatario, asunto, texto)
+  def self.call(destinatario:, asunto:, texto:, html: nil)
+    return false if remitente.nil?
+
+    por_resend(destinatario, asunto, texto, html) || por_brevo(destinatario, asunto, texto, html)
+  end
+
+  def self.por_resend(destinatario, asunto, texto, html)
     clave = ENV["RESEND_API_KEY"].presence
     return false unless clave
 
     enviar("Resend", RESEND_URL, { "Authorization" => "Bearer #{clave}" },
-           { from: remitente, to: [ destinatario ], subject: asunto, text: texto })
+           { from: remitente_resend, to: [ destinatario ], subject: asunto, text: texto, html: html }.compact)
   end
 
-  def self.por_brevo(destinatario, asunto, texto)
+  def self.por_brevo(destinatario, asunto, texto, html)
     clave = ENV["BREVO_API_KEY"].presence
     return false unless clave
 
     enviar("Brevo", BREVO_URL, { "api-key" => clave },
-           { sender: { email: remitente }, to: [ { email: destinatario } ], subject: asunto, textContent: texto })
+           { sender: datos_remitente, to: [ { email: destinatario } ], subject: asunto, textContent: texto, htmlContent: html }.compact)
+  end
+
+  def self.remitente_resend
+    datos = datos_remitente
+    datos[:name] ? "#{datos[:name]} <#{datos[:email]}>" : datos[:email]
   end
 
   def self.enviar(proveedor, url, cabeceras, cuerpo)
@@ -44,5 +58,5 @@ class EmailEnviar
     false
   end
 
-  private_class_method :por_resend, :por_brevo, :enviar
+  private_class_method :por_resend, :por_brevo, :remitente_resend, :enviar
 end

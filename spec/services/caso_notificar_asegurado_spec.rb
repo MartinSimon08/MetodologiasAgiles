@@ -15,6 +15,39 @@ RSpec.describe CasoNotificarAsegurado do
     expect(notificacion.enviada_en).to be_within(2.seconds).of(Time.current)
   end
 
+  it "avisa también por mail cuando el asegurado tiene email" do
+    asegurado = create(:cliente, email: "juan@ejemplo.com")
+    caso = create(:caso, asegurado: asegurado, numero_siniestro: "SIN-2")
+    allow(TelegramEnviar).to receive(:call).and_return(true)
+    allow(EmailEnviar).to receive(:call).and_return(true)
+
+    expect { described_class.call(caso: caso) }.to change(NotificacionAsegurado, :count).by(2)
+
+    expect(EmailEnviar).to have_received(:call).with(
+      destinatario: "juan@ejemplo.com", asunto: "Aviso del taller - Caso SIN-2", texto: /ya está listo para retirar/,
+      html: a_string_including("Tu vehículo está listo para retirar", "SIN-2")
+    )
+    expect(caso.notificacion_asegurados.pluck(:medio)).to contain_exactly("telegram", "email")
+  end
+
+  it "no registra el aviso por mail si el envío falla" do
+    caso = create(:caso, asegurado: create(:cliente, email: "juan@ejemplo.com"))
+    allow(TelegramEnviar).to receive(:call).and_return(true)
+    allow(EmailEnviar).to receive(:call).and_return(false)
+
+    expect { described_class.call(caso: caso) }.to change(NotificacionAsegurado, :count).by(1)
+  end
+
+  it "no manda mail si el asegurado no tiene email" do
+    caso = create(:caso, asegurado: create(:cliente, email: nil))
+    allow(TelegramEnviar).to receive(:call).and_return(true)
+    allow(EmailEnviar).to receive(:call)
+
+    described_class.call(caso: caso)
+
+    expect(EmailEnviar).not_to have_received(:call)
+  end
+
   it "arma el mensaje con el nombre del asegurado, la patente y el caso" do
     asegurado = create(:cliente, nombre: "Juan Pérez")
     vehiculo = create(:vehiculo, cliente: asegurado, patente: "AB123CD")

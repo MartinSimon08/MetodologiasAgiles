@@ -12,7 +12,11 @@ class CasoNotificarAsegurado
       caso: caso, medio: MEDIO_POR_DEFECTO, contenido: contenido, enviada_en: Time.current
     )
 
-    TelegramEnviar.call(texto: contenido)
+    if asegurado.telegram_vinculada?
+      TelegramEnviar.call(texto: contenido, chat_ids: [ asegurado.telegram_chat_id ])
+    else
+      TelegramEnviar.call(texto: contenido)
+    end
     notificar_por_email(caso, asegurado, contenido, personalizado)
 
     Rails.logger.info(

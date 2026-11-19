@@ -48,20 +48,20 @@ class TelegramSincronizar
 
   def self.vincular(chat_id, telefono)
     clave = solo_digitos(telefono).last(10)
-    aseguradoras = clave.length < 6 ? [] : coincidentes(clave)
+    contactos = clave.length < 6 ? [] : coincidentes(Aseguradora, clave) + coincidentes(Cliente, clave)
 
-    if aseguradoras.empty?
-      TelegramEnviar.call(texto: "No encontramos ese número en ninguna aseguradora del taller.",
+    if contactos.empty?
+      TelegramEnviar.call(texto: "No encontramos ese número en ninguna aseguradora ni cliente del taller.",
                           chat_ids: [ chat_id ], reply_markup: SIN_TECLADO)
     else
-      aseguradoras.each { |aseguradora| aseguradora.update!(telegram_chat_id: chat_id) }
-      TelegramEnviar.call(texto: "Listo, quedaste vinculado como contacto de #{aseguradoras.map(&:nombre).join(', ')}. " \
+      contactos.each { |contacto| contacto.update_columns(telegram_chat_id: chat_id) }
+      TelegramEnviar.call(texto: "Listo, quedaste vinculado como contacto de #{contactos.map(&:nombre).join(', ')}. " \
                                  "Te vamos a avisar por acá.", chat_ids: [ chat_id ], reply_markup: SIN_TECLADO)
     end
   end
 
-  def self.coincidentes(clave)
-    Aseguradora.where.not(telefono: nil).select { |aseguradora| solo_digitos(aseguradora.telefono).last(10) == clave }
+  def self.coincidentes(modelo, clave)
+    modelo.where.not(telefono: nil).select { |contacto| solo_digitos(contacto.telefono).last(10) == clave }
   end
 
   def self.solo_digitos(valor)

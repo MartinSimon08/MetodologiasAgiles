@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Cargando } from '../../components/Cargando'
 import { EnlaceEntidad } from '../../components/EnlaceEntidad'
@@ -8,11 +9,13 @@ import { Tabla } from '../../components/Tabla'
 import { errorMessage } from '../../lib/api'
 import { fechaHora } from '../../lib/formato'
 import { obtenerCliente } from './api'
+import { EditarClienteForm } from './EditarClienteForm'
 
 export function ClienteDetallePage() {
   const clienteId = Number(useParams().id)
   const cliente = useQuery({ queryKey: ['cliente', clienteId], queryFn: () => obtenerCliente(clienteId) })
   const datos = cliente.data
+  const [editando, setEditando] = useState(false)
 
   return (
     <section className="detalle-entidad">
@@ -35,12 +38,20 @@ export function ClienteDetallePage() {
               <p className="estado">
                 <a href={`tel:${datos.telefono}`}>{datos.telefono}</a>
                 {datos.email ? ` · ${datos.email}` : ''}
+                {datos.telegram_vinculada ? ' · Telegram vinculado' : ' · Telegram sin vincular'}
               </p>
             </div>
-            <span className={`insignia ${datos.asegurado ? 'insignia-asegurado' : 'insignia-desactivado'}`}>
-              {datos.asegurado ? 'Asegurado' : 'Particular'}
+            <span className="acciones">
+              <span className={`insignia ${datos.asegurado ? 'insignia-asegurado' : 'insignia-desactivado'}`}>
+                {datos.asegurado ? 'Asegurado' : 'Particular'}
+              </span>
+              <button type="button" className="secundario" onClick={() => setEditando(true)}>
+                Editar
+              </button>
             </span>
           </header>
+
+          {editando && <EditarClienteForm cliente={datos} onTerminar={() => setEditando(false)} />}
 
           <section className="tarjeta">
             <h2>Vehículos</h2>

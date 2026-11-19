@@ -47,6 +47,23 @@ module MailPlantilla
     end
   end
 
+  def cierre(orden:, nombre:, titulo:, etiqueta:, mensaje:, monto:, rotulo_total:)
+    vehiculo = orden.vehiculo
+    envolver(titulo: titulo, etiqueta: etiqueta) do
+      <<~HTML
+        #{saludo("Hola #{h(nombre)},")}
+        #{caja_mensaje(mensaje)}
+        #{datos([
+          [ "Orden", "##{orden.id}" ],
+          [ "Vehículo", descripcion_vehiculo(vehiculo) ],
+          [ "Patente", vehiculo.patente ]
+        ])}
+        #{monto ? total(monto, rotulo_total) : ''}
+        #{parrafo("Si tenés dudas, respondé este mail.")}
+      HTML
+    end
+  end
+
   def imagen_url
     "#{ENV['MAIL_IMAGENES_URL'].presence || BASE_IMAGENES}/taller.jpg"
   end
@@ -105,10 +122,10 @@ module MailPlantilla
     %(<p style="margin:24px 0 4px;font-family:#{MONO};font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#{SUAVE};">Detalle</p><table role="presentation" width="100%" cellpadding="0" cellspacing="0">#{filas.join}</table>)
   end
 
-  def total(monto)
+  def total(monto, rotulo = "Total para la aseguradora")
     <<~HTML
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:24px;"><tr>
-        <td style="background:#{TINTA};padding:18px 20px;font-family:#{MONO};font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#{SUPERFICIE};">Total para la aseguradora</td>
+        <td style="background:#{TINTA};padding:18px 20px;font-family:#{MONO};font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#{SUPERFICIE};">#{h(rotulo)}</td>
         <td align="right" style="background:#{TINTA};padding:18px 20px;font-size:24px;font-weight:600;color:#{SUPERFICIE};white-space:nowrap;">#{importe(monto)}</td>
       </tr></table>
     HTML

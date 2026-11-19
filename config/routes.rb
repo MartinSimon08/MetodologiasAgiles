@@ -21,7 +21,7 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :clientes, only: %i[index show create]
+  resources :clientes, only: %i[index show create update]
   resources :casos, only: %i[index show create] do
     member do
       post :ingresar
@@ -97,6 +97,8 @@ Rails.application.routes.draw do
       get :presupuesto
       get :comprobante
       post :enviar_presupuesto
+      get :avisos_cierre
+      post :avisar_cierre
     end
   end
 end

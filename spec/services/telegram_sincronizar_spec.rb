@@ -50,6 +50,17 @@ RSpec.describe TelegramSincronizar do
     expect(TelegramApi).to have_received(:post).with("getUpdates", "offset" => 11, "timeout" => 0)
   end
 
+  it "vincula también al cliente cuyo teléfono coincide con el contacto compartido" do
+    cliente = create(:cliente, telefono: "1166667777")
+    allow(TelegramApi).to receive(:post).with("getUpdates", hash_including("timeout")).and_return(
+      respuesta([ contacto("+5491166667777") ])
+    )
+
+    described_class.call
+
+    expect(cliente.reload.telegram_chat_id).to eq("7")
+  end
+
   it "avisa si el número no pertenece a ninguna aseguradora" do
     aseguradora = create(:aseguradora, telefono: "1155551234")
     allow(TelegramApi).to receive(:post).with("getUpdates", hash_including("timeout")).and_return(

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_17_130000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_18_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "unaccent"
@@ -123,6 +123,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_17_130000) do
     t.string "nombre", null: false
     t.string "telefono", null: false
     t.datetime "updated_at", null: false
+    t.string "telegram_chat_id"
     t.index ["telefono"], name: "index_clientes_on_telefono", unique: true
   end
 
@@ -165,7 +166,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_17_130000) do
     t.index ["aseguradora_id"], name: "index_envios_presupuesto_on_aseguradora_id"
     t.index ["enviado_por_id"], name: "index_envios_presupuesto_on_enviado_por_id"
     t.index ["orden_id"], name: "index_envios_presupuesto_on_orden_id"
-    t.check_constraint "medio::text = ANY (ARRAY['email'::character varying, 'whatsapp'::character varying, 'telegram'::character varying]::text[])", name: "envios_presupuesto_medio_valido"
+    t.check_constraint "medio::text = ANY (ARRAY['email'::character varying::text, 'whatsapp'::character varying::text, 'telegram'::character varying::text])", name: "envios_presupuesto_medio_valido"
   end
 
   create_table "notificacion_asegurados", force: :cascade do |t|

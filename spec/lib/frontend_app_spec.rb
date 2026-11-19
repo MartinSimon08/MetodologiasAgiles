@@ -44,6 +44,20 @@ RSpec.describe FrontendApp do
     expect(respuesta.body).to include("root")
   end
 
+  it "devuelve index.html en cada ruta definida en el router de React" do
+    app_tsx = Rails.root.join("frontend/src/App.tsx").read
+    rutas = app_tsx.scan(/path="([^"]+)"/).flatten - [ "*" ]
+
+    expect(rutas).not_to be_empty
+    rutas.each do |ruta|
+      url = "/#{ruta.delete_prefix("/").gsub(/:[^\/]+/, "42")}"
+      respuesta = request.get(url)
+
+      expect(respuesta.status).to eq(200), "#{url} devolvió #{respuesta.status}"
+      expect(respuesta.body).to include("root")
+    end
+  end
+
   it "sirve la consulta de casos por aseguradora" do
     respuesta = request.get("/casos/aseguradora")
 

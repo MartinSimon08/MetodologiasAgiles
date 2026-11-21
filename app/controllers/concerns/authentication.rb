@@ -27,6 +27,7 @@ module Authentication
     return @current_usuario if defined?(@current_usuario)
 
     payload = JsonWebToken.decode(bearer_token)
+    payload = nil unless JsonWebToken.de_sesion?(payload)
     @current_usuario = payload && Usuario.activos.find_by(id: payload["usuario_id"])
   end
 

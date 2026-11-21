@@ -2,6 +2,20 @@ require "rails_helper"
 
 RSpec.describe "Autorización por rol", type: :request do
   accesos = {
+    "GET /.well-known/oauth-protected-resource" => :publico,
+    "GET /.well-known/oauth-protected-resource/mcp" => :publico,
+    "GET /.well-known/oauth-protected-resource/*resto" => :publico,
+    "GET /.well-known/oauth-authorization-server" => :publico,
+    "GET /.well-known/oauth-authorization-server/*resto" => :publico,
+    "GET /.well-known/openid-configuration" => :publico,
+    "GET /.well-known/openid-configuration/*resto" => :publico,
+    "GET /oauth/authorize" => :publico,
+    "POST /oauth/authorize" => :publico,
+    "POST /oauth/token" => :publico,
+    "POST /oauth/registro" => :publico,
+    "GET /mcp" => :publico,
+    "POST /mcp" => :publico,
+    "DELETE /mcp" => :publico,
     "GET /llms.txt" => :publico,
     "POST /sesion" => :publico,
     "GET /sesion" => :ambos,

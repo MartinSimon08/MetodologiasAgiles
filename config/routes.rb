@@ -7,7 +7,23 @@ Rails.application.routes.draw do
 
   scope format: false do
     get "/llms.txt", to: "llms#show"
+    get "/.well-known/oauth-protected-resource", to: "oauth/metadatos#recurso"
+    get "/.well-known/oauth-protected-resource/mcp", to: "oauth/metadatos#recurso"
+    get "/.well-known/oauth-protected-resource/*resto", to: "oauth/metadatos#recurso"
+    get "/.well-known/oauth-authorization-server", to: "oauth/metadatos#servidor"
+    get "/.well-known/oauth-authorization-server/*resto", to: "oauth/metadatos#servidor"
+    get "/.well-known/openid-configuration", to: "oauth/metadatos#servidor"
+    get "/.well-known/openid-configuration/*resto", to: "oauth/metadatos#servidor"
   end
+
+  get "oauth/authorize", to: "oauth/autorizaciones#new"
+  post "oauth/authorize", to: "oauth/autorizaciones#create"
+  post "oauth/token", to: "oauth/tokens#create"
+  post "oauth/registro", to: "oauth/registros#create"
+
+  get "mcp", to: "mcp#show"
+  post "mcp", to: "mcp#create"
+  delete "mcp", to: "mcp#destroy"
 
   mount ActionCable.server => "/cable"
 

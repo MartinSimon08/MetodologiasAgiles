@@ -10,6 +10,7 @@ module ApplicationCable
 
     def autenticar!
       payload = JsonWebToken.decode(request.params[:token])
+      payload = nil unless JsonWebToken.de_sesion?(payload)
       usuario = payload && Usuario.activos.find_by(id: payload["usuario_id"])
       usuario || reject_unauthorized_connection
     end

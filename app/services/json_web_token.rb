@@ -12,6 +12,10 @@ class JsonWebToken
     nil
   end
 
+  def self.de_sesion?(payload)
+    payload.present? && payload["uso"] != Oauth::AccessToken::USO && payload["aud"].blank?
+  end
+
   def self.para(usuario)
     encode({ usuario_id: usuario.id, rol: usuario.rol })
   end

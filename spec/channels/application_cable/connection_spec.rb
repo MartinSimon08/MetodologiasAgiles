@@ -22,4 +22,14 @@ RSpec.describe ApplicationCable::Connection, type: :channel do
 
     expect { connect "/cable?token=#{JsonWebToken.para(usuario)}" }.to have_rejected_connection
   end
+
+  it "rechaza un token emitido para el MCP" do
+    token = Oauth::AccessToken.emitir(
+      usuario: usuario,
+      recurso: Oauth::Recurso.new("http://www.example.com"),
+      client_id: "taller-mcp"
+    )
+
+    expect { connect "/cable?token=#{token}" }.to have_rejected_connection
+  end
 end

@@ -101,7 +101,7 @@ stateDiagram-v2
 
 ## Stack
 
-- Ruby 4.0.7 (`.ruby-version`, pensado para rbenv)
+- Ruby 4.0.10 (`.ruby-version`, pensado para rbenv)
 - Rails 8.1 (modo API)
 - PostgreSQL 16, la API y el frontend, vía Docker Compose
 - Frontend: Vite, React y TypeScript en `frontend/` (pnpm)
@@ -110,7 +110,7 @@ stateDiagram-v2
 
 ## Requisitos previos
 
-- Ruby 4.0.7. Dentro del repo, `rbenv install` lee `.ruby-version`.
+- Ruby 4.0.10. Dentro del repo, `rbenv install` lee `.ruby-version`.
 - Bundler 4.0.21, la versión con la que se generó `Gemfile.lock`:
   ```
   gem install bundler -v 4.0.21

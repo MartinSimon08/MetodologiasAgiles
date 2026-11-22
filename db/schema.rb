@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_18_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_21_143000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "unaccent"
@@ -179,6 +179,52 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_18_120000) do
     t.index ["caso_id"], name: "index_notificacion_asegurados_on_caso_id"
   end
 
+  create_table "oauth_clientes", force: :cascade do |t|
+    t.text "client_id", null: false
+    t.string "nombre", null: false
+    t.text "redirect_uris", default: [], null: false, array: true
+    t.string "origen", null: false
+    t.datetime "metadata_expira_en"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["client_id"], name: "index_oauth_clientes_on_client_id", unique: true
+    t.check_constraint "cardinality(redirect_uris) > 0", name: "oauth_clientes_redirects_presentes"
+    t.check_constraint "origen::text = ANY (ARRAY['registro'::character varying, 'metadata'::character varying]::text[])", name: "oauth_clientes_origen_valido"
+  end
+
+  create_table "oauth_codigos", force: :cascade do |t|
+    t.string "digesto", null: false
+    t.bigint "usuario_id", null: false
+    t.text "client_id", null: false
+    t.text "redirect_uri", null: false
+    t.string "code_challenge", null: false
+    t.text "recurso", null: false
+    t.string "scope", null: false
+    t.datetime "expira_en", null: false
+    t.datetime "usado_en"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["digesto"], name: "index_oauth_codigos_on_digesto", unique: true
+    t.index ["usuario_id"], name: "index_oauth_codigos_on_usuario_id"
+  end
+
+  create_table "oauth_refresh_tokens", force: :cascade do |t|
+    t.string "digesto", null: false
+    t.string "familia", null: false
+    t.bigint "usuario_id", null: false
+    t.text "client_id", null: false
+    t.text "recurso", null: false
+    t.string "scope", null: false
+    t.datetime "expira_en", null: false
+    t.datetime "reemplazado_en"
+    t.datetime "revocado_en"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["digesto"], name: "index_oauth_refresh_tokens_on_digesto", unique: true
+    t.index ["familia"], name: "index_oauth_refresh_tokens_on_familia"
+    t.index ["usuario_id"], name: "index_oauth_refresh_tokens_on_usuario_id"
+  end
+
   create_table "ordenes", force: :cascade do |t|
     t.bigint "cliente_id", null: false
     t.datetime "created_at", null: false
@@ -315,6 +361,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_18_120000) do
   add_foreign_key "envios_presupuesto", "ordenes"
   add_foreign_key "envios_presupuesto", "usuarios", column: "enviado_por_id"
   add_foreign_key "notificacion_asegurados", "casos"
+  add_foreign_key "oauth_codigos", "usuarios"
+  add_foreign_key "oauth_refresh_tokens", "usuarios"
   add_foreign_key "ordenes", "clientes"
   add_foreign_key "ordenes", "usuarios", column: "cerrada_por_id"
   add_foreign_key "ordenes", "vehiculos"
